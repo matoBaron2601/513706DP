@@ -1,3 +1,4 @@
+import type { Q } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
 import type { UserQuizDto, CreateUserQuizDto } from '../db/schema';
 import type { UserQuizRepository } from '../repositories/userQuizRepository';
 import type { Transaction } from '../types';
@@ -45,5 +46,12 @@ export class UserQuizService {
 			throw new UserQuizNotFoundError(`UserQuiz with id ${newUserQuiz.id} not found`);
 		}
 		return userQuiz;
+	}
+
+	async deleteUserQuizzesByQuizIdTransational(
+		quizId: string,
+		tx: Transaction
+	): Promise<UserQuizDto> {
+		return this.userQuizRepository.deleteUserQuizzesByQuizId(quizId, tx);
 	}
 }

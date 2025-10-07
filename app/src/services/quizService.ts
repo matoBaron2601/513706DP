@@ -41,8 +41,9 @@ export class QuizService {
 	async createQuizTransactional(create: CreateQuizDto, tx: Transaction): Promise<QuizDto> {
 		return await this.quizRepository.createQuizTransactional(create, tx);
 	}
-	async deleteQuizById(quizId: string): Promise<QuizDto> {
-		const result = await this.quizRepository.deleteQuizById(quizId);
+	async deleteQuizByIdTransactional(quizId: string, tx: Transaction): Promise<QuizDto> {
+
+		const result = await this.quizRepository.deleteQuizByIdTransactional(quizId, tx);
 		if (!result) {
 			throw new QuizNotFoundError(`Quiz with id ${quizId} could not be deleted`);
 		}
@@ -59,9 +60,6 @@ export class QuizService {
 
 	async getQuizzesByCreatorId(creatorId: string): Promise<QuizDto[]> {
 		const result = await this.quizRepository.getQuizzesByCreatorId(creatorId);
-		if (!result || result.length === 0) {
-			throw new QuizNotFoundError(`No quizzes found for creator with id ${creatorId}`);
-		}
 		return result;
 	}
 }

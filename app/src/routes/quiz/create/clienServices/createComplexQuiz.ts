@@ -1,14 +1,19 @@
-const createComplexQuiz = async (prompt: string, technologies: string[]): Promise<string> => {
-	const quizId = await fetch('/api/quiz/complex', {
+import type { Quiz } from '../../../../schemas/quizSchema';
+
+const createComplexQuiz = async (
+	prompt: string,
+	technologies: string[],
+	email: string
+): Promise<Quiz> => {
+	console.log("HERE")
+	const quiz = await fetch('/api/quiz', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({ prompt, technologies })
+		body: JSON.stringify({ prompt, technologies, email })
 	});
-
-	const data = await quizId.json();
-	return data.id;
+	return await quiz.json();
 };
 
 export default createComplexQuiz;

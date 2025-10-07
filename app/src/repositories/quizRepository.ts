@@ -1,5 +1,5 @@
 import { db } from '../db/client';
-import { eq } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import { quiz, type CreateQuizDto, type QuizDto } from '../db/schema';
 import { type NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
 import { type ExtractTablesWithRelations } from 'drizzle-orm/relations';
@@ -19,11 +19,16 @@ export class QuizRepository {
 
 	async createQuizTransactional(newQuiz: CreateQuizDto, tx: Transaction): Promise<QuizDto> {
 		const result = await tx.insert(quiz).values(newQuiz).returning();
+		console.log('Quiz created transactionally:', result[0]);
 		return result[0];
 	}
 
-	async deleteQuizById(quizId: string): Promise<QuizDto | undefined> {
-		const result = await db.delete(quiz).where(eq(quiz.id, quizId)).returning();
+	async deleteQuizByIdTransactional(quizId: string, tx: Transaction): Promise<QuizDto | undefined> {
+		const result = await tx
+			.update(quiz)
+			.set({ deletedAt: new Date() })
+			.where(eq(quiz.id, quizId))
+			.returning();
 		return result[0];
 	}
 
@@ -33,6 +38,9 @@ export class QuizRepository {
 	}
 
 	async getQuizzesByCreatorId(creatorId: string): Promise<QuizDto[]> {
-		return await db.select().from(quiz).where(eq(quiz.creatorId, creatorId));
+		return await db
+			.select()
+			.from(quiz)
+			.where(and(eq(quiz.creatorId, creatorId), isNull(quiz.deletedAt)));
 	}
 }

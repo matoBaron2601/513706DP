@@ -1,5 +1,8 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { page } from '$app/state';
+	import { signOut } from '@auth/sveltekit/client';
+
 	import {
 		House,
 		FolderCog,
@@ -8,6 +11,7 @@
 		LucideHistory,
 		PersonStandingIcon
 	} from '@lucide/svelte';
+	import Button from './ui/button/button.svelte';
 
 	const items = [
 		{
@@ -44,9 +48,9 @@
 </script>
 
 <Sidebar.Root>
-	<Sidebar.Content>
-		<Sidebar.Group>
-			<Sidebar.GroupLabel>OnlyDevs Quizzes</Sidebar.GroupLabel>
+	<Sidebar.Content class=" h-full">
+		<Sidebar.GroupLabel>OnlyDevs Quizzes</Sidebar.GroupLabel>
+		<Sidebar.Group class="flex h-full flex-col justify-between">
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
@@ -63,6 +67,22 @@
 					{/each}
 				</Sidebar.Menu>
 			</Sidebar.GroupContent>
+			<Sidebar.Footer>
+				<div class="flex items-center">
+					<img
+						src={page.data.session?.user?.image}
+						alt="Google Logo"
+						class="mr-2 h-8 w-8 rounded-2xl"
+					/>
+					<div>
+						<p>{page.data.session?.user?.name}</p>
+						<p class="text-muted-foreground text-sm">{page.data.session?.user?.email}</p>
+					</div>
+				</div>
+				<Button onclick={signOut} variant="outline" size="sm" class="w-full cursor-pointer"
+					>Sign out</Button
+				>
+			</Sidebar.Footer>
 		</Sidebar.Group>
 	</Sidebar.Content>
 </Sidebar.Root>

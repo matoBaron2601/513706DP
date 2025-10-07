@@ -27,8 +27,8 @@ export class QuestionService {
 		return await this.questionRepository.createQuestionTransactional(newQuestion, tx);
 	}
 
-	async deleteQuestionById(questionId: string): Promise<QuestionDto> {
-		const result = await this.questionRepository.deleteQuestionById(questionId);
+	async deleteQuestionByIdTransactional(questionId: string, tx: Transaction): Promise<QuestionDto> {
+		const result = await this.questionRepository.deleteQuestionByIdTransactional(questionId, tx);
 		if (!result) {
 			throw new QuestionNotFoundError(`Question with id ${questionId} could not be deleted`);
 		}
@@ -39,6 +39,14 @@ export class QuestionService {
 		const result = await this.questionRepository.updateQuestion(newQuestion);
 		if (!result) {
 			throw new QuestionNotFoundError(`Question with id ${newQuestion.id} was not found`);
+		}
+		return result;
+	}
+
+	async getQuestionsByQuizIdTransactional(quizId: string, tx: Transaction): Promise<QuestionDto[]> {
+		const result = await this.questionRepository.getQuestionsByQuizIdTransactional(quizId, tx);
+		if (!result) {
+			throw new QuestionNotFoundError(`Questions for quiz with id ${quizId} not found`);
 		}
 		return result;
 	}

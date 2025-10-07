@@ -1,5 +1,6 @@
 import { user, type CreateUserDto, type UpdateUserDto, type UserDto } from '../db/schema';
 import type { UserRepository } from '../repositories/userRepository';
+import type { Credentials } from 'google-auth-library';
 
 export class UserNotFoundError extends Error {
 	constructor(message: string = 'User not found') {
@@ -65,5 +66,41 @@ export class UserService {
 			throw new UserNotFoundError(`User with id ${userId} was not found`);
 		}
 		return result;
+	}
+
+	async getOrCreateUser(userData: CreateUserDto): Promise<UserDto> {
+		try {
+			const existingUser = await this.userRepository.getUserByEmail(userData.email);
+			if (!existingUser) {
+				return await this.userRepository.createUser(userData);
+			}
+			return existingUser;
+		} catch (e) {
+			if (e instanceof UserNotFoundError) {
+				return await this.userRepository.createUser(userData);
+			}
+		}
+
+		return await this.userRepository.createUser(userData);
+	}
+
+	async getUserFromGoogle(tokens: Credentials): Promise<UserDto> {
+		const result = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+			headers: {
+				Authorization: `Bearer ${tokens.access_token}`
+			}
+		});
+		const profile: {
+			sub: string;
+			name?: string;
+			picture?: string;
+			email?: string;
+		} = await result.json();
+		return {
+			id: profile.sub,
+			name: profile.name || '',
+			email: profile.email || '',
+			profilePicture: profile.picture || ''
+		};
 	}
 }

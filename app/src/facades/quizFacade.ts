@@ -7,6 +7,7 @@ import type { OptionService } from '../services/optionService';
 import type { QuestionService } from '../services/questionService';
 import type { QuizService } from '../services/quizService';
 import type { UserQuizService } from '../services/userQuizService';
+import type { UserService } from '../services/userService';
 
 export class QuizFacade {
 	constructor(
@@ -14,14 +15,21 @@ export class QuizFacade {
 		private userQuizService: UserQuizService,
 		private questionService: QuestionService,
 		private optionService: OptionService,
-		private openAiService: OpenAiService
+		private openAiService: OpenAiService,
+		private userService: UserService
 	) {}
 
-	async initialCreateQuiz(_initialCreateQuiz: CreateQuizInitialRequest): Promise<Quiz> {
+	async initialCreateQuiz(initialCreateQuiz: CreateQuizInitialRequest): Promise<Quiz> {
 		const openaiResult = await this.openAiService.callOpenAI();
 		const parsedJson: CreateQuizRequest = JSON.parse(openaiResult.choices[0].message.content);
-		const quizId = await this.createQuiz(parsedJson);
-		return await this.getQuizById(quizId);
+		const user = await this.userService.getUserByEmail(initialCreateQuiz.email);
+		const quizId = await this.createQuiz({
+			...parsedJson,
+			quiz: { ...parsedJson.quiz, creatorId: user.id }
+		});
+
+		const actualQuiz = await this.getQuizById(quizId);
+		return actualQuiz;
 	}
 
 	async createQuiz(createQuiz: CreateQuizRequest): Promise<string> {
@@ -85,8 +93,27 @@ export class QuizFacade {
 		};
 	}
 
-	async getQuizzesByCreatorId(creatorId: string): Promise<Quiz[]> {
-		const quizzesData = await this.quizService.getQuizzesByCreatorId(creatorId);
+	async deleteQuizById(quizId: string): Promise<void> {
+		await db.transaction(async (tx) => {
+			await this.userQuizService.deleteUserQuizzesByQuizIdTransational(quizId, tx);
+			const questions = await this.questionService.getQuestionsByQuizIdTransactional(quizId, tx);
+			for (const question of questions) {
+				const options = await this.optionService.getOptionsByQuestionIdTransactional(
+					question.id,
+					tx
+				);
+				for (const option of options) {
+					await this.optionService.deleteOptionByIdTransactional(option.id, tx);
+				}
+				await this.questionService.deleteQuestionByIdTransactional(question.id, tx);
+			}
+			await this.quizService.deleteQuizByIdTransactional(quizId, tx);
+		});
+	}
+
+	async getQuizzesByCreatorEmail(creatorEmail: string): Promise<Quiz[]> {
+		const creator = await this.userService.getUserByEmail(creatorEmail);
+		const quizzesData = await this.quizService.getQuizzesByCreatorId(creator.id);
 		return await Promise.all(
 			quizzesData.map(async (quiz) => ({
 				...(await this.getQuizById(quiz.id))

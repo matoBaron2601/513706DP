@@ -1,10 +1,13 @@
 import { t } from 'elysia';
+import { type Static } from 'elysia';
 
 export const createUserSchema = t.Object({
 	name: t.String(),
 	email: t.String(),
 	profilePicture: t.String()
 });
+
+export type CreateUser = Static<typeof createUserSchema>;
 
 export const updateUserSchema = t.Object({
 	name: t.Optional(t.String()),

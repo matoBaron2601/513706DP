@@ -2,6 +2,7 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 
 export const createQuizInitialRequestSchema = t.Object({
+	email: t.String(),
 	prompt: t.String(),
 	technologies: t.Array(t.String())
 });
@@ -31,9 +32,10 @@ export type CreateQuizRequest = Static<typeof createQuizRequestSchema>;
 
 export const quizSchema = t.Object({
 	quiz: t.Object({
+		id: t.String(),
 		creatorId: t.String(),
-		timePerQuestion: t.Number(),
-		canGoBack: t.Boolean(),
+		timePerQuestion: t.Nullable(t.Number()),
+		canGoBack: t.Nullable(t.Boolean()),
 		createdAt: t.Date()
 	}),
 	questions: t.Array(

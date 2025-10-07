@@ -64,4 +64,13 @@ export class UserQuizRepository {
 			.where(eq(userQuiz.quizId, quizId));
 		return result.map((r) => r.user);
 	}
+
+	async deleteUserQuizzesByQuizId(quizId: string, tx: Transaction): Promise<UserQuizDto> {
+		const result = await tx
+			.update(userQuiz)
+			.set({ deletedAt: new Date() })
+			.where(eq(userQuiz.quizId, quizId))
+			.returning();
+		return result[0];
+	}
 }

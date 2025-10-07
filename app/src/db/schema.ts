@@ -16,7 +16,8 @@ export const user = pgTable('user', {
 		.primaryKey(),
 	email: varchar('email').notNull().unique(),
 	name: varchar('name').notNull(),
-	profilePicture: varchar('profilePicture').notNull()
+	profilePicture: varchar('profilePicture').notNull(),
+	deletedAt: timestamp('deletedAt')
 });
 
 export type UserDto = InferSelectModel<typeof user>;
@@ -31,8 +32,9 @@ export const quiz = pgTable('quiz', {
 		.notNull()
 		.references(() => user.id),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	timePerQuestion: integer('timePerQuestion').notNull().default(0),
-	canGoBack: boolean('canGoBack').notNull().default(true)
+	timePerQuestion: integer('timePerQuestion'),
+	canGoBack: boolean('canGoBack'),
+	deletedAt: timestamp('deletedAt')
 });
 
 export type QuizDto = InferSelectModel<typeof quiz>;
@@ -49,7 +51,8 @@ export const userQuiz = pgTable('userQuiz', {
 		.notNull()
 		.references(() => quiz.id),
 	openedAt: timestamp('openedAt').notNull().defaultNow(),
-	submittedAt: timestamp('submittedAt')
+	submittedAt: timestamp('submittedAt'),
+	deletedAt: timestamp('deletedAt')
 });
 
 export type UserQuizDto = InferSelectModel<typeof userQuiz>;
@@ -62,7 +65,8 @@ export const question = pgTable('question', {
 	quizId: varchar('quizId')
 		.notNull()
 		.references(() => quiz.id),
-	text: varchar('text').notNull()
+	text: varchar('text').notNull(),
+	deletedAt: timestamp('deletedAt')
 });
 
 export type QuestionDto = InferSelectModel<typeof question>;
@@ -76,7 +80,8 @@ export const option = pgTable('option', {
 		.notNull()
 		.references(() => question.id),
 	text: varchar('text').notNull(),
-	isCorrect: boolean('isCorrect').notNull()
+	isCorrect: boolean('isCorrect').notNull(),
+	deletedAt: timestamp('deletedAt')
 });
 
 export type OptionDto = InferSelectModel<typeof option>;
@@ -95,7 +100,8 @@ export const userAnswer = pgTable('userAnswer', {
 	optionId: varchar('optionId')
 		.notNull()
 		.references(() => option.id),
-	answeredAt: timestamp('answeredAt').notNull().defaultNow()
+	answeredAt: timestamp('answeredAt').notNull().defaultNow(),
+	deletedAt: timestamp('deletedAt')
 });
 
 export const table = {

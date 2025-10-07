@@ -13,7 +13,7 @@
 	import { goto } from '$app/navigation';
 	import { getUniqueDatasets } from '../../../clientServices/getUniqueDatasets';
 	import Spinner from '$lib/components/Spinner.svelte';
-
+	import { page } from '$app/state';
 	let { data }: { data: { createQuizForm: SuperValidated<Infer<CreateQuizFormSchema>> } } =
 		$props();
 
@@ -21,10 +21,10 @@
 		validators: zodClient(createQuizFormSchema)
 	});
 
-	const { form: formData, enhance, reset } = form;
-
+	const { form: formData, enhance } = form;
 	const createComplexQuizMutation = createMutation({
-		mutationFn: () => createComplexQuiz($formData.prompt, $formData.technologies)
+		mutationFn: () =>
+			createComplexQuiz($formData.prompt, $formData.technologies, page.data.session?.user?.email ?? '')
 	});
 
 	const fetchDatasets = (datasetType: Dataset) =>
@@ -34,8 +34,10 @@
 		});
 
 	const handleSubmit = async () => {
-		const quizId = await $createComplexQuizMutation.mutateAsync();
-		goto(`/quiz/${quizId}`);
+		const quiz = await $createComplexQuizMutation.mutateAsync();
+		if (quiz) {
+			goto(`/quiz/${quiz.quiz.id}`);
+		}
 	};
 
 	let datasets = $derived.by(() => fetchDatasets($formData.activeTab));

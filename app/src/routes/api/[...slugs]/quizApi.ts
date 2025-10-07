@@ -12,24 +12,28 @@ import { QuestionService } from '../../../services/questionService';
 import { OptionService } from '../../../services/optionService';
 import { QuizFacade } from '../../../facades/quizFacade';
 import { createQuizInitialRequestSchema, quizSchema } from '../../../schemas/quizSchema';
+import { UserService } from '../../../services/userService';
+import { UserRepository } from '../../../repositories/userRepository';
 
 const quizRepository = new QuizRepository();
 const questionRepository = new QuestionRepository();
 const optionRepository = new OptionRepository();
 const userQuizRepository = new UserQuizRepository();
+const userRepository = new UserRepository();
 const openAiService = new OpenAiService();
 
 const userQuizService = new UserQuizService(userQuizRepository);
 const questionService = new QuestionService(questionRepository);
 const optionService = new OptionService(optionRepository);
 const quizService = new QuizService(quizRepository);
-
+const userService = new UserService(userRepository);
 const quizFacade = new QuizFacade(
 	quizService,
 	userQuizService,
 	questionService,
 	optionService,
-	openAiService
+	openAiService,
+	userService
 );
 
 export const quizApi = new Elysia({ prefix: 'quiz' })
@@ -53,21 +57,27 @@ export const quizApi = new Elysia({ prefix: 'quiz' })
 	.post(
 		'/',
 		async (req) => {
-			return await quizFacade.initialCreateQuiz(req.body);
+			console.log('Initial quiz creation request:', req.body);
+			const final = await quizFacade.initialCreateQuiz(req.body);
+			console.log('Final quiz created:', final, typeof final);
+			return final;
 		},
 		{
-			body: createQuizInitialRequestSchema,
-			response: quizSchema
+			body: createQuizInitialRequestSchema
+			// response: quizSchema
 		}
 	)
 	.get(
-		'/list/:creatorId',
+		'/list/:creatorEmail',
 		async (req) => {
-			return await quizFacade.getQuizzesByCreatorId(req.params.creatorId);
+			return await quizFacade.getQuizzesByCreatorEmail(req.params.creatorEmail);
 		},
 		{
 			response: t.Array(quizSchema)
 		}
-	);
+	)
+	.delete('/:id', async (req) => {
+		return await quizFacade.deleteQuizById(req.params.id);
+	});
 
 export default quizApi;

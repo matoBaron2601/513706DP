@@ -4,9 +4,11 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/AppSidebar.svelte';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { page } from '$app/state';
+	import queryClient from './queryClient';
+
 	let { children } = $props();
 
-	const queryClient = new QueryClient();
 </script>
 
 <svelte:head>
@@ -15,7 +17,9 @@
 
 <QueryClientProvider client={queryClient}>
 	<Sidebar.Provider>
-		<AppSidebar />
+		{#if page.data.session}
+			<AppSidebar />
+		{/if}
 		<main class="w-full">
 			{@render children?.()}
 		</main>

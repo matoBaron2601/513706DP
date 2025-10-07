@@ -1,26 +1,16 @@
-<script lang="ts">
+<script>
+	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { page } from '$app/state';
+	import { createQuery } from '@tanstack/svelte-query';
+	import getQuizById from './clientServices/getQuizById';
 
-	const getComplexQuizById = async (id: string) => {
-		const response = await fetch(`/api/quiz/complex/${id}`);
-		if (!response.ok) {
-			throw new Error('Failed to fetch quiz');
-		}
-		const data = await response.json();
-		return data;
-	};
+	const quizId = page.params.id ?? '';
 
-	import { onMount } from 'svelte';
-	import Question from '../components/Question.svelte';
-
-	onMount(async () => {
-		await getComplexQuizById(page.params.id ?? '');
+	const getQuizByIdQuery = createQuery({
+		queryKey: ['quiz', quizId],
+		queryFn: async () => getQuizById(quizId)
 	});
+
 </script>
 
-<div>
-
-
-
-	<Question />
-</div>
+<div>{$getQuizByIdQuery.data?.quiz.id}</div>

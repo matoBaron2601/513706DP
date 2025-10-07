@@ -4,10 +4,13 @@ import { chunkerApi } from './chunkerApi';
 import { openapi } from '@elysiajs/openapi';
 import userApi from './userApi';
 import { quizApi } from './quizApi';
+import authApi from './authApi';
+
 const app = new Elysia({
 	prefix: '/api'
 })
 	.use(openapi())
+	.use(authApi)
 	.use(userApi)
 	.use(quizApi)
 	.use(typesenseApi)

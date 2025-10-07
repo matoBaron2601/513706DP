@@ -8,6 +8,48 @@
       "when": 1759074559548,
       "tag": "0000_useful_chronomancer",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759269056473,
+      "tag": "0001_yummy_sir_ram",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759269497664,
+      "tag": "0002_jazzy_kang",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759269667456,
+      "tag": "0003_legal_switch",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759269879122,
+      "tag": "0004_smiling_ben_parker",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1759270290713,
+      "tag": "0005_elite_thaddeus_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1759493038626,
+      "tag": "0006_rich_monster_badoon",
+      "breakpoints": true
     }
   ]
 }
