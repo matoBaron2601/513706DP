@@ -31,21 +31,22 @@ export interface OpenAIChatCompletionResponse {
 	usage: Usage; // token usage statistics
 }
 
-const prompt = `Please return a JSON response that strictly conforms to the following schema with the creatorId set to "user1". Return only the JSON object, nothing else:
+const prompt = `Please return a JSON response that strictly conforms to the following schema. Return only the JSON object, nothing else. Return 5 questions.
 
 {
     "quiz": {
-        "creatorId": "user1",
-        "timePerQuestion": null, // Optional - can be a number
-        "canGoBack": null // Optional - can be a boolean
+        "creatorId": "",
+		"name": "",
+        "timePerQuestion": null,
+        "canGoBack": null 
     },
     "questions": [
         {
-            "text": "", // Example: "What is the capital of France?"
+            "text": "",
             "options": [
                 {
-                    "text": "", // Example: "Paris"
-                    "isCorrect": false // Example: true or false
+                    "text": "",
+                    "isCorrect": false
                 }
             ]
         }
