@@ -34,16 +34,11 @@ export class QuizService {
 		return result;
 	}
 
-	async createQuiz(create: CreateQuizDto) {
-		return await this.quizRepository.createQuiz(create);
+	async createQuiz(create: CreateQuizDto, tx?: Transaction): Promise<QuizDto> {
+		return await this.quizRepository.createQuiz(create, tx);
 	}
-
-	async createQuizTransactional(create: CreateQuizDto, tx: Transaction): Promise<QuizDto> {
-		return await this.quizRepository.createQuizTransactional(create, tx);
-	}
-	async deleteQuizByIdTransactional(quizId: string, tx: Transaction): Promise<QuizDto> {
-
-		const result = await this.quizRepository.deleteQuizByIdTransactional(quizId, tx);
+	async deleteQuizById(quizId: string, tx?: Transaction): Promise<QuizDto> {
+		const result = await this.quizRepository.deleteQuizById(quizId, tx);
 		if (!result) {
 			throw new QuizNotFoundError(`Quiz with id ${quizId} could not be deleted`);
 		}
@@ -61,5 +56,13 @@ export class QuizService {
 	async getQuizzesByCreatorId(creatorId: string): Promise<QuizDto[]> {
 		const result = await this.quizRepository.getQuizzesByCreatorId(creatorId);
 		return result;
+	}
+
+	async getQuizzesByUserId(userId: string): Promise<QuizDto[]> {
+		return await this.quizRepository.getQuizzesByUserId(userId);
+	}
+
+	async getQuizzesByIds(quizIds: string[]): Promise<QuizDto[]> {
+		return await this.quizRepository.getQuizzesByIds(quizIds);
 	}
 }

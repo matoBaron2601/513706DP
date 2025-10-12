@@ -6,6 +6,8 @@ import {
 	userQuiz,
 	type CreateUserQuizDto,
 	type QuizDto,
+	type UpdateQuizDto,
+	type UpdateUserQuizDto,
 	type UserDto,
 	type UserQuizDto
 } from '../db/schema';
@@ -13,6 +15,7 @@ import { type NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
 import { type ExtractTablesWithRelations } from 'drizzle-orm/relations';
 import { type PgTransaction } from 'drizzle-orm/pg-core';
 import type { Transaction } from '../types';
+import getDbClient from './utils/getDbClient';
 
 export class UserQuizRepository {
 	async getUserQuizById(userQuizId: string): Promise<UserQuizDto | undefined> {
@@ -20,16 +23,8 @@ export class UserQuizRepository {
 		return result[0];
 	}
 
-	async createUserQuiz(newUserQuiz: CreateUserQuizDto): Promise<UserQuizDto> {
-		const result = await db.insert(userQuiz).values(newUserQuiz).returning();
-		return result[0];
-	}
-
-	async createUserQuizTransactional(
-		newUserQuiz: CreateUserQuizDto,
-		tx: Transaction
-	): Promise<UserQuizDto> {
-		const result = await tx.insert(userQuiz).values(newUserQuiz).returning();
+	async createUserQuiz(newUserQuiz: CreateUserQuizDto, tx?: Transaction): Promise<UserQuizDto> {
+		const result = await getDbClient(tx).insert(userQuiz).values(newUserQuiz).returning();
 		return result[0];
 	}
 
@@ -38,11 +33,15 @@ export class UserQuizRepository {
 		return result[0];
 	}
 
-	async updateUserQuiz(newUserQuiz: UserQuizDto): Promise<UserQuizDto | undefined> {
-		const result = await db
+	async updateUserQuiz(
+		userQuizId: string,
+		newUserQuiz: UpdateUserQuizDto,
+		tx?: Transaction
+	): Promise<UserQuizDto | undefined> {
+		const result = await getDbClient(tx)
 			.update(userQuiz)
 			.set(newUserQuiz)
-			.where(eq(userQuiz.id, newUserQuiz.id))
+			.where(eq(userQuiz.id, userQuizId))
 			.returning();
 		return result[0];
 	}
@@ -65,12 +64,21 @@ export class UserQuizRepository {
 		return result.map((r) => r.user);
 	}
 
-	async deleteUserQuizzesByQuizId(quizId: string, tx: Transaction): Promise<UserQuizDto> {
-		const result = await tx
+	async deleteUserQuizzesByQuizId(quizId: string, tx?: Transaction): Promise<UserQuizDto> {
+		const result = await getDbClient(tx)
 			.update(userQuiz)
 			.set({ deletedAt: new Date() })
 			.where(eq(userQuiz.quizId, quizId))
 			.returning();
 		return result[0];
+	}
+
+	async getUserQuizzesByUserEmail(email: string, tx?: Transaction): Promise<UserQuizDto[]> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(userQuiz)
+			.innerJoin(user, eq(user.id, userQuiz.userId))
+			.where(eq(user.email, email));
+		return result.map((r) => r.userQuiz);
 	}
 }

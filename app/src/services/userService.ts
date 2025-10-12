@@ -84,23 +84,28 @@ export class UserService {
 		return await this.userRepository.createUser(userData);
 	}
 
-	async getUserFromGoogle(tokens: Credentials): Promise<UserDto> {
-		const result = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
-			headers: {
-				Authorization: `Bearer ${tokens.access_token}`
-			}
-		});
-		const profile: {
-			sub: string;
-			name?: string;
-			picture?: string;
-			email?: string;
-		} = await result.json();
-		return {
-			id: profile.sub,
-			name: profile.name || '',
-			email: profile.email || '',
-			profilePicture: profile.picture || ''
-		};
+	async getUsersByIds(userIds: string[]): Promise<UserDto[]> {
+		return await this.userRepository.getUsersByIds(userIds);
 	}
+
+	// async getUserFromGoogle(tokens: Credentials): Promise<UserDto> {
+	// 	const result = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+	// 		headers: {
+	// 			Authorization: `Bearer ${tokens.access_token}`
+	// 		}
+	// 	});
+	// 	const profile: {
+	// 		sub: string;
+	// 		name?: string;
+	// 		picture?: string;
+	// 		email?: string;
+	// 	} = await result.json();
+	// 	return {
+	// 		id: profile.sub,
+	// 		name: profile.name || '',
+	// 		email: profile.email || '',
+	// 		profilePicture: profile.picture || '',
+
+	// 	};
+	// }
 }

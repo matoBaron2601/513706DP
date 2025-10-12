@@ -36,7 +36,7 @@
 	const handleSubmit = async () => {
 		const quiz = await $createComplexQuizMutation.mutateAsync();
 		if (quiz) {
-			goto(`/quiz/${quiz.quiz.id}`);
+			goto(`/quiz/created`);
 		}
 	};
 

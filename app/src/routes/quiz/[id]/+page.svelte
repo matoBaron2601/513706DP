@@ -1,16 +1,34 @@
-<script>
-	import PageWrapper from '$lib/components/PageWrapper.svelte';
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import QuizForm from './components/QuizForm.svelte';
+	import { createMutation } from '@tanstack/svelte-query';
+	import createUserQuiz from './clientServices/createUserQuiz';
 	import { page } from '$app/state';
-	import { createQuery } from '@tanstack/svelte-query';
-	import getQuizById from './clientServices/getQuizById';
+	import getUserByEmail from '../../clientServices/getUserByEmail';
+	import { getUserFromPage } from '$lib/utils';
 
-	const quizId = page.params.id ?? '';
+	let userQuizId = $state<string | null>(null);
+	const user = getUserFromPage(page);
 
-	const getQuizByIdQuery = createQuery({
-		queryKey: ['quiz', quizId],
-		queryFn: async () => getQuizById(quizId)
+	const createUserQuizMutation = createMutation({
+		mutationKey: ['createUserQuiz'],
+		mutationFn: async () => {
+			const userId = (await getUserByEmail(user?.email ?? '')).id;
+			const response = await createUserQuiz(page.params.id ?? '', userId);
+			return response;
+		},
+		onSuccess: (data) => {
+			userQuizId = data.id ?? null;
+		}
 	});
 
+	onMount(async () => {
+		if (user) {
+			await $createUserQuizMutation.mutateAsync();
+		}
+	});
 </script>
 
-<div>{$getQuizByIdQuery.data?.quiz.id}</div>
+{#if userQuizId}
+	<QuizForm {userQuizId} />
+{/if}

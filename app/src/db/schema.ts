@@ -9,6 +9,9 @@ import {
 } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { QuestionType } from '../schemas/questionSchema';
+import { updated } from '$app/state';
+import { create } from 'domain';
 
 export const user = pgTable('user', {
 	id: varchar('id')
@@ -17,6 +20,8 @@ export const user = pgTable('user', {
 	email: varchar('email').notNull().unique(),
 	name: varchar('name').notNull(),
 	profilePicture: varchar('profilePicture').notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
 });
 
@@ -28,6 +33,7 @@ export const quiz = pgTable('quiz', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
+	name: varchar('name').notNull(),
 	creatorId: varchar('creatorId')
 		.notNull()
 		.references(() => user.id),
@@ -39,6 +45,7 @@ export const quiz = pgTable('quiz', {
 
 export type QuizDto = InferSelectModel<typeof quiz>;
 export type CreateQuizDto = InferInsertModel<typeof quiz>;
+export type UpdateQuizDto = Partial<CreateQuizDto>;
 
 export const userQuiz = pgTable('userQuiz', {
 	id: varchar('id')
@@ -50,14 +57,20 @@ export const userQuiz = pgTable('userQuiz', {
 	quizId: varchar('quizId')
 		.notNull()
 		.references(() => quiz.id),
-	openedAt: timestamp('openedAt').notNull().defaultNow(),
+	openedAt: timestamp('openedAt'),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	submittedAt: timestamp('submittedAt'),
 	deletedAt: timestamp('deletedAt')
 });
 
 export type UserQuizDto = InferSelectModel<typeof userQuiz>;
 export type CreateUserQuizDto = InferInsertModel<typeof userQuiz>;
+export type UpdateUserQuizDto = Partial<CreateUserQuizDto>;
 
+export const questionTypeEnum = pgEnum('questionType', [
+	QuestionType.SingleChoice,
+	QuestionType.MultipleChoice
+]);
 export const question = pgTable('question', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
@@ -66,6 +79,8 @@ export const question = pgTable('question', {
 		.notNull()
 		.references(() => quiz.id),
 	text: varchar('text').notNull(),
+	type: questionTypeEnum().default(QuestionType.SingleChoice).notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	deletedAt: timestamp('deletedAt')
 });
 
@@ -81,32 +96,51 @@ export const option = pgTable('option', {
 		.references(() => question.id),
 	text: varchar('text').notNull(),
 	isCorrect: boolean('isCorrect').notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	deletedAt: timestamp('deletedAt')
 });
 
 export type OptionDto = InferSelectModel<typeof option>;
 export type CreateOptionDto = InferInsertModel<typeof option>;
 
-export const userAnswer = pgTable('userAnswer', {
+export const answer = pgTable('answer', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
-	userId: varchar('userId')
+	userQuizId: varchar('userQuizId')
 		.notNull()
-		.references(() => user.id),
+		.references(() => userQuiz.id),
 	questionId: varchar('questionId')
 		.notNull()
 		.references(() => question.id),
 	optionId: varchar('optionId')
 		.notNull()
 		.references(() => option.id),
-	answeredAt: timestamp('answeredAt').notNull().defaultNow(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	deletedAt: timestamp('deletedAt')
 });
 
+export type AnswerDto = InferSelectModel<typeof answer>;
+export type CreateAnswerDto = InferInsertModel<typeof answer>;
+
+export const quizInvitation = pgTable('quizInvitation', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	quizId: varchar('quizId')
+		.notNull()
+		.references(() => quiz.id),
+	maxUses: integer('maxUses').default(0).notNull(),
+	currentUses: integer('currentUses').default(0).notNull(),
+	expiresAt: timestamp('expiresAt'),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	deletedAt: timestamp('deletedAt')
+});
 export const table = {
 	quiz,
 	question,
 	option,
-	user
+	user,
+	answer,
+	userQuiz
 } as const;

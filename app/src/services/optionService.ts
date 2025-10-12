@@ -20,13 +20,12 @@ export class OptionService {
 		return result;
 	}
 
-	async createOptionTransactional(newOption: CreateOptionDto, tx: Transaction): Promise<OptionDto> {
-		const result = await tx.insert(option).values(newOption).returning();
-		return result[0];
+	async createOption(newOption: CreateOptionDto, tx?: Transaction): Promise<OptionDto> {
+		return await this.optionRepository.createOption(newOption, tx);
 	}
 
-	async deleteOptionByIdTransactional(optionId: string, tx: Transaction): Promise<OptionDto> {
-		const result = await this.optionRepository.deleteOptionByIdTransactional(optionId, tx);
+	async deleteOptionById(optionId: string, tx?: Transaction): Promise<OptionDto> {
+		const result = await this.optionRepository.deleteOptionById(optionId, tx);
 		if (!result) {
 			throw new OptionNotFoundError(`Option with id ${optionId} could not be deleted`);
 		}
@@ -41,24 +40,15 @@ export class OptionService {
 		return result;
 	}
 
-	async getOptionsByQuestionIdTransactional(
+	async getOptionsByQuestionId(
 		questionId: string,
-		tx: Transaction
+		tx?: Transaction
 	): Promise<OptionDto[]> {
-		const result = await this.optionRepository.getOptionsByQuestionIdTransactional(questionId, tx);
+		const result = await this.optionRepository.getOptionsByQuestionId(questionId, tx);
 		if (!result) {
 			throw new OptionNotFoundError(`Options for question with id ${questionId} not found`);
 		}
 		return result;
 	}
 
-	async getOptionsByQuestionId(
-		questionId: string,
-	): Promise<OptionDto[]> {
-		const result = await this.optionRepository.getOptionsByQuestionId(questionId);
-		if (!result) {
-			throw new OptionNotFoundError(`Options for question with id ${questionId} not found`);
-		}
-		return result;
-	}
 }

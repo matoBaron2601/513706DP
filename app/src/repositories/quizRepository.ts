@@ -1,10 +1,11 @@
 import { db } from '../db/client';
-import { eq, and, isNull } from 'drizzle-orm';
-import { quiz, type CreateQuizDto, type QuizDto } from '../db/schema';
+import { eq, and, isNull, inArray } from 'drizzle-orm';
+import { quiz, userQuiz, type CreateQuizDto, type QuizDto } from '../db/schema';
 import { type NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
 import { type ExtractTablesWithRelations } from 'drizzle-orm/relations';
 import { type PgTransaction } from 'drizzle-orm/pg-core';
 import type { Transaction } from '../types';
+import getDbClient from './utils/getDbClient';
 
 export class QuizRepository {
 	async getQuizById(quizId: string): Promise<QuizDto | undefined> {
@@ -12,19 +13,13 @@ export class QuizRepository {
 		return result[0];
 	}
 
-	async createQuiz(newQuiz: CreateQuizDto): Promise<QuizDto> {
-		const result = await db.insert(quiz).values(newQuiz).returning();
+	async createQuiz(newQuiz: CreateQuizDto, tx?: Transaction): Promise<QuizDto> {
+		const result = await getDbClient(tx).insert(quiz).values(newQuiz).returning();
 		return result[0];
 	}
 
-	async createQuizTransactional(newQuiz: CreateQuizDto, tx: Transaction): Promise<QuizDto> {
-		const result = await tx.insert(quiz).values(newQuiz).returning();
-		console.log('Quiz created transactionally:', result[0]);
-		return result[0];
-	}
-
-	async deleteQuizByIdTransactional(quizId: string, tx: Transaction): Promise<QuizDto | undefined> {
-		const result = await tx
+	async deleteQuizById(quizId: string, tx?: Transaction): Promise<QuizDto | undefined> {
+		const result = await getDbClient(tx)
 			.update(quiz)
 			.set({ deletedAt: new Date() })
 			.where(eq(quiz.id, quizId))
@@ -42,5 +37,22 @@ export class QuizRepository {
 			.select()
 			.from(quiz)
 			.where(and(eq(quiz.creatorId, creatorId), isNull(quiz.deletedAt)));
+	}
+
+	async getQuizzesByUserId(userId: string): Promise<QuizDto[]> {
+		const result = await db
+			.select()
+			.from(quiz)
+			.innerJoin(userQuiz, eq(quiz.id, userQuiz.quizId))
+			.where(and(eq(userQuiz.userId, userId), isNull(quiz.deletedAt)));
+		return result.map((row) => row.quiz);
+	}
+
+	async getQuizzesByIds(quizIds: string[]): Promise<QuizDto[]> {
+		const result = await db
+			.select()
+			.from(quiz)
+			.where(and(inArray(quiz.id, quizIds), isNull(quiz.deletedAt)));
+		return result;
 	}
 }

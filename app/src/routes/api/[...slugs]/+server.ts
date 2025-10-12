@@ -5,6 +5,9 @@ import { openapi } from '@elysiajs/openapi';
 import userApi from './userApi';
 import { quizApi } from './quizApi';
 import authApi from './authApi';
+import { userQuiz } from '../../../db/schema';
+import { userQuizApi } from './userQuizApi';
+import { answerApi } from './answerApi';
 
 const app = new Elysia({
 	prefix: '/api'
@@ -13,6 +16,8 @@ const app = new Elysia({
 	.use(authApi)
 	.use(userApi)
 	.use(quizApi)
+	.use(userQuizApi)
+	.use(answerApi)
 	.use(typesenseApi)
 	.use(chunkerApi);
 

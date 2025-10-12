@@ -11,7 +11,12 @@ import { UserQuizService } from '../../../services/userQuizService';
 import { QuestionService } from '../../../services/questionService';
 import { OptionService } from '../../../services/optionService';
 import { QuizFacade } from '../../../facades/quizFacade';
-import { createQuizInitialRequestSchema, quizSchema } from '../../../schemas/quizSchema';
+import {
+	createQuizInitialRequestSchema,
+	quizHistoryListSchema,
+	quizHistorySchema,
+	quizSchema
+} from '../../../schemas/quizSchema';
 import { UserService } from '../../../services/userService';
 import { UserRepository } from '../../../repositories/userRepository';
 
@@ -68,12 +73,21 @@ export const quizApi = new Elysia({ prefix: 'quiz' })
 		}
 	)
 	.get(
-		'/list/:creatorEmail',
+		'/created/:creatorEmail',
 		async (req) => {
 			return await quizFacade.getQuizzesByCreatorEmail(req.params.creatorEmail);
 		},
 		{
 			response: t.Array(quizSchema)
+		}
+	)
+	.get(
+		'/history/:userEmail',
+		async (req) => {
+			return await quizFacade.getQuizHistoryListByUserEmail(req.params.userEmail);
+		},
+		{
+			response: t.Array(quizHistoryListSchema)
 		}
 	)
 	.delete('/:id', async (req) => {

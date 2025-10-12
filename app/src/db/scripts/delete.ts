@@ -1,9 +1,9 @@
 import { db } from '../client';
-import { option, question, quiz, user, userAnswer, userQuiz } from '../schema';
+import { option, question, quiz, user, answer, userQuiz } from '../schema';
 
 async function deleteDatabaseTables() {
 	try {
-		await db.delete(userAnswer).execute();
+		await db.delete(answer).execute();
 		await db.delete(option).execute();
 		await db.delete(question).execute();
 		await db.delete(userQuiz).execute();

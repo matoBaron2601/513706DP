@@ -1,5 +1,10 @@
 import type { Q } from 'vitest/dist/chunks/reporters.d.BFLkQcL6.js';
-import type { UserQuizDto, CreateUserQuizDto } from '../db/schema';
+import type {
+	UserQuizDto,
+	CreateUserQuizDto,
+	UpdateQuizDto,
+	UpdateUserQuizDto
+} from '../db/schema';
 import type { UserQuizRepository } from '../repositories/userQuizRepository';
 import type { Transaction } from '../types';
 
@@ -21,15 +26,8 @@ export class UserQuizService {
 		return userQuiz;
 	}
 
-	async createUserQuiz(newUserQuiz: CreateUserQuizDto): Promise<UserQuizDto> {
-		return this.userQuizRepository.createUserQuiz(newUserQuiz);
-	}
-
-	async createUserQuizTransational(
-		newUserQuiz: CreateUserQuizDto,
-		tx: Transaction
-	): Promise<UserQuizDto> {
-		return this.userQuizRepository.createUserQuizTransactional(newUserQuiz, tx);
+	async createUserQuiz(newUserQuiz: CreateUserQuizDto, tx?: Transaction): Promise<UserQuizDto> {
+		return this.userQuizRepository.createUserQuiz(newUserQuiz, tx);
 	}
 
 	async deleteUserQuizById(userQuizId: string): Promise<UserQuizDto> {
@@ -40,18 +38,19 @@ export class UserQuizService {
 		return userQuiz;
 	}
 
-	async updateUserQuiz(newUserQuiz: UserQuizDto): Promise<UserQuizDto> {
-		const userQuiz = await this.userQuizRepository.updateUserQuiz(newUserQuiz);
+	async updateUserQuiz(userQuizId: string, newUserQuiz: UpdateUserQuizDto, tx?: Transaction): Promise<UserQuizDto> {
+		const userQuiz = await this.userQuizRepository.updateUserQuiz(userQuizId, newUserQuiz, tx);
 		if (!userQuiz) {
 			throw new UserQuizNotFoundError(`UserQuiz with id ${newUserQuiz.id} not found`);
 		}
 		return userQuiz;
 	}
 
-	async deleteUserQuizzesByQuizIdTransational(
-		quizId: string,
-		tx: Transaction
-	): Promise<UserQuizDto> {
+	async deleteUserQuizzesByQuizId(quizId: string, tx?: Transaction): Promise<UserQuizDto> {
 		return this.userQuizRepository.deleteUserQuizzesByQuizId(quizId, tx);
+	}
+
+	async getUserQuizzesByUserEmail(userEmail: string): Promise<UserQuizDto[]> {
+		return this.userQuizRepository.getUserQuizzesByUserEmail(userEmail);
 	}
 }

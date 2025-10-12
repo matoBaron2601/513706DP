@@ -5,25 +5,20 @@ import { type NodePgQueryResultHKT } from 'drizzle-orm/node-postgres';
 import { type ExtractTablesWithRelations } from 'drizzle-orm/relations';
 import { type PgTransaction } from 'drizzle-orm/pg-core';
 import type { Transaction } from '../types';
+import getDbClient from './utils/getDbClient';
 export class QuestionRepository {
 	async getQuestionById(questionId: string): Promise<QuestionDto | undefined> {
 		const result = await db.select().from(question).where(eq(question.id, questionId));
 		return result[0];
 	}
 
-	async createQuestionTransactional(
-		newQuestion: CreateQuestionDto,
-		tx: Transaction
-	): Promise<QuestionDto> {
-		const result = await tx.insert(question).values(newQuestion).returning();
+	async createQuestion(newQuestion: CreateQuestionDto, tx?: Transaction): Promise<QuestionDto> {
+		const result = await getDbClient(tx).insert(question).values(newQuestion).returning();
 		return result[0];
 	}
 
-	async deleteQuestionByIdTransactional(
-		questionId: string,
-		tx: Transaction
-	): Promise<QuestionDto | undefined> {
-		const result = await tx
+	async deleteQuestionById(questionId: string, tx?: Transaction): Promise<QuestionDto | undefined> {
+		const result = await getDbClient(tx)
 			.update(question)
 			.set({ deletedAt: new Date() })
 			.where(eq(question.id, questionId))
@@ -40,10 +35,7 @@ export class QuestionRepository {
 		return result[0];
 	}
 
-	async getQuestionsByQuizIdTransactional(quizId: string, tx: Transaction): Promise<QuestionDto[]> {
-		return await tx.select().from(question).where(eq(question.quizId, quizId));
-	}
-	async getQuestionsByQuizId(quizId: string): Promise<QuestionDto[]> {
-		return await db.select().from(question).where(eq(question.quizId, quizId));
+	async getQuestionsByQuizId(quizId: string, tx?: Transaction): Promise<QuestionDto[]> {
+		return await getDbClient(tx).select().from(question).where(eq(question.quizId, quizId));
 	}
 }

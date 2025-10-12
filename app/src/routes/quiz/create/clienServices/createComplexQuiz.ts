@@ -5,7 +5,6 @@ const createComplexQuiz = async (
 	technologies: string[],
 	email: string
 ): Promise<Quiz> => {
-	console.log("HERE")
 	const quiz = await fetch('/api/quiz', {
 		method: 'POST',
 		headers: {

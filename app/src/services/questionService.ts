@@ -20,15 +20,15 @@ export class QuestionService {
 		return result;
 	}
 
-	async createQuestionTransactional(
+	async createQuestion(
 		newQuestion: CreateQuestionDto,
-		tx: Transaction
+		tx?: Transaction
 	): Promise<QuestionDto> {
-		return await this.questionRepository.createQuestionTransactional(newQuestion, tx);
+		return await this.questionRepository.createQuestion(newQuestion, tx);
 	}
 
-	async deleteQuestionByIdTransactional(questionId: string, tx: Transaction): Promise<QuestionDto> {
-		const result = await this.questionRepository.deleteQuestionByIdTransactional(questionId, tx);
+	async deleteQuestionById(questionId: string, tx?: Transaction): Promise<QuestionDto> {
+		const result = await this.questionRepository.deleteQuestionById(questionId, tx);
 		if (!result) {
 			throw new QuestionNotFoundError(`Question with id ${questionId} could not be deleted`);
 		}
@@ -43,16 +43,8 @@ export class QuestionService {
 		return result;
 	}
 
-	async getQuestionsByQuizIdTransactional(quizId: string, tx: Transaction): Promise<QuestionDto[]> {
-		const result = await this.questionRepository.getQuestionsByQuizIdTransactional(quizId, tx);
-		if (!result) {
-			throw new QuestionNotFoundError(`Questions for quiz with id ${quizId} not found`);
-		}
-		return result;
-	}
-
-	async getQuestionsByQuizId(quizId: string): Promise<QuestionDto[]> {
-		const result = await this.questionRepository.getQuestionsByQuizId(quizId);
+	async getQuestionsByQuizId(quizId: string, tx?: Transaction): Promise<QuestionDto[]> {
+		const result = await this.questionRepository.getQuestionsByQuizId(quizId, tx);
 		if (!result) {
 			throw new QuestionNotFoundError(`Questions for quiz with id ${quizId} not found`);
 		}

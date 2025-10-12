@@ -1,7 +1,13 @@
 import { get } from 'http';
 import { db } from '../db/client';
 import type { QuizDto } from '../db/schema';
-import type { CreateQuizRequest, Quiz, CreateQuizInitialRequest } from '../schemas/quizSchema';
+import type {
+	CreateQuizRequest,
+	Quiz,
+	CreateQuizInitialRequest,
+	QuizHistory,
+	QuizHistoryList
+} from '../schemas/quizSchema';
 import type { OpenAiService } from '../services/openAiService';
 import type { OptionService } from '../services/optionService';
 import type { QuestionService } from '../services/questionService';
@@ -34,16 +40,9 @@ export class QuizFacade {
 
 	async createQuiz(createQuiz: CreateQuizRequest): Promise<string> {
 		return await db.transaction(async (tx) => {
-			const createdQuiz = await this.quizService.createQuizTransactional(createQuiz.quiz, tx);
-			await this.userQuizService.createUserQuizTransational(
-				{
-					userId: createQuiz.quiz.creatorId,
-					quizId: createdQuiz.id
-				},
-				tx
-			);
+			const createdQuiz = await this.quizService.createQuiz(createQuiz.quiz, tx);
 			for (const question of createQuiz.questions) {
-				const createdQuestion = await this.questionService.createQuestionTransactional(
+				const createdQuestion = await this.questionService.createQuestion(
 					{
 						quizId: createdQuiz.id,
 						text: question.text
@@ -51,7 +50,7 @@ export class QuizFacade {
 					tx
 				);
 				for (const option of question.options) {
-					await this.optionService.createOptionTransactional(
+					await this.optionService.createOption(
 						{
 							text: option.text,
 							isCorrect: option.isCorrect,
@@ -77,6 +76,7 @@ export class QuizFacade {
 			const questionItem = {
 				questionId: question.id,
 				text: question.text,
+				type: question.type,
 				options: optionsData.map((option) => ({
 					optionId: option.id,
 					text: option.text,
@@ -95,19 +95,16 @@ export class QuizFacade {
 
 	async deleteQuizById(quizId: string): Promise<void> {
 		await db.transaction(async (tx) => {
-			await this.userQuizService.deleteUserQuizzesByQuizIdTransational(quizId, tx);
-			const questions = await this.questionService.getQuestionsByQuizIdTransactional(quizId, tx);
+			await this.userQuizService.deleteUserQuizzesByQuizId(quizId, tx);
+			const questions = await this.questionService.getQuestionsByQuizId(quizId, tx);
 			for (const question of questions) {
-				const options = await this.optionService.getOptionsByQuestionIdTransactional(
-					question.id,
-					tx
-				);
+				const options = await this.optionService.getOptionsByQuestionId(question.id, tx);
 				for (const option of options) {
-					await this.optionService.deleteOptionByIdTransactional(option.id, tx);
+					await this.optionService.deleteOptionById(option.id, tx);
 				}
-				await this.questionService.deleteQuestionByIdTransactional(question.id, tx);
+				await this.questionService.deleteQuestionById(question.id, tx);
 			}
-			await this.quizService.deleteQuizByIdTransactional(quizId, tx);
+			await this.quizService.deleteQuizById(quizId, tx);
 		});
 	}
 
@@ -119,5 +116,37 @@ export class QuizFacade {
 				...(await this.getQuizById(quiz.id))
 			}))
 		);
+	}
+
+	async getQuizHistoryListByUserEmail(userEmail: string): Promise<QuizHistoryList[]> {
+		const quizHistories: QuizHistoryList[] = [];
+		const userQuizzes = await this.userQuizService.getUserQuizzesByUserEmail(userEmail);
+
+		const quizIds = userQuizzes.map((uq) => uq.quizId);
+		const quizzes = await this.quizService.getQuizzesByIds(quizIds);
+		const users = await this.userService.getUsersByIds(quizzes.map((q) => q.creatorId));
+
+		for (const userQuiz of userQuizzes) {
+			const quiz = quizzes.find((quiz) => quiz.id === userQuiz.quizId);
+			const creator = users.find((user) => user.id === quiz?.creatorId);
+			if (!quiz || !creator) continue;
+			quizHistories.push({
+				userQuizId: userQuiz.id,
+				name: quiz?.name,
+				creatorName: creator.name,
+				submissionDate: userQuiz?.submittedAt
+			});
+		}
+		return quizHistories;
+	}
+
+	async getQuizHistoryByUserEmail(userEmail: string): Promise<QuizHistory[]> {
+		const quizHistories: QuizHistory[] = [];
+		const userQuizzes = await this.userQuizService.getUserQuizzesByUserEmail(userEmail);
+		for (const userQuiz of userQuizzes) {
+			const quiz = await this.getQuizById(userQuiz.quizId);
+			quizHistories.push({ userQuiz, quiz });
+		}
+		return quizHistories;
 	}
 }

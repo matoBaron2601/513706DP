@@ -31,12 +31,12 @@
 		},
 		{
 			title: 'My quizzes',
-			url: '/quiz/list/created',
+			url: '/quiz/created',
 			icon: PersonStandingIcon
 		},
 		{
 			title: 'Quiz history',
-			url: '/quiz/list/attended',
+			url: '/quiz/history',
 			icon: LucideHistory
 		},
 		{
