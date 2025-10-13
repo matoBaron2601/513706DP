@@ -2,7 +2,7 @@
 	"name": "collection",
 	"fields": [
 		{ "name": "content", "type": "string" },
-		{ "name": "technology", "type": "string[]", "facet": true },
+		{ "name": "name", "type": "string", "facet": true },
 		{ "name": "is_default", "type": "bool" },
 		{ "name": "source_file", "type": "string" }
 	]

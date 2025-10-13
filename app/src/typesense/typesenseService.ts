@@ -26,7 +26,7 @@ export const deleteCollectionService = async () => {
 export const populateDocumentsService = async ({
 	contentChunks,
 	is_default,
-	technology,
+	name,
 	source_file
 }: PopulateCollectionService) => {
 	for (const content of contentChunks) {
@@ -34,7 +34,7 @@ export const populateDocumentsService = async ({
 			collectionName: DEFAULT_COLLECTION_NAME,
 			content,
 			is_default,
-			technology,
+			name,
 			source_file
 		});
 	}
@@ -50,15 +50,15 @@ export const getUniqueDatasetsService = async ({
 		collectionName: DEFAULT_COLLECTION_NAME,
 		searchParams: {
 			q: '*',
-			query_by: 'technology',
-			facet_by: 'technology',
+			query_by: 'name',
+			facet_by: 'name',
 			per_page: 0,
 			filter_by: `is_default:=${isDefault}`
 		}
 	});
 	return (
 		response.facet_counts?.[0]?.counts.map((c) => ({
-			technology: c.value,
+			name: c.value,
 			count: c.count
 		})) ?? []
 	);
@@ -66,7 +66,7 @@ export const getUniqueDatasetsService = async ({
 
 export const getDocumentsByPrompt = async (
 	prompt: string,
-	technologies: string[]
+	documents: string[]
 ): Promise<SearchResponse<object>> => {
 	const tags = prompt
 		.split(' ')
@@ -77,7 +77,7 @@ export const getDocumentsByPrompt = async (
 		query_by: 'content',
 		per_page: 25,
 		sort_by: '_text_match:desc',
-		filter_by: "technology:=[" + technologies.map((tech) => `"${tech}"`).join(',') + "]",
+		filter_by: "name:=[" + documents.map((doc) => `"${doc}"`).join(',') + "]",
 	};
 
 	return await getDocuments({

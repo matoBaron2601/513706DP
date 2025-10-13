@@ -20,13 +20,13 @@ export const populateCollection = async ({
 	collectionName,
 	content,
 	is_default,
-	technology,
+	name,
 	source_file
 }: PopulateCollection) => {
 	return await typesenseClient.collections(collectionName).documents().create({
 		content,
 		is_default,
-		technology,
+		name,
 		source_file
 	});
 };

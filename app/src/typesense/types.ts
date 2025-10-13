@@ -1,7 +1,7 @@
 export type PopulateCollectionService = {
 	contentChunks: string[];
 	is_default: boolean;
-	technology: string[];
+	name: string;
 	source_file: string;
 };
 
@@ -9,7 +9,7 @@ export type PopulateCollection = {
 	collectionName: string;
 	content: string;
 	is_default: boolean;
-	technology: string[];
+	name: string;
 	source_file: string;
 };
 
@@ -24,6 +24,6 @@ export type DocumentSearchParams = {
 };
 
 export type UniqueDataset = {
-	technology: string;
+	name: string;
 	count: number;
 };

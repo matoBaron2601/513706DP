@@ -31,35 +31,60 @@ export interface OpenAIChatCompletionResponse {
 	usage: Usage; // token usage statistics
 }
 
-const prompt = `Please return a JSON response that strictly conforms to the following schema. Return only the JSON object, nothing else. Return 5 questions.
+const createPrompt = (chunks: string[], numberOfQuestions: number, prompt:string) => {
+	return `
+	You are an expert quiz creator. You are part of RAG system that creates quizzes based on provided content chunks and parameters.
 
-{
-    "quiz": {
-        "creatorId": "",
+	Your task is to create a quiz with a specified number of questions based solely on the provided content chunks.
+	
+	 
+	Content chunks: ${JSON.stringify(chunks)}
+	Number of questions: ${numberOfQuestions}
+
+	Here is the additional prompt by our client to guide your quiz creation: ${prompt}
+
+	Your output should strictly adhere to the following JSON schema:
+	
+	{
+	"quiz": {
+		"creatorId": "",
 		"name": "",
-        "timePerQuestion": null,
-        "canGoBack": null 
-    },
-    "questions": [
-        {
-            "text": "",
-            "options": [
-                {
-                    "text": "",
-                    "isCorrect": false
-                }
-            ]
-        }
-    ]
-}`;
+		"timePerQuestion": null,
+		"canGoBack": null
+	},
+	"questions": [
+		{
+		"text": "",
+		"options": [
+			{
+			"text": "",
+			"isCorrect": boolean
+			}
+		]
+		}
+	]
+	}
+
+	Each question should have one correct answer and three incorrect options.
+	Ensure that the JSON is properly formatted and valid.
+
+	Do not include any explanations or additional text outside the JSON structure.
+	Your response must be a valid JSON object as per the schema provided above.
+
+	`;
+};
 
 export class OpenAiService {
-	async callOpenAI(): Promise<OpenAIChatCompletionResponse> {
+	async callOpenAI(
+		chunks: string[],
+		numberOfQuestions: number,
+		prompt: string
+	): Promise<OpenAIChatCompletionResponse> {
 		const response = await axios.post(
 			'https://api.openai.com/v1/chat/completions',
 			{
 				model: 'gpt-4o-mini',
-				messages: [{ role: 'user', content: prompt }]
+				messages: [{ role: 'user', content: createPrompt(chunks, numberOfQuestions, prompt) }]
 			},
 			{
 				headers: {

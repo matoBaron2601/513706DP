@@ -20,7 +20,7 @@
 		<Spinner classname="h-10 w-10" />
 	{:else if $getUniqueDatasetsQuery.data}
 		{#each $getUniqueDatasetsQuery.data as dataset}
-			<DatasetCard technology={dataset.technology} count={dataset.count} />
+			<DatasetCard name={dataset.name} count={dataset.count} />
 		{/each}
 	{/if}
 </PageWrapper>

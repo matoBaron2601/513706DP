@@ -14,6 +14,7 @@ import type { QuestionService } from '../services/questionService';
 import type { QuizService } from '../services/quizService';
 import type { UserQuizService } from '../services/userQuizService';
 import type { UserService } from '../services/userService';
+import { getDocumentsByPrompt } from '../typesense/typesenseService';
 
 export class QuizFacade {
 	constructor(
@@ -26,17 +27,31 @@ export class QuizFacade {
 	) {}
 
 	async initialCreateQuiz(initialCreateQuiz: CreateQuizInitialRequest): Promise<Quiz> {
-		const openaiResult = await this.openAiService.callOpenAI();
-		const parsedJson: CreateQuizRequest = JSON.parse(openaiResult.choices[0].message.content);
+		const typeSenseChunks = await getDocumentsByPrompt(
+			initialCreateQuiz.prompt,
+			initialCreateQuiz.documents
+		);
+		const chunks =
+			typeSenseChunks.hits?.map((hit) => (hit.document as { content: string }).content) ?? [];
+		const openaiResult = await this.openAiService.callOpenAI(
+			chunks,
+			initialCreateQuiz.numberOfQuestions,
+			initialCreateQuiz.prompt
+		);
+		const cleanedString = openaiResult.choices[0].message.content
+			.replace(/```json|```/g, '')
+			.trim();
+		const parsedJson: CreateQuizRequest = JSON.parse(cleanedString);
 		const user = await this.userService.getUserByEmail(initialCreateQuiz.email);
 		const quizId = await this.createQuiz({
 			...parsedJson,
-			quiz: { ...parsedJson.quiz, creatorId: user.id }
+			quiz: { ...parsedJson.quiz, creatorId: user.id, name: initialCreateQuiz.name }
 		});
 
 		const actualQuiz = await this.getQuizById(quizId);
 		return actualQuiz;
 	}
+
 
 	async createQuiz(createQuiz: CreateQuizRequest): Promise<string> {
 		return await db.transaction(async (tx) => {
@@ -49,7 +64,8 @@ export class QuizFacade {
 					},
 					tx
 				);
-				for (const option of question.options) {
+				const shuffledOptions = shuffleOptions(question.options);
+				for (const option of shuffledOptions) {
 					await this.optionService.createOption(
 						{
 							text: option.text,
@@ -150,3 +166,11 @@ export class QuizFacade {
 		return quizHistories;
 	}
 }
+function shuffleOptions(array: { text: string; isCorrect: boolean; }[]): { text: string; isCorrect: boolean; }[] {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+

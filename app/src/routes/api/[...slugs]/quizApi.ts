@@ -62,14 +62,11 @@ export const quizApi = new Elysia({ prefix: 'quiz' })
 	.post(
 		'/',
 		async (req) => {
-			console.log('Initial quiz creation request:', req.body);
 			const final = await quizFacade.initialCreateQuiz(req.body);
-			console.log('Final quiz created:', final, typeof final);
 			return final;
 		},
 		{
 			body: createQuizInitialRequestSchema
-			// response: quizSchema
 		}
 	)
 	.get(

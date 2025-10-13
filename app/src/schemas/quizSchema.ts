@@ -3,9 +3,13 @@ import { type Static } from 'elysia';
 import { QuestionType } from './questionSchema';
 
 export const createQuizInitialRequestSchema = t.Object({
-	email: t.String(),
+	isDefaultDataset: t.Boolean(),
+	documents: t.Array(t.String()),
 	prompt: t.String(),
-	technologies: t.Array(t.String())
+	numberOfQuestions: t.Number(),
+	name: t.String(),
+	canGoBack: t.Boolean(),
+	email: t.String()
 });
 
 export type CreateQuizInitialRequest = Static<typeof createQuizInitialRequestSchema>;
@@ -68,7 +72,6 @@ export const quizHistorySchema = t.Object({
 	quiz: quizSchema
 });
 export type QuizHistory = Static<typeof quizHistorySchema>;
-
 
 export const quizHistoryListSchema = t.Object({
 	userQuizId: t.String(),

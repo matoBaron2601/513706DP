@@ -23,7 +23,7 @@
 	});
 </script>
 
-<Card.Root class="relative w-80">
+<Card.Root class="relative max-w-80 min-w-70">
 	<Card.Content class="flex flex-col gap-2">
 		<Popover.Root bind:open={deleteModalOpen}>
 			<Popover.Trigger>
@@ -56,7 +56,7 @@
 		</Popover.Root>
 
 		<Mails size={16} class="absolute right-4 top-4 cursor-pointer" />
-		<Card.Title class="m-auto text-xl">Quiz name</Card.Title>
+		<Card.Title class="m-auto text-xl">{quiz.quiz.name}</Card.Title>
 		<div class="flex items-center gap-2">
 			<Tally5Icon size={16} />
 			<p>{'Number of questions:'}</p>
@@ -78,7 +78,7 @@
 			<p>{quiz.quiz.canGoBack ? 'Yes' : 'No'}</p>
 		</div>
 		<div class="flex gap-2">
-			<Button variant="outline" class="flex-1 cursor-pointer bg-blue-200">Edit quiz</Button>
+			<Button onclick={() => {goto(`/quiz/${quiz.quiz.id}/edit`)}} variant="outline" class="flex-1 cursor-pointer bg-blue-200">Edit quiz</Button>
 			<Button onclick={() => {goto(`/quiz/${quiz.quiz.id}`)}} variant="outline" class="flex-1 cursor-pointer bg-green-200">Start quiz</Button>
 		</div>
 	</Card.Content>

@@ -5,6 +5,7 @@ const deleteQuizById = async (quizId: string) => {
 	if (!response.ok) {
 		throw new Error('Failed to delete quiz');
 	}
-	return await response.json();
+
+	return;
 };
 export default deleteQuizById;

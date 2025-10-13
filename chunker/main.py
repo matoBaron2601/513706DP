@@ -26,7 +26,7 @@ def rtc():
 
     recursive_character_chunks = recursive_character_chunker.split_text(document)
 
-    analysis_results = analyze_chunks(recursive_character_chunks, use_tokens=False)
+    # analysis_results = analyze_chunks(recursive_character_chunks, use_tokens=False)
 
 
     with open('./test.json', "w", encoding="utf-8") as f:
@@ -36,7 +36,7 @@ def rtc():
 
 
 
-    print(analysis_results)
+    # print(analysis_results)
     # print(recursive_character_chunks)
     return jsonify(recursive_character_chunks)
 

@@ -16,7 +16,7 @@ export const chunkerApi = new Elysia().post(
 		const populateChunks = await populateDocumentsService({
 			contentChunks: chunksFromFile,
 			is_default: false,
-			technology: ['custom'],
+			name: 'custom',
 			source_file: file.name
 		});
 		return { message: populateChunks.message, chunksCount: chunksFromFile.length };
