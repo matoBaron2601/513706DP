@@ -39,4 +39,12 @@ export class ConceptService {
 	async getByIds(ids: string[], tx?: Transaction): Promise<ConceptDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
+
+	async createMany(data: CreateConceptDto[], tx?: Transaction): Promise<ConceptDto[]> {
+		return await this.repo.createMany(data, tx);
+	}
+
+	async getManyByCourseBlockIds(courseBlockIds: string[], tx?: Transaction): Promise<ConceptDto[]> {
+		return await this.repo.getManyByCourseBlockIds(courseBlockIds, tx);
+	}	
 }

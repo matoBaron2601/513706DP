@@ -39,4 +39,5 @@ export class CourseBlockService {
 	async getByIds(ids: string[], tx?: Transaction): Promise<CourseBlockDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
+	
 }

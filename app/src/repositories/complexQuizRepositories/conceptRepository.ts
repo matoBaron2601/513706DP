@@ -47,4 +47,16 @@ export class ConceptRepository {
 	async getByIds(ids: string[], tx?: Transaction): Promise<ConceptDto[]> {
 		return await getDbClient(tx).select().from(concept).where(inArray(concept.id, ids));
 	}
+
+	async createMany(data: CreateConceptDto[], tx?: Transaction): Promise<ConceptDto[]> {
+		const result = await getDbClient(tx).insert(concept).values(data).returning();
+		return result;
+	}
+
+	async getManyByCourseBlockIds(courseBlockIds: string[], tx?: Transaction): Promise<ConceptDto[]> {
+		return await getDbClient(tx)
+			.select()
+			.from(concept)
+			.where(inArray(concept.courseBlockId, courseBlockIds));
+	}
 }

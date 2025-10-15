@@ -23,10 +23,6 @@ export class TypesenseService {
 		return this.repo.deleteCollection(COLLECTION_NAME);
 	}
 
-	async populateQuizCollection(document: QuizDocument): Promise<object> {
-		return this.repo.populateCollection(COLLECTION_NAME, document);
-	}
-
 	async getDocuments(searchParams: DocumentSearchParams): Promise<SearchResponse<object>> {
 		return this.repo.getDocuments(COLLECTION_NAME, searchParams);
 	}
@@ -40,5 +36,11 @@ export class TypesenseService {
 		};
 		const result = await this.getDocuments(searchParams);
 		return result.found > 0;
+	}
+
+	async populateManyQuizCollection(documents: QuizDocument[]) {
+		for (const document of documents) {
+			await this.repo.populateCollection(COLLECTION_NAME, document);
+		}
 	}
 }

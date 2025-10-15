@@ -98,7 +98,7 @@ export class OpenAiService {
 		return response.data;
 	}
 
-	async indetifyContepts(text: string): Promise<string[]> {
+	async identifyConcepts(text: string): Promise<string[]> {
 		const response = await axios.post(
 			'https://api.openai.com/v1/chat/completions',
 			{
