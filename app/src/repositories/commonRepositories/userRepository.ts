@@ -4,7 +4,7 @@ import type { Transaction } from '../../types';
 import getDbClient from '../utils/getDbClient';
 
 export class UserRepository {
-	async getUById(userId: string, tx?: Transaction): Promise<UserDto | undefined> {
+	async getById(userId: string, tx?: Transaction): Promise<UserDto | undefined> {
 		const result = await getDbClient(tx).select().from(user).where(eq(user.id, userId));
 		return result[0];
 	}

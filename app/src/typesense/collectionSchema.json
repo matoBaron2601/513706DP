@@ -1,9 +1,0 @@
-{
-	"name": "collection",
-	"fields": [
-		{ "name": "content", "type": "string" },
-		{ "name": "name", "type": "string", "facet": true },
-		{ "name": "is_default", "type": "bool" },
-		{ "name": "source_file", "type": "string" }
-	]
-}
