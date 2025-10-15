@@ -14,7 +14,7 @@ import type { QuestionService } from '../services/questionService';
 import type { QuizService } from '../services/quizService';
 import type { UserQuizService } from '../services/userQuizService';
 import type { UserService } from '../services/userService';
-import { getDocumentsByPrompt } from '../typesense/typesenseService';
+import { getDocumentsByPrompt } from '../typesense/typesenseService_old';
 
 export class QuizFacade {
 	constructor(
@@ -51,7 +51,6 @@ export class QuizFacade {
 		const actualQuiz = await this.getQuizById(quizId);
 		return actualQuiz;
 	}
-
 
 	async createQuiz(createQuiz: CreateQuizRequest): Promise<string> {
 		return await db.transaction(async (tx) => {
@@ -166,11 +165,12 @@ export class QuizFacade {
 		return quizHistories;
 	}
 }
-function shuffleOptions(array: { text: string; isCorrect: boolean; }[]): { text: string; isCorrect: boolean; }[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+function shuffleOptions(
+	array: { text: string; isCorrect: boolean }[]
+): { text: string; isCorrect: boolean }[] {
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+	}
+	return array;
 }
-

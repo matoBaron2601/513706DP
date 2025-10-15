@@ -1,6 +1,6 @@
 import Elysia from 'elysia';
 import { chunkRTCService } from '../../../chunker/chunkerService';
-import { populateDocumentsService } from '../../../typesense/typesenseService';
+import { populateDocumentsService } from '../../../typesense/typesenseService_old';
 
 export const chunkerApi = new Elysia().post(
 	'chunker/chunkRTC',

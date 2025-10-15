@@ -1,0 +1,7 @@
+{
+	"name": "complexQuizSchema",
+	"fields": [
+		{ "name": "course_block_id", "type": "string" },
+		{ "name": "content", "type": "string" }
+	]
+}

@@ -1,42 +1,26 @@
-import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import typesenseClient from './client';
-import type { DocumentSearchParams, PopulateCollection } from './types';
+import type { CollectionSchema } from 'typesense/lib/Typesense/Collection';
+import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
+import type { DocumentSearchParams } from './types';
 
-export const getCollection = async () => {
-	const collections = await typesenseClient.collections().retrieve();
-	return collections;
-};
+export class TypesenseRepository {
+	async getCollections(): Promise<CollectionSchema[]> {
+		return await typesenseClient.collections().retrieve();
+	}
 
-export const createCollection = async ({ schema }: { schema: CollectionCreateSchema }) => {
-	const newCollection = await typesenseClient.collections().create(schema);
-	return newCollection;
-};
+	async createCollection(schema: CollectionCreateSchema): Promise<CollectionSchema> {
+		return await typesenseClient.collections().create(schema);
+	}
 
-export const deleteCollection = async ({ name }: { name: string }) => {
-	return await typesenseClient.collections(name).delete();
-};
+	async deleteCollection(name: string): Promise<CollectionSchema> {
+		return await typesenseClient.collections(name).delete();
+	}
 
-export const populateCollection = async ({
-	collectionName,
-	content,
-	is_default,
-	name,
-	source_file
-}: PopulateCollection) => {
-	return await typesenseClient.collections(collectionName).documents().create({
-		content,
-		is_default,
-		name,
-		source_file
-	});
-};
+	async populateCollection(collectionName: string, document: object): Promise<object> {
+		return await typesenseClient.collections(collectionName).documents().create(document);
+	}
 
-export const getDocuments = async ({
-	collectionName,
-	searchParams
-}: {
-	collectionName: string;
-	searchParams: DocumentSearchParams;
-}) => {
-	return await typesenseClient.collections(collectionName).documents().search(searchParams);
-};
+	async getDocuments(collectionName: string, searchParams: DocumentSearchParams): Promise<object> {
+		return await typesenseClient.collections(collectionName).documents().search(searchParams);
+	}
+}

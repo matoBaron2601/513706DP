@@ -1,17 +1,5 @@
-export type PopulateCollectionService = {
-	contentChunks: string[];
-	is_default: boolean;
-	name: string;
-	source_file: string;
-};
-
-export type PopulateCollection = {
-	collectionName: string;
-	content: string;
-	is_default: boolean;
-	name: string;
-	source_file: string;
-};
+export const ONE_TIME_QUIZ = 'oneTimeQuizSchema';
+export const COMPLEX_QUIZ = 'complexQuizSchema';
 
 export type DocumentSearchParams = {
 	q: string;
@@ -21,9 +9,4 @@ export type DocumentSearchParams = {
 	sort_by?: string;
 	page?: number;
 	per_page?: number;
-};
-
-export type UniqueDataset = {
-	name: string;
-	count: number;
 };

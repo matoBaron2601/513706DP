@@ -1,5 +1,5 @@
 import Elysia from 'elysia';
-import { getUniqueDatasetsService } from '../../../typesense/typesenseService';
+import { getUniqueDatasetsService } from '../../../typesense/typesenseService_old';
 import type { UniqueDataset } from '../../../typesense/types';
 export const typesenseApi = new Elysia()
 	//General

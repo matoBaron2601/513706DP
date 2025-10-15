@@ -1,0 +1,7 @@
+{
+	"name": "oneTimeQuizSchema",
+	"fields": [
+		{ "name": "course_id", "type": "string" },
+		{ "name": "content", "type": "string" }
+	]
+}
