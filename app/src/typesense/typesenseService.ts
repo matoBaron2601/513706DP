@@ -1,9 +1,9 @@
 import { TypesenseRepository } from './typesenseRepository';
-import oneTimeQuizCollectionSchema from './schemas/oneTimeQuizCollectionSchema.json';
-import complexQuizCollectionSchema from './schemas/complexQuizCollectionSchema.json';
+import quizCollectionSchema from './schemas/quizCollectionSchema.json';
 import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import type { CollectionSchema } from 'typesense/lib/Typesense/Collection';
-import { ONE_TIME_QUIZ, COMPLEX_QUIZ, type DocumentSearchParams } from './types';
+import { COLLECTION_NAME, type DocumentSearchParams, type QuizDocument } from './types';
+import type { SearchResponse } from 'typesense/lib/Typesense/Documents';
 
 export class TypesenseService {
 	private repo: TypesenseRepository;
@@ -15,35 +15,30 @@ export class TypesenseService {
 		return this.repo.getCollections();
 	}
 
-	async createOneTimeQuizCollection(): Promise<CollectionSchema> {
-		return this.repo.createCollection(oneTimeQuizCollectionSchema as CollectionCreateSchema);
+	async createQuizCollection(): Promise<CollectionSchema> {
+		return this.repo.createCollection(quizCollectionSchema as CollectionCreateSchema);
 	}
 
-	async createComplexQuizCollection(): Promise<CollectionSchema> {
-		return this.repo.createCollection(complexQuizCollectionSchema as CollectionCreateSchema);
+	async deleteQuizCollection(): Promise<CollectionSchema> {
+		return this.repo.deleteCollection(COLLECTION_NAME);
 	}
 
-	async deleteOneTimeQuizCollection(): Promise<CollectionSchema> {
-		return this.repo.deleteCollection(ONE_TIME_QUIZ);
+	async populateQuizCollection(document: QuizDocument): Promise<object> {
+		return this.repo.populateCollection(COLLECTION_NAME, document);
 	}
 
-	async deleteComplexQuizCollection(): Promise<CollectionSchema> {
-		return this.repo.deleteCollection(COMPLEX_QUIZ);
+	async getDocuments(searchParams: DocumentSearchParams): Promise<SearchResponse<object>> {
+		return this.repo.getDocuments(COLLECTION_NAME, searchParams);
 	}
 
-	async populateOneTimeQuizCollection(document: object): Promise<object> {
-		return this.repo.populateCollection(ONE_TIME_QUIZ, document);
-	}
-
-	async populateComplexQuizCollection(document: object): Promise<object> {
-		return this.repo.populateCollection(COMPLEX_QUIZ, document);
-	}
-
-	async getOneTimeQuizDocuments(searchParams: DocumentSearchParams): Promise<object> {
-		return this.repo.getDocuments(ONE_TIME_QUIZ, searchParams);
-	}
-
-	async getComplexQuizDocuments(searchParams: DocumentSearchParams): Promise<object> {
-		return this.repo.getDocuments(COMPLEX_QUIZ, searchParams);
+	async checkDocumentExists(courseBlockId: string): Promise<boolean> {
+		const searchParams: DocumentSearchParams = {
+			q: '*',
+			query_by: 'course_block_id',
+			filter_by: `course_block_id:=${courseBlockId}`,
+			per_page: 1
+		};
+		const result = await this.getDocuments(searchParams);
+		return result.found > 0;
 	}
 }

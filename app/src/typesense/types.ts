@@ -1,5 +1,4 @@
-export const ONE_TIME_QUIZ = 'oneTimeQuizSchema';
-export const COMPLEX_QUIZ = 'complexQuizSchema';
+export const COLLECTION_NAME = 'quizCollection';
 
 export type DocumentSearchParams = {
 	q: string;
@@ -10,3 +9,9 @@ export type DocumentSearchParams = {
 	page?: number;
 	per_page?: number;
 };
+
+export type QuizDocument = {
+	course_block_id: string;
+	content: string;
+};
+
