@@ -17,11 +17,13 @@
 <div>
 	{#each $getCourseBlocksQuery.data as courseBlock}
 		<div>
-			<h2>Course Block ID: {courseBlock.id}</h2>
-			<p>Id: {courseBlock.id}</p>
-			<p>Title: {courseBlock.name}</p>
+			<p>{courseBlock.name}</p>
 		</div>
 	{/each}
 
-	<Button class="cursor-pointer" onclick={async () => await goto(`/courses/${courseId}/createCourseBlock`)}>Go to Create Course Block page</Button>
+	<Button
+		class="cursor-pointer"
+		onclick={async () => await goto(`/courses/${courseId}/createCourseBlock`)}
+		> + Add course block</Button
+	>
 </div>

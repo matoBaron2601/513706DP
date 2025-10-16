@@ -13,7 +13,6 @@
 <div class="flex flex-col gap-4">
 	{#each $getCoursesQuery.data as course}
 		<Button class="cursor-pointer" onclick={() => goto(`/courses/${course.id}`)}>
-			<div>{course.creatorId}</div>
 			<div>{course.name}</div>
 		</Button>
 	{/each}

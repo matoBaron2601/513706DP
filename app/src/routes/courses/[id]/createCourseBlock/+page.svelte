@@ -27,6 +27,6 @@
 
 <div>
 	<Button onclick={async () => await $createCourseBlockMutation.mutateAsync()}
-		>Create Course Block</Button
+		>Submit Form</Button
 	>
 </div>
