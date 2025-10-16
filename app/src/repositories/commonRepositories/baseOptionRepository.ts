@@ -43,4 +43,8 @@ export class BaseOptionRepository {
 	async getByIds(ids: string[], tx?: Transaction): Promise<BaseOptionDto[]> {
 		return await getDbClient(tx).select().from(baseOption).where(inArray(baseOption.id, ids));
 	}
+
+	async createMany(data: CreateBaseOptionDto[], tx?: Transaction): Promise<BaseOptionDto[]> {
+		return await getDbClient(tx).insert(baseOption).values(data).returning();
+	}
 }

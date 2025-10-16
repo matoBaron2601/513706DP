@@ -1,25 +1,16 @@
 import { Elysia, t } from 'elysia';
-import { typesenseApi } from './typesenseApi';
-import { chunkerApi } from './chunkerApi';
 import { openapi } from '@elysiajs/openapi';
-import userApi from './userApi';
-import { quizApi } from './quizApi';
 import authApi from './authApi';
-import { userQuiz } from '../../../db/schema';
-import { userQuizApi } from './userQuizApi';
-import { answerApi } from './answerApi';
-
+import courseApi from './courseApi';
+import courseBlockApi from './courseBlockApi';
 const app = new Elysia({
 	prefix: '/api'
 })
 	.use(openapi())
 	.use(authApi)
-	.use(userApi)
-	.use(quizApi)
-	.use(userQuizApi)
-	.use(answerApi)
-	.use(typesenseApi)
-	.use(chunkerApi);
+	.use(courseApi)
+	.use(courseBlockApi);
+
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
 

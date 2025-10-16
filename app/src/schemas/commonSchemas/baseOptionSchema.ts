@@ -2,7 +2,7 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from '../baseSchema';
 
-const baseBaseOptionSchema = t.Object({
+export const baseBaseOptionSchema = t.Object({
 	baseQuestionId: t.String(),
 	optionText: t.String()
 });

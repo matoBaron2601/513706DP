@@ -43,4 +43,8 @@ export class BaseQuestionService {
 	async getByIds(ids: string[], tx?: Transaction): Promise<BaseQuestionDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
+
+	async createMany(data: CreateBaseQuestionDto[], tx?: Transaction): Promise<BaseQuestionDto[]> {
+		return await this.repo.createMany(data, tx);
+	}
 }

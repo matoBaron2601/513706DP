@@ -1,20 +1,22 @@
 import { Elysia, t } from 'elysia';
-import { UserRepository } from '../../../repositories/userRepository';
-import { UserService } from '../../../services/userService';
-import { createUserSchema, updateUserSchema } from '../../../schemas/userSchema';
+import { UserService } from '../../../services/commonServices/userService';
+import { createUserSchema, updateUserSchema } from '../../../schemas/commonSchemas/userSchema';
 
-const userRepository = new UserRepository();
-const userService = new UserService(userRepository);
+
+const userService = new UserService();
 
 export const authApi = new Elysia({ prefix: 'auth' })
 
 	.get('/:id', async (req) => {
-		return await userService.getUserById(req.params.id);
+		return await userService.getById(req.params.id);
+	})
+	.get('/email/:email', async (req) => {
+		return await userService.getByEmail(req.params.email);
 	})
 	.post(
 		'/',
 		async (req) => {
-			return await userService.createUser(req.body);
+			return await userService.create(req.body);
 		},
 		{
 			body: createUserSchema
@@ -23,7 +25,7 @@ export const authApi = new Elysia({ prefix: 'auth' })
 	.put(
 		'/:id',
 		async (req) => {
-			return await userService.updateUser(req.params.id, req.body);
+			return await userService.update(req.params.id, req.body);
 		},
 		{
 			body: updateUserSchema

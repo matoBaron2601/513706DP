@@ -1,6 +1,7 @@
 import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from '../baseSchema';
+import { baseBaseOptionSchema, baseOptionSchema } from './baseOptionSchema';
 
 const baseBaseQuestionSchema = t.Object({
 	baseQuizId: t.String(),
@@ -16,3 +17,20 @@ export type CreateBaseQuestion = Static<typeof createBaseQuestionSchema>;
 
 export const updateBaseQuestionSchema = t.Partial(createBaseQuestionSchema);
 export type UpdateBaseQuestion = Static<typeof updateBaseQuestionSchema>;
+
+//EXTENDED
+export const baseQuestionWithOptionsSchema = t.Intersect([
+	t.Object({
+		questionText: t.String(),
+		correctAnswerText: t.String()
+	}),
+	t.Object({
+		options: t.Array(
+			t.Object({
+				optionText: t.String()
+			})
+		)
+	})
+]);
+
+export type BaseQuestionWithOptions = Static<typeof baseQuestionWithOptionsSchema>;

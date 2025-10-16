@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { config } from 'dotenv';
 import { ca } from 'zod/v4/locales';
+import type { BaseQuizWithQuestionsAndOptions } from '../../schemas/commonSchemas/baseQuizSchema';
 
 config();
 
@@ -32,46 +33,38 @@ export interface OpenAIChatCompletionResponse {
 	usage: Usage; // token usage statistics
 }
 
-const createPrompt = (chunks: string[], numberOfQuestions: number, prompt: string) => {
+const createPrompt = (concept: string, chunks: string[], numberOfQuestions: number) => {
 	return `
 	You are an expert quiz creator. You are part of RAG system that creates quizzes based on provided content chunks and parameters.
+	Your task is to create a quiz about a concept=${concept} with a specified number of questions=${numberOfQuestions} based solely on the provided <chunks> which are provided below.
 
-	Your task is to create a quiz with a specified number of questions based solely on the provided content chunks.
-	
-	 
-	Content chunks: ${JSON.stringify(chunks)}
-	Number of questions: ${numberOfQuestions}
-
-	Here is the additional prompt by our client to guide your quiz creation: ${prompt}
+	Chunks: 
+	START OF CHUNKS DATA
+	${JSON.stringify(chunks)}
+	END OF CHUNKS DATA
 
 	Your output should strictly adhere to the following JSON schema:
-	
 	{
-	"quiz": {
-		"creatorId": "",
-		"name": "",
-		"timePerQuestion": null,
-		"canGoBack": null
-	},
-	"questions": [
-		{
-		"text": "",
-		"options": [
-			{
-			"text": "",
-			"isCorrect": boolean
-			}
-		]
-		}
-	]
+		questions: ({
+			questionText: string;
+			correctAnswerText: string;
+			options: {
+				optionText: string;
+			}[];
+		})[];
 	}
 
-	Each question should have one correct answer and three incorrect options.
+
+	You can either crate a question with 4 options where one is correct
+	OR
+	you can create a question with only one option without the optionText and it will be fill in question.
+	Which to choose is up to you, just make sure that the question makes sense and an answer can be found in the chunks.
+
+	Ensure that questions are about a concept ${concept} and are relevant to the provided chunks.
 	Ensure that the JSON is properly formatted and valid.
 
 	Do not include any explanations or additional text outside the JSON structure.
 	Your response must be a valid JSON object as per the schema provided above.
-
 	`;
 };
 
@@ -85,7 +78,7 @@ export class OpenAiService {
 			'https://api.openai.com/v1/chat/completions',
 			{
 				model: 'gpt-4o-mini',
-				messages: [{ role: 'user', content: createPrompt(chunks, numberOfQuestions, prompt) }]
+				messages: [{ role: 'user', content: '' }]
 			},
 			{
 				headers: {
@@ -96,6 +89,45 @@ export class OpenAiService {
 		);
 
 		return response.data;
+	}
+
+	async createInitialQuiz(
+		concept: string,
+		chunks: string[]
+	): Promise<BaseQuizWithQuestionsAndOptions> {
+		const response = await axios.post(
+			'https://api.openai.com/v1/chat/completions',
+			{
+				model: 'gpt-4o-mini',
+				messages: [
+					{
+						role: 'user',
+						content: createPrompt(concept, chunks, 10)
+					}
+				]
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${OPENAI_API_KEY}`,
+					'Content-Type': 'application/json'
+				}
+			}
+		);
+		const responseContent = response.data.choices[0].message.content.replace(/```json|```/g, '').trim();
+
+		let parsedQuiz: any;
+		try {
+			parsedQuiz = JSON.parse(responseContent);
+		} catch (e) {
+			throw new Error('Error parsing JSON: ' + e);
+		}
+
+		// Validate the parsed object
+		if (!this.isValidBaseQuizWithQuestionsAndOptions(parsedQuiz)) {
+			throw new Error('Invalid quiz format.');
+		}
+
+		return parsedQuiz as BaseQuizWithQuestionsAndOptions;
 	}
 
 	async identifyConcepts(text: string): Promise<string[]> {
@@ -143,46 +175,22 @@ export class OpenAiService {
 		}
 	}
 
-	//not working bcs of response format
-	async assingConceptsToChunks(chunks: string[], concepts: string[]): Promise<string[]> {
-		const response = await axios.post(
-			'https://api.openai.com/v1/chat/completions',
-			{
-				model: 'gpt-4o-mini',
-				messages: [
-					{
-						role: 'user',
-						content: `
-					You are an expert in text analysis and categorization.
-					Your task is to assign exactly one of the provided concepts to each chunk of text, choosing the most relevant concept for each chunk.
-					If a chunk does not relate to any concept, return an X string for that chunk.
-					Here are the chunks: ${JSON.stringify(chunks)}
-					Here are the concepts: ${JSON.stringify(concepts)}
-					Provide answer as list in same order as chunks in the following format ['concept1', 'concept2', '', 'concept3'....] where each concept corresponds to the chunk at the same index.
-					No JSON, just string in format ['concept1', 'concept2', '', 'concept3'....]
-					`
-					}
-				]
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${OPENAI_API_KEY}`,
-					'Content-Type': 'application/json'
-				}
+	private async isValidBaseQuizWithQuestionsAndOptions(obj: any): Promise<boolean> {
+		// Check the 'questions' property
+		if (!Array.isArray(obj.questions)) return false;
+
+		// Validate each question in the questions array
+		for (const question of obj.questions) {
+			if (typeof question.questionText !== 'string') return false;
+			if (typeof question.correctAnswerText !== 'string') return false;
+
+			// Check options
+			if (!Array.isArray(question.options)) return false;
+			for (const option of question.options) {
+				if (typeof option.optionText !== 'string') return false;
 			}
-		);
-		const content = response.data.choices[0].message.content;
-		const jsonString = content.replace(/'/g, '"');
-		const parsedConcepts = JSON.parse(jsonString);
-		try {
-			if (Array.isArray(parsedConcepts) && parsedConcepts.every((c) => typeof c === 'string')) {
-				return parsedConcepts;
-			} else {
-				throw new Error('Invalid response format');
-			}
-		} catch (error) {
-			console.error('Error parsing concepts from OpenAI response:', error);
-			return [];
 		}
+
+		return true;
 	}
 }

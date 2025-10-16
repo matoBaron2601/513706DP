@@ -1,6 +1,7 @@
 import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from '../baseSchema';
+import { baseQuestionSchema, baseQuestionWithOptionsSchema } from './baseQuestionSchema';
 
 const baseBaseQuizSchema = t.Object({});
 
@@ -12,3 +13,11 @@ export type CreateBaseQuiz = Static<typeof createBaseQuizSchema>;
 
 export const updateBaseQuizSchema = t.Partial(createBaseQuizSchema);
 export type UpdateBaseQuiz = Static<typeof updateBaseQuizSchema>;
+
+//EXTENDED
+export const baseQuizWithQuestionsAndOptionsSchema = t.Intersect([
+	t.Object({
+		questions: t.Array(baseQuestionWithOptionsSchema)
+	})
+]);
+export type BaseQuizWithQuestionsAndOptions = Static<typeof baseQuizWithQuestionsAndOptionsSchema>;

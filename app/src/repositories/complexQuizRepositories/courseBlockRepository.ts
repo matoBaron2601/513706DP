@@ -50,4 +50,8 @@ export class CourseBlockRepository {
 	async getByIds(ids: string[], tx?: Transaction): Promise<CourseBlockDto[]> {
 		return await getDbClient(tx).select().from(courseBlock).where(inArray(courseBlock.id, ids));
 	}
+
+	async getAll(tx?: Transaction): Promise<CourseBlockDto[]> {
+		return await getDbClient(tx).select().from(courseBlock);
+	}
 }
