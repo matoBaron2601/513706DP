@@ -27,7 +27,7 @@ export const baseQuestionWithOptionsSchema = t.Intersect([
 	t.Object({
 		options: t.Array(
 			t.Object({
-				optionText: t.String()
+				optionText: t.Nullable(t.String())
 			})
 		)
 	})

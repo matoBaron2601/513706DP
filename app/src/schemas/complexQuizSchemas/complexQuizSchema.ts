@@ -17,12 +17,9 @@ export type CreateComplexQuiz = Static<typeof createComplexQuizSchema>;
 export const updateComplexQuizSchema = t.Partial(createComplexQuizSchema);
 export type UpdateComplexQuiz = Static<typeof updateComplexQuizSchema>;
 
-
-
 //EXTENDED
 
-
-export const CreateComplexQuizExtendedSchema = t.Object({
-	courseBlockId: t.String(),
-})
-export type CreateComplexQuizExtended = Static<typeof CreateComplexQuizExtendedSchema>;
+export const createComplexQuizExtendedSchema = t.Object({
+	courseBlockId: t.String()
+});
+export type CreateComplexQuizExtended = Static<typeof createComplexQuizExtendedSchema>;

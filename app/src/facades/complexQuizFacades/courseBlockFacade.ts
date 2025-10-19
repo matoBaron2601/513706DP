@@ -1,9 +1,8 @@
 import { ChunkerService } from '../../chunker/chunkerService';
 import { db } from '../../db/client';
-import { createBaseAnswerSchema } from '../../schemas/commonSchemas/baseAnsweSchema';
 import type {
 	CourseBlockExtended,
-	CreateCourseBlockExtended
+	CreateCourseBlockWithDocumentPathExtended
 } from '../../schemas/complexQuizSchemas/courseBlockSchema';
 import { OpenAiService } from '../../services/commonServices/openAIService';
 import { ConceptService } from '../../services/complexQuizServices/conceptService';
@@ -11,13 +10,12 @@ import { CourseBlockService } from '../../services/complexQuizServices/courseBlo
 import { TypesenseService } from '../../typesense/typesenseService';
 
 export class CourseBlockFacade {
-	constructor(
-		private courseBlockService: CourseBlockService,
-		private openAiService: OpenAiService,
-		private conceptService: ConceptService,
-		private typesenseService: TypesenseService,
-		private chunkerService: ChunkerService
-	) {
+	private courseBlockService: CourseBlockService;
+	private openAiService: OpenAiService;
+	private conceptService: ConceptService;
+	private typesenseService: TypesenseService;
+	private chunkerService: ChunkerService;
+	constructor() {
 		this.courseBlockService = new CourseBlockService();
 		this.openAiService = new OpenAiService();
 		this.conceptService = new ConceptService();
@@ -25,26 +23,27 @@ export class CourseBlockFacade {
 		this.chunkerService = new ChunkerService();
 	}
 
-	async create(data: CreateCourseBlockExtended): Promise<CourseBlockExtended> {
+	async create(data: CreateCourseBlockWithDocumentPathExtended): Promise<CourseBlockExtended> {
 		return await db.transaction(async (tx) => {
-			const courseBlock = await this.courseBlockService.create(data);
+			const courseBlock = await this.courseBlockService.create(data, tx);
 			const courseBlockDataExist = await this.typesenseService.checkDocumentExists(courseBlock.id);
-			if (!courseBlockDataExist) {
+			if (courseBlockDataExist) {
 				throw new Error(
 					`Typesense document for course block with id ${courseBlock.id} does already exist`
 				);
 			}
-			const identifiedConcepts = await this.openAiService.identifyConcepts(data.document);
+			const loadFile = await this.courseBlockService.getFileByPath(data.document);
+			const identifiedConcepts = await this.openAiService.identifyConcepts(loadFile ?? 'Unknown');
 			await this.conceptService.createMany(
-				identifiedConcepts.map((concept) => ({
+				identifiedConcepts.map((concept, index) => ({
 					name: concept,
-					courseBlockId: courseBlock.id
+					courseBlockId: courseBlock.id,
+					learned: false,
+					difficultyIndex: index
 				})),
 				tx
 			);
-
-			const chunks = await this.chunkerService.chunkRTC(data.document);
-
+			const chunks = await this.chunkerService.chunkRTC(loadFile ?? 'Unknown');
 			await this.typesenseService.populateManyQuizCollection(
 				chunks.map((chunk) => ({
 					course_block_id: courseBlock.id,

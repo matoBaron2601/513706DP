@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, integer } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
@@ -121,6 +121,7 @@ export const courseBlock = pgTable('courseBlock', {
 		.notNull()
 		.references(() => course.id),
 	name: varchar('name').notNull(),
+	document: varchar('file').notNull(),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
@@ -139,7 +140,7 @@ export const complexQuiz = pgTable('complexQuiz', {
 	courseBlockId: varchar('courseBlockId')
 		.notNull()
 		.references(() => courseBlock.id),
-	version: integer('version').notNull().default(1),
+	version: integer('version').notNull().default(0),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
@@ -156,6 +157,8 @@ export const concept = pgTable('concept', {
 		.notNull()
 		.references(() => courseBlock.id),
 	name: varchar('name').notNull(),
+	learned: boolean('learned').notNull(),
+	difficultyIndex: integer('difficultyIndex').notNull(),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')

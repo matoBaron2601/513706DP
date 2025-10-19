@@ -47,4 +47,11 @@ export class BaseQuestionRepository {
 	async createMany(data: CreateBaseQuestionDto[], tx?: Transaction): Promise<BaseQuestionDto[]> {
 		return await getDbClient(tx).insert(baseQuestion).values(data).returning();
 	}
+
+	async getByBaseQuizId(baseQuizId: string, tx?: Transaction): Promise<BaseQuestionDto[]> {
+		return await getDbClient(tx)
+			.select()
+			.from(baseQuestion)
+			.where(eq(baseQuestion.baseQuizId, baseQuizId));
+	}
 }

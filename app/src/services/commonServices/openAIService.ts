@@ -33,11 +33,17 @@ export interface OpenAIChatCompletionResponse {
 	usage: Usage; // token usage statistics
 }
 
-const createPrompt = (concept: string, chunks: string[], numberOfQuestions: number) => {
+const createPlacementPrompt = (
+	concept: string,
+	concepts: string[],
+	chunks: string[],
+	numberOfQuestions: number
+) => {
 	return `
 	You are an expert quiz creator. You are part of RAG system that creates quizzes based on provided content chunks and parameters.
-	Your task is to create a quiz about a concept=${concept} with a specified number of questions=${numberOfQuestions} based solely on the provided <chunks> which are provided below.
-
+	Your task is to create a placement quiz about a concept=${concept} with a specified number of questions=${numberOfQuestions} based solely on the provided <chunks> which are provided below.
+	Other concepts from the block, that you should NOT create questons about are =${concepts.filter(c => c !== concept).join(', ')}.
+	
 	Chunks: 
 	START OF CHUNKS DATA
 	${JSON.stringify(chunks)}
@@ -57,7 +63,7 @@ const createPrompt = (concept: string, chunks: string[], numberOfQuestions: numb
 
 	You can either crate a question with 4 options where one is correct
 	OR
-	you can create a question with only one option without the optionText and it will be fill in question.
+	you can create a question with blank list [] and it will be fill in question.
 	Which to choose is up to you, just make sure that the question makes sense and an answer can be found in the chunks.
 
 	Ensure that questions are about a concept ${concept} and are relevant to the provided chunks.
@@ -91,8 +97,9 @@ export class OpenAiService {
 		return response.data;
 	}
 
-	async createInitialQuiz(
+	async createPlacementQuestions(
 		concept: string,
+		concepts: string[],
 		chunks: string[]
 	): Promise<BaseQuizWithQuestionsAndOptions> {
 		const response = await axios.post(
@@ -102,7 +109,7 @@ export class OpenAiService {
 				messages: [
 					{
 						role: 'user',
-						content: createPrompt(concept, chunks, 10)
+						content: createPlacementPrompt(concept, concepts, chunks, 3)
 					}
 				]
 			},
@@ -113,8 +120,9 @@ export class OpenAiService {
 				}
 			}
 		);
-		const responseContent = response.data.choices[0].message.content.replace(/```json|```/g, '').trim();
-
+		const responseContent = response.data.choices[0].message.content
+			.replace(/```json|```/g, '')
+			.trim();
 		let parsedQuiz: any;
 		try {
 			parsedQuiz = JSON.parse(responseContent);
@@ -146,6 +154,7 @@ export class OpenAiService {
 					there are not many or they are not really different or relevant.
 					Provide the concepts as a JSON array of strings.
 					Provide answers as ['concept1', 'concept2', 'concept3'....] and nothing else.
+					Concepts should in order from easiest to most difficult combined from most relevant to less relevant.
 					Here is the text: ${text}
 					`
 					}
@@ -158,7 +167,6 @@ export class OpenAiService {
 				}
 			}
 		);
-
 		const content = response.data.choices[0].message.content;
 		const cleanedString = content.replace(/```json|```/g, '').trim();
 		const jsonString = cleanedString.replace(/'/g, '"');
@@ -176,15 +184,12 @@ export class OpenAiService {
 	}
 
 	private async isValidBaseQuizWithQuestionsAndOptions(obj: any): Promise<boolean> {
-		// Check the 'questions' property
 		if (!Array.isArray(obj.questions)) return false;
 
-		// Validate each question in the questions array
 		for (const question of obj.questions) {
 			if (typeof question.questionText !== 'string') return false;
 			if (typeof question.correctAnswerText !== 'string') return false;
 
-			// Check options
 			if (!Array.isArray(question.options)) return false;
 			for (const option of question.options) {
 				if (typeof option.optionText !== 'string') return false;

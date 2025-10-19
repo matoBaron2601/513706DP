@@ -43,4 +43,13 @@ export class ComplexQuizService {
 	async getByIds(ids: string[], tx?: Transaction): Promise<ComplexQuizDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
+
+	async getQuizWithSmallerVersion(
+		courseBlockId: string,
+		tx?: Transaction
+	): Promise<ComplexQuizDto> {
+		const item = await this.repo.getQuizWithSmallerVersion(courseBlockId, tx);
+		if (!item) throw new NotFoundError(`ComplexQuiz for courseBlockId ${courseBlockId} not found`);
+		return item;
+	}
 }

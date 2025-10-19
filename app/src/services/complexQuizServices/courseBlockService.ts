@@ -2,7 +2,8 @@ import type { CreateCourseBlockDto, UpdateCourseBlockDto, CourseBlockDto } from 
 import { CourseBlockRepository } from '../../repositories/complexQuizRepositories/courseBlockRepository';
 import type { Transaction } from '../../types';
 import { NotFoundError } from '../utils/notFoundError';
-
+import fs from 'fs/promises';
+import path from 'path';
 export class CourseBlockService {
 	private repo: CourseBlockRepository;
 
@@ -43,5 +44,24 @@ export class CourseBlockService {
 	async getAll(tx?: Transaction): Promise<CourseBlockDto[]> {
 		return await this.repo.getAll(tx);
 	}
-	
+	async getFileByPath(filePath: string): Promise<string | null> {
+		const uploadsDir = path.resolve(process.cwd(), 'uploads');
+		const resolvedPath = path.resolve(uploadsDir, filePath);
+
+		if (resolvedPath === uploadsDir || !resolvedPath.startsWith(uploadsDir + path.sep)) {
+			return null;
+		}
+
+		if (path.extname(resolvedPath).toLowerCase() !== '.txt') {
+			return null;
+		}
+
+		try {
+			const data = await fs.readFile(resolvedPath, 'utf8');
+			return data;
+		} catch (err: any) {
+			if (err.code === 'ENOENT') return null;
+			throw err;
+		}
+	}
 }

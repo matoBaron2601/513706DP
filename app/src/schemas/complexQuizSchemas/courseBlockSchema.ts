@@ -29,7 +29,16 @@ export type CourseBlockExtended = Static<typeof courseBlockExtendedSchema>;
 export const createCourseBlockExtendedSchema = t.Intersect([
 	createCourseBlockSchema,
 	t.Object({
-		document: t.String()
+		document: t.File()
 	})
 ]);
 export type CreateCourseBlockExtended = Static<typeof createCourseBlockExtendedSchema>;
+
+
+export const createCourseBlockWithDocumentPathExtendedSchema = t.Intersect([
+	createCourseBlockSchema,
+	t.Object({
+		document: t.String()
+	})
+]);
+export type CreateCourseBlockWithDocumentPathExtended = Static<typeof createCourseBlockWithDocumentPathExtendedSchema>;

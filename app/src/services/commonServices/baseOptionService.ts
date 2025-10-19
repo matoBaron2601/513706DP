@@ -39,4 +39,8 @@ export class BaseOptionService {
 	async createMany(data: CreateBaseOptionDto[], tx?: Transaction): Promise<BaseOptionDto[]> {
 		return await this.repo.createMany(data, tx);
 	}
+
+	async getByBaseQuestionId(baseQuestionId: string, tx?: Transaction): Promise<BaseOptionDto[]> {
+		return await this.repo.getByBaseQuestionId(baseQuestionId, tx);
+	}
 }

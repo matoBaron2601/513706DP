@@ -35,4 +35,5 @@ export class BaseQuizService {
 	async getByIds(ids: string[], tx?: Transaction): Promise<BaseQuizDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
+
 }

@@ -2,7 +2,9 @@
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { createQuery } from '@tanstack/svelte-query';
-	import getCourses from './clientServices/getCourses';
+	import getCourses from './_clientServices/getCourses';
+	import CourseCard from './_components/CourseCard.svelte';
+	import PageWrapper from '$lib/components/PageWrapper.svelte';
 
 	const getCoursesQuery = createQuery({
 		queryKey: ['courses'],
@@ -10,11 +12,10 @@
 	});
 </script>
 
-<div class="flex flex-col gap-4">
-	{#each $getCoursesQuery.data as course}
-		<Button class="cursor-pointer" onclick={() => goto(`/courses/${course.id}`)}>
-			<div>{course.name}</div>
-		</Button>
-	{/each}
-	<Button class="mt-20" onclick={() => goto('/courses/create')}>Create Course</Button>
-</div>
+<PageWrapper>
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+		{#each $getCoursesQuery.data as course}
+			<CourseCard {course} />
+		{/each}
+	</div>
+</PageWrapper>

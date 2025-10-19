@@ -3,14 +3,17 @@ import { openapi } from '@elysiajs/openapi';
 import authApi from './authApi';
 import courseApi from './courseApi';
 import courseBlockApi from './courseBlockApi';
+import complexQuizApi from './complexQuizApi';
+import { conceptApi } from './conceptApi';
 const app = new Elysia({
 	prefix: '/api'
 })
 	.use(openapi())
 	.use(authApi)
 	.use(courseApi)
-	.use(courseBlockApi);
-
+	.use(courseBlockApi)
+	.use(complexQuizApi)
+	.use(conceptApi)
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
 

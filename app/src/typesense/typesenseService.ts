@@ -64,7 +64,6 @@ export class TypesenseService {
 		courseBlockId: string
 	): Promise<Record<string, string[]>> {
 		const contentToDocumentsMap: Record<string, string[]> = {};
-
 		for (const concept of concepts) {
 			const typeSenseChunks = await this.getDocuments({
 				q: concept.name,
@@ -75,7 +74,6 @@ export class TypesenseService {
 
 			const chunks =
 				typeSenseChunks.hits?.map((hit) => (hit.document as { content: string }).content) ?? [];
-
 			for (const chunk of chunks) {
 				if (!contentToDocumentsMap[concept.id]) {
 					contentToDocumentsMap[concept.id] = [];

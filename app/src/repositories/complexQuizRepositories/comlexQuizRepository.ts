@@ -57,4 +57,17 @@ export class ComplexQuizRepository {
 	async getByIds(ids: string[], tx?: Transaction): Promise<ComplexQuizDto[]> {
 		return await getDbClient(tx).select().from(complexQuiz).where(inArray(complexQuiz.id, ids));
 	}
+
+	async getQuizWithSmallerVersion(
+		courseBlockId: string,
+		tx?: Transaction
+	): Promise<ComplexQuizDto | undefined> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(complexQuiz)
+			.where(eq(complexQuiz.courseBlockId, courseBlockId))
+			.orderBy(complexQuiz.version)
+			.limit(1);
+		return result[0]
+	}
 }
