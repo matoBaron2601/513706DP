@@ -1,19 +1,17 @@
 <script lang="ts">
-	const getComplexQuizUser = async (courseBlockId: string, id: string) => {
-		const res = await fetch(`/api/courses/${id}/course-blocks/${courseBlockId}/complex-quiz-user`, {
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			credentials: 'include'
-		});
+	import { createQuery } from '@tanstack/svelte-query';
+	import { page } from '$app/state';
+	import getUserBlock from './_clientServices/getUserBlock';
+	import { userDataStore } from '$lib/stores/userDataStore';
 
-		if (!res.ok) {
-			throw new Error('Failed to fetch complex quiz user data');
-		}
+	const courseId = page.params.id ?? '';
+	const blockId = page.params.blockId ?? '';
+	const userId = $userDataStore.userId;
 
-		return await res.json();
-	};
-
+	const getUserBlockQuery = createQuery({
+		queryKey: ['userBlock', courseId, blockId],
+		queryFn: async () => await getUserBlock({ userId, blockId })
+	});
 </script>
 
-Hello
+<p>{$getUserBlockQuery.data}</p>

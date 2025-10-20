@@ -5,16 +5,15 @@
 	import getCourseBlockConcepts from './_clientServices/getCourseBlockConcepts';
 	import getNextQuiz from './_clientServices/getNextQuiz';
 
-	const courseId = page.params.id;
-	const courseBlockId = page.params.courseBlockId;
+	const blockId = page.params.blockId;
 
 	const getNextQuizQuery = createQuery({
-		queryKey: ['nextQuiz', courseBlockId],
-		queryFn: async () => await getNextQuiz(courseBlockId ?? '')
+		queryKey: ['nextQuiz', blockId],
+		queryFn: async () => await getNextQuiz(blockId ?? '')
 	});
 	const getConceptsQuery = createQuery({
-		queryKey: ['getCourseBlockConcepts', courseBlockId],
-		queryFn: async () => await getCourseBlockConcepts(courseBlockId ?? '')
+		queryKey: ['getCourseBlockConcepts', blockId],
+		queryFn: async () => await getCourseBlockConcepts(blockId ?? '')
 	});
 </script>
 

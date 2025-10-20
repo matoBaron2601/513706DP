@@ -128,11 +128,9 @@ export const userBlock = pgTable('userBlock', {
 	blockId: varchar('blockId')
 		.notNull()
 		.references(() => block.id),
-	placementQuizId: varchar('placementQuizId')
-		.notNull()
-		.references(() => placementQuiz.id),
-	completed: boolean('completed').notNull().default(false),
-	createdAt: timestamp('createdAt').notNull().defaultNow()
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
 });
 
 export type UserBlockDto = InferSelectModel<typeof userBlock>;

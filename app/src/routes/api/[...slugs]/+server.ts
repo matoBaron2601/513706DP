@@ -4,6 +4,8 @@ import authApi from './authApi';
 import courseApi from './courseApi';
 import courseBlockApi from './blockApi';
 import { conceptApi } from './conceptApi';
+import { userBlock } from '../../../db/schema';
+import userBlockApi from './userBlockApi';
 const app = new Elysia({
 	prefix: '/api'
 })
@@ -12,6 +14,7 @@ const app = new Elysia({
 	.use(courseApi)
 	.use(courseBlockApi)
 	.use(conceptApi)
+	.use(userBlockApi);
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
 
