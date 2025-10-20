@@ -41,9 +41,13 @@ export class UserBlockService {
 		return item;
 	}
 
-	async getOrCreateByUserId(data: CreateUserBlockDto, tx?: Transaction): Promise<UserBlockDto> {
-		const existing = await this.repo.getByBothIds(data, tx);
-		if (existing) return existing;
-		return await this.repo.create(data, tx);
+	async getByBothIdsOrUndefined(
+		data: { userId: string; blockId: string },
+		tx?: Transaction
+	): Promise<UserBlockDto | undefined> {
+		const item = await this.repo.getByBothIds(data, tx);
+		if (!item) return undefined;
+		return item;
 	}
+
 }

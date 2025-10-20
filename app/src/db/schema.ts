@@ -180,10 +180,12 @@ export const adaptiveQuiz = pgTable('adaptiveQuiz', {
 		.primaryKey(),
 	userBlockId: varchar('userBlockId')
 		.notNull()
-		.references(() => userBlock.id),
+		.references(() => userBlock.id),	
 	baseQuizId: varchar('baseQuizId')
 		.notNull()
 		.references(() => baseQuiz.id),
+	placementQuizId: varchar('placementQuizId')
+		.references(() => placementQuiz.id),
 	version: integer('version').notNull().default(0),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),

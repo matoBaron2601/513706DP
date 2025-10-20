@@ -1,14 +1,15 @@
 import { Elysia} from 'elysia';
 import { UserBlockService } from '../../../services/userBlockService';
 import { createUserBlockSchema } from '../../../schemas/userBlockSchema';
+import { UserBlockFacade } from '../../../facades/userBlockFacade';
 
-const userBlockService = new UserBlockService();
+const userBlockFacade = new UserBlockFacade();
 
 export const userBlockApi = new Elysia({ prefix: 'userBlock' })
     .post(
         '/',
         async (req) => {
-            return await userBlockService.getOrCreateByUserId(req.body);
+            return await userBlockFacade.handleUserBlockLogic(req.body);
         },
         {
             body: createUserBlockSchema

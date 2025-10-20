@@ -2,19 +2,14 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { page } from '$app/state';
 	import { signOut } from '@auth/sveltekit/client';
-	import { userDataStore } from '$lib/stores/userDataStore';
 
 	import {
 		House,
-		FolderCog,
 		Columns3CogIcon,
 		PlusIcon,
-		LucideHistory,
-		PersonStandingIcon
 	} from '@lucide/svelte';
 	import Button from './ui/button/button.svelte';
-	import { onMount } from 'svelte';
-	import { getUserByEmail } from '$lib/utils';
+
 
 	const items = [
 		{
@@ -63,15 +58,6 @@
 		// 	icon: PlusIcon
 		// }
 	];
-	onMount(async () => {
-		const user = await getUserByEmail(page.data.session?.user?.email ?? '');
-		userDataStore.update(() => ({
-			userId: user.id,
-			userEmail: user.email,
-			userName: user.name,
-			profilePicture: user.profilePicture
-		}));
-	});
 </script>
 
 <Sidebar.Root>

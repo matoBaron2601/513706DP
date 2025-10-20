@@ -1,0 +1,2 @@
+ALTER TABLE "adaptiveQuiz" ADD COLUMN "placementQuizId" varchar;--> statement-breakpoint
+ALTER TABLE "adaptiveQuiz" ADD CONSTRAINT "adaptiveQuiz_placementQuizId_placementQuiz_id_fk" FOREIGN KEY ("placementQuizId") REFERENCES "public"."placementQuiz"("id") ON DELETE no action ON UPDATE no action;

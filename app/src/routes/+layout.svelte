@@ -6,9 +6,20 @@
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import queryClient from './queryClient';
+	import { onMount } from 'svelte';
+	import { userDataStore } from '$lib/stores/userDataStore';
+	import { getUserByEmail } from '$lib/utils';
 
 	let { children } = $props();
-
+	onMount(async () => {
+		const user = await getUserByEmail(page.data.session?.user?.email ?? '');
+		userDataStore.update(() => ({
+			userId: user.id,
+			userEmail: user.email,
+			userName: user.name,
+			profilePicture: user.profilePicture
+		}));
+	});
 </script>
 
 <svelte:head>

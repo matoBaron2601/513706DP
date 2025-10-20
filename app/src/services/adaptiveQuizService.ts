@@ -51,4 +51,5 @@ export class AdaptiveQuizService {
 	async getByUserBlockId(userBlockId: string, tx?: Transaction): Promise<AdaptiveQuizDto[]> {
 		return await this.repo.getByUserBlockId(userBlockId, tx);
 	}
+	
 }
