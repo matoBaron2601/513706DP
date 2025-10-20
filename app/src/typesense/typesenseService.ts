@@ -61,14 +61,14 @@ export class TypesenseService {
 
 	async createContentToDocumentsMap(
 		concepts: ConceptDto[],
-		courseBlockId: string
+		blockId: string
 	): Promise<Record<string, string[]>> {
 		const contentToDocumentsMap: Record<string, string[]> = {};
 		for (const concept of concepts) {
 			const typeSenseChunks = await this.getDocuments({
 				q: concept.name,
 				query_by: 'content',
-				filter_by: `course_block_id:=${courseBlockId}`,
+				filter_by: `course_block_id:=${blockId}`,
 				per_page: 50
 			});
 

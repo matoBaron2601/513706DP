@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
-import { createCourseSchema } from '../../../schemas/complexQuizSchemas/courseSchema';
-import { CourseService } from '../../../services/complexQuizServices/courseService';
+import { createCourseSchema } from '../../../schemas/courseSchema';
+import { CourseService } from '../../../services/courseService';
 
 const courseService = new CourseService();
 

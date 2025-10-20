@@ -62,21 +62,156 @@ export type BaseOptionDto = InferSelectModel<typeof baseOption>;
 export type CreateBaseOptionDto = InferInsertModel<typeof baseOption>;
 export type UpdateBaseOptionDto = Partial<CreateBaseOptionDto>;
 
-export const baseAnswer = pgTable('baseAnswer', {
+export const course = pgTable('course', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
-	baseQuestionId: varchar('baseQuestionId')
+	name: varchar('name').notNull(),
+	creatorId: varchar('creatorId')
 		.notNull()
-		.references(() => baseQuestion.id),
-	answerText: varchar('answerText').notNull(),
+		.references(() => user.id),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
 });
-export type BaseAnswerDto = InferSelectModel<typeof baseAnswer>;
-export type CreateBaseAnswerDto = InferInsertModel<typeof baseAnswer>;
-export type UpdateBaseAnswerDto = Partial<CreateBaseAnswerDto>;
+
+export type CourseDto = InferSelectModel<typeof course>;
+export type CreateCourseDto = InferInsertModel<typeof course>;
+export type UpdateCourseDto = Partial<CreateCourseDto>;
+
+export const block = pgTable('block', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	courseId: varchar('courseId')
+		.notNull()
+		.references(() => course.id),
+	name: varchar('name').notNull(),
+	document: varchar('file').notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+
+export type BlockDto = InferSelectModel<typeof block>;
+export type CreateBlockDto = InferInsertModel<typeof block>;
+export type UpdateBlockDto = Partial<CreateBlockDto>;
+
+export const concept = pgTable('concept', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	blockId: varchar('blockId')
+		.notNull()
+		.references(() => block.id),
+	name: varchar('name').notNull(),
+	difficultyIndex: integer('difficultyIndex').notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+
+export type ConceptDto = InferSelectModel<typeof concept>;
+export type CreateConceptDto = InferInsertModel<typeof concept>;
+export type UpdateConceptDto = Partial<CreateConceptDto>;
+
+export const userBlock = pgTable('userBlock', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	userId: varchar('userId')
+		.notNull()
+		.references(() => user.id),
+	blockId: varchar('blockId')
+		.notNull()
+		.references(() => block.id),
+	placementQuizId: varchar('placementQuizId')
+		.notNull()
+		.references(() => placementQuiz.id),
+	completed: boolean('completed').notNull().default(false),
+	createdAt: timestamp('createdAt').notNull().defaultNow()
+});
+
+export type UserBlockDto = InferSelectModel<typeof userBlock>;
+export type CreateUserBlockDto = InferInsertModel<typeof userBlock>;
+export type UpdateUserBlockDto = Partial<CreateUserBlockDto>;
+
+export const completedConcept = pgTable('completedConcept', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	userBlockId: varchar('userBlockId')
+		.notNull()
+		.references(() => userBlock.id),
+	conceptId: varchar('conceptId')
+		.notNull()
+		.references(() => concept.id),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+export type CompletedConceptDto = InferSelectModel<typeof completedConcept>;
+export type CreateCompletedConceptDto = InferInsertModel<typeof completedConcept>;
+export type UpdateCompletedConceptDto = Partial<CreateCompletedConceptDto>;
+
+export const placementQuiz = pgTable('placementQuiz', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	blockId: varchar('blockId')
+		.notNull()
+		.references(() => block.id),
+	baseQuizId: varchar('baseQuizId')
+		.notNull()
+		.references(() => baseQuiz.id),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+
+export type PlacementQuizDto = InferSelectModel<typeof placementQuiz>;
+export type CreatePlacementQuizDto = InferInsertModel<typeof placementQuiz>;
+export type UpdatePlacementQuizDto = Partial<CreatePlacementQuizDto>;
+
+export const adaptiveQuiz = pgTable('adaptiveQuiz', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	userBlockId: varchar('userBlockId')
+		.notNull()
+		.references(() => userBlock.id),
+	baseQuizId: varchar('baseQuizId')
+		.notNull()
+		.references(() => baseQuiz.id),
+	version: integer('version').notNull().default(0),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+
+export type AdaptiveQuizDto = InferSelectModel<typeof adaptiveQuiz>;
+export type CreateAdaptiveQuizDto = InferInsertModel<typeof adaptiveQuiz>;
+export type UpdateAdaptiveQuizDto = Partial<CreateAdaptiveQuizDto>;
+
+export const adaptiveQuizAnswer = pgTable('adaptiveQuizAnswer', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	adaptiveQuizId: varchar('adaptiveQuizId')
+		.notNull()
+		.references(() => adaptiveQuiz.id),
+	baseQuestionId: varchar('baseQuestionId')
+		.notNull()
+		.references(() => baseQuestion.id),
+	answerText: varchar('answerText').notNull(),
+	isCorrect: boolean('isCorrect').notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+export type AdaptiveQuizAnswerDto = InferSelectModel<typeof adaptiveQuizAnswer>;
+export type CreateAdaptiveQuizAnswerDto = InferInsertModel<typeof adaptiveQuizAnswer>;
+export type UpdateAdaptiveQuizAnswerDto = Partial<CreateAdaptiveQuizAnswerDto>;
 
 export const oneTimeQuiz = pgTable('oneTimeQuiz', {
 	id: varchar('id')
@@ -97,86 +232,13 @@ export type OneTimeQuizDto = InferSelectModel<typeof oneTimeQuiz>;
 export type CreateOneTimeQuizDto = InferInsertModel<typeof oneTimeQuiz>;
 export type UpdateOneTimeQuizDto = Partial<CreateOneTimeQuizDto>;
 
-export const course = pgTable('course', {
+export const oneTimeQuizConcept = pgTable('oneTimeQuizConcept', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
-	name: varchar('name').notNull(),
-	creatorId: varchar('creatorId')
+	oneTimeQuizId: varchar('oneTimeQuizId')
 		.notNull()
-		.references(() => user.id),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type CourseDto = InferSelectModel<typeof course>;
-export type CreateCourseDto = InferInsertModel<typeof course>;
-export type UpdateCourseDto = Partial<CreateCourseDto>;
-
-export const courseBlock = pgTable('courseBlock', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	courseId: varchar('courseId')
-		.notNull()
-		.references(() => course.id),
-	name: varchar('name').notNull(),
-	document: varchar('file').notNull(),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type CourseBlockDto = InferSelectModel<typeof courseBlock>;
-export type CreateCourseBlockDto = InferInsertModel<typeof courseBlock>;
-export type UpdateCourseBlockDto = Partial<CreateCourseBlockDto>;
-
-export const complexQuiz = pgTable('complexQuiz', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	baseQuizId: varchar('baseQuizId')
-		.notNull()
-		.references(() => baseQuiz.id),
-	courseBlockId: varchar('courseBlockId')
-		.notNull()
-		.references(() => courseBlock.id),
-	version: integer('version').notNull().default(0),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type ComplexQuizDto = InferSelectModel<typeof complexQuiz>;
-export type CreateComplexQuizDto = InferInsertModel<typeof complexQuiz>;
-export type UpdateComplexQuizDto = Partial<CreateComplexQuizDto>;
-
-export const concept = pgTable('concept', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	courseBlockId: varchar('courseBlockId')
-		.notNull()
-		.references(() => courseBlock.id),
-	name: varchar('name').notNull(),
-	learned: boolean('learned').notNull(),
-	difficultyIndex: integer('difficultyIndex').notNull(),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type ConceptDto = InferSelectModel<typeof concept>;
-export type CreateConceptDto = InferInsertModel<typeof concept>;
-export type UpdateConceptDto = Partial<CreateConceptDto>;
-
-export const complexQuizQuestion = pgTable('complexQuizQuestion', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	baseQuestionId: varchar('baseQuestionId')
-		.notNull()
-		.references(() => baseQuestion.id),
-	complexQuizId: varchar('complexQuizId')
-		.notNull()
-		.references(() => complexQuiz.id),
+		.references(() => oneTimeQuiz.id),
 	conceptId: varchar('conceptId')
 		.notNull()
 		.references(() => concept.id),
@@ -184,98 +246,44 @@ export const complexQuizQuestion = pgTable('complexQuizQuestion', {
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
 });
-export type ComplexQuizQuestionDto = InferSelectModel<typeof complexQuizQuestion>;
-export type CreateComplexQuizQuestionDto = InferInsertModel<typeof complexQuizQuestion>;
-export type UpdateComplexQuizQuestionDto = Partial<CreateComplexQuizQuestionDto>;
 
-export const oneTimeQuizUser = pgTable('oneTimeQuizUser', {
+export type OneTimeQuizConceptDto = InferSelectModel<typeof oneTimeQuizConcept>;
+export type CreateOneTimeQuizConceptDto = InferInsertModel<typeof oneTimeQuizConcept>;
+export type UpdateOneTimeQuizConceptDto = Partial<CreateOneTimeQuizConceptDto>;
+
+export const oneTimeQuizAnswer = pgTable('oneTimeQuizAnswer', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
 	oneTimeQuizId: varchar('oneTimeQuizId')
 		.notNull()
 		.references(() => oneTimeQuiz.id),
-	userId: varchar('userId')
-		.notNull()
-		.references(() => user.id),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type oneTimeUserQuizDto = InferSelectModel<typeof oneTimeQuizUser>;
-export type CreateOneTimeUserQuizDto = InferInsertModel<typeof oneTimeQuizUser>;
-export type UpdateOneTimeUserQuizDto = Partial<CreateOneTimeUserQuizDto>;
-
-export const oneTimeUserAnswer = pgTable('oneTimeUserAnswer', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	oneTimeUserQuizId: varchar('oneTimeUserQuizId')
-		.notNull()
-		.references(() => oneTimeQuizUser.id),
 	baseQuestionId: varchar('baseQuestionId')
 		.notNull()
 		.references(() => baseQuestion.id),
-	baseAnswerId: varchar('baseAnswerId')
-		.notNull()
-		.references(() => baseAnswer.id),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type OneTimeUserAnswerDto = InferSelectModel<typeof oneTimeUserAnswer>;
-export type CreateOneTimeUserAnswerDto = InferInsertModel<typeof oneTimeUserAnswer>;
-export type UpdateOneTimeUserAnswerDto = Partial<CreateOneTimeUserAnswerDto>;
-
-export const complexQuizUser = pgTable('complexQuizUser', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	complexQuizId: varchar('complexQuizId')
-		.notNull()
-		.references(() => complexQuiz.id),
-	userId: varchar('userId')
-		.notNull()
-		.references(() => user.id),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type ComplexQuizUserDto = InferSelectModel<typeof complexQuizUser>;
-export type CreateComplexQuizUserDto = InferInsertModel<typeof complexQuizUser>;
-export type UpdateComplexQuizUserDto = Partial<CreateComplexQuizUserDto>;
-
-export const complexQuizUserAnswer = pgTable('complexQuizUserAnswer', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	complexQuizUserId: varchar('complexQuizUserId')
-		.notNull()
-		.references(() => complexQuizUser.id),
-	complexQuizQuestionId: varchar('complexQuizQuestionId')
-		.notNull()
-		.references(() => complexQuizQuestion.id),
-	baseAnswerId: varchar('baseAnswerId')
-		.notNull()
-		.references(() => baseAnswer.id),
 	answerText: varchar('answerText').notNull(),
+	isCorrect: boolean('isCorrect').notNull(),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
 });
-export type ComplexQuizUserAnswerDto = InferSelectModel<typeof complexQuizUserAnswer>;
-export type CreateComplexQuizUserAnswerDto = InferInsertModel<typeof complexQuizUserAnswer>;
-export type UpdateComplexQuizUserAnswerDto = Partial<CreateComplexQuizUserAnswerDto>;
+export type OneTimeQuizAnswerDto = InferSelectModel<typeof oneTimeQuizAnswer>;
+export type CreateOneTimeQuizAnswerDto = InferInsertModel<typeof oneTimeQuizAnswer>;
+export type UpdateOneTimeQuizAnswerDto = Partial<CreateOneTimeQuizAnswerDto>;
 
 export const table = {
 	user,
+	course,
+	block,
+	concept,
+	placementQuiz,
+	userBlock,
+	completedConcept,
+	adaptiveQuiz,
+	adaptiveQuizAnswer,
+	oneTimeQuiz,
+	oneTimeQuizAnswer,
 	baseQuiz,
 	baseQuestion,
-	baseOption,
-	oneTimeQuiz,
-	course,
-	courseBlock,
-	complexQuiz,
-	concept,
-	complexQuizQuestion
+	baseOption
 } as const;

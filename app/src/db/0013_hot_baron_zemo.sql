@@ -1,1 +1,0 @@
-ALTER TABLE "courseBlock" ADD COLUMN "file" varchar NOT NULL;

@@ -1,5 +1,4 @@
 import type { CreateComplexQuizExtended } from '../../../../schemas/complexQuizSchemas/complexQuizSchema';
-import type { CourseBlock } from '../../../../schemas/complexQuizSchemas/courseBlockSchema';
 
 const createInitialComplexQuiz = async (
 	data: CreateComplexQuizExtended

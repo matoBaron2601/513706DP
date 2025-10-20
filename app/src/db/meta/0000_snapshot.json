@@ -1,11 +1,11 @@
 {
-  "id": "5e1f349d-7468-4854-93c7-191dd20e0d88",
+  "id": "2ca520f1-991d-44c9-964f-f019d683ff9b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.option": {
-      "name": "option",
+    "public.adaptiveQuiz": {
+      "name": "adaptiveQuiz",
       "schema": "",
       "columns": {
         "id": {
@@ -14,14 +14,123 @@
           "primaryKey": true,
           "notNull": true
         },
-        "questionId": {
-          "name": "questionId",
+        "userBlockId": {
+          "name": "userBlockId",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "text": {
-          "name": "text",
+        "baseQuizId": {
+          "name": "baseQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "placementQuizId": {
+          "name": "placementQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "adaptiveQuiz_userBlockId_userBlock_id_fk": {
+          "name": "adaptiveQuiz_userBlockId_userBlock_id_fk",
+          "tableFrom": "adaptiveQuiz",
+          "tableTo": "userBlock",
+          "columnsFrom": [
+            "userBlockId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "adaptiveQuiz_baseQuizId_baseQuiz_id_fk": {
+          "name": "adaptiveQuiz_baseQuizId_baseQuiz_id_fk",
+          "tableFrom": "adaptiveQuiz",
+          "tableTo": "baseQuiz",
+          "columnsFrom": [
+            "baseQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "adaptiveQuiz_placementQuizId_placementQuiz_id_fk": {
+          "name": "adaptiveQuiz_placementQuizId_placementQuiz_id_fk",
+          "tableFrom": "adaptiveQuiz",
+          "tableTo": "placementQuiz",
+          "columnsFrom": [
+            "placementQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.adaptiveQuizAnswer": {
+      "name": "adaptiveQuizAnswer",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "adaptiveQuizId": {
+          "name": "adaptiveQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "baseQuestionId": {
+          "name": "baseQuestionId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answerText": {
+          "name": "answerText",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
@@ -31,16 +140,48 @@
           "type": "boolean",
           "primaryKey": false,
           "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "option_questionId_question_id_fk": {
-          "name": "option_questionId_question_id_fk",
-          "tableFrom": "option",
-          "tableTo": "question",
+        "adaptiveQuizAnswer_adaptiveQuizId_adaptiveQuiz_id_fk": {
+          "name": "adaptiveQuizAnswer_adaptiveQuizId_adaptiveQuiz_id_fk",
+          "tableFrom": "adaptiveQuizAnswer",
+          "tableTo": "adaptiveQuiz",
           "columnsFrom": [
-            "questionId"
+            "adaptiveQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "adaptiveQuizAnswer_baseQuestionId_baseQuestion_id_fk": {
+          "name": "adaptiveQuizAnswer_baseQuestionId_baseQuestion_id_fk",
+          "tableFrom": "adaptiveQuizAnswer",
+          "tableTo": "baseQuestion",
+          "columnsFrom": [
+            "baseQuestionId"
           ],
           "columnsTo": [
             "id"
@@ -55,8 +196,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.question": {
-      "name": "question",
+    "public.baseOption": {
+      "name": "baseOption",
       "schema": "",
       "columns": {
         "id": {
@@ -65,27 +206,46 @@
           "primaryKey": true,
           "notNull": true
         },
-        "quizId": {
-          "name": "quizId",
+        "baseQuestionId": {
+          "name": "baseQuestionId",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "text": {
-          "name": "text",
+        "optionText": {
+          "name": "optionText",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "question_quizId_quiz_id_fk": {
-          "name": "question_quizId_quiz_id_fk",
-          "tableFrom": "question",
-          "tableTo": "quiz",
+        "baseOption_baseQuestionId_baseQuestion_id_fk": {
+          "name": "baseOption_baseQuestionId_baseQuestion_id_fk",
+          "tableFrom": "baseOption",
+          "tableTo": "baseQuestion",
           "columnsFrom": [
-            "quizId"
+            "baseQuestionId"
           ],
           "columnsTo": [
             "id"
@@ -100,14 +260,345 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.quiz": {
-      "name": "quiz",
+    "public.baseQuestion": {
+      "name": "baseQuestion",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "varchar",
           "primaryKey": true,
+          "notNull": true
+        },
+        "baseQuizId": {
+          "name": "baseQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "questionText": {
+          "name": "questionText",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correctAnswerText": {
+          "name": "correctAnswerText",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "baseQuestion_baseQuizId_baseQuiz_id_fk": {
+          "name": "baseQuestion_baseQuizId_baseQuiz_id_fk",
+          "tableFrom": "baseQuestion",
+          "tableTo": "baseQuiz",
+          "columnsFrom": [
+            "baseQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.baseQuiz": {
+      "name": "baseQuiz",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.block": {
+      "name": "block",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "courseId": {
+          "name": "courseId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file": {
+          "name": "file",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "block_courseId_course_id_fk": {
+          "name": "block_courseId_course_id_fk",
+          "tableFrom": "block",
+          "tableTo": "course",
+          "columnsFrom": [
+            "courseId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.completedConcept": {
+      "name": "completedConcept",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userBlockId": {
+          "name": "userBlockId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conceptId": {
+          "name": "conceptId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "completedConcept_userBlockId_userBlock_id_fk": {
+          "name": "completedConcept_userBlockId_userBlock_id_fk",
+          "tableFrom": "completedConcept",
+          "tableTo": "userBlock",
+          "columnsFrom": [
+            "userBlockId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "completedConcept_conceptId_concept_id_fk": {
+          "name": "completedConcept_conceptId_concept_id_fk",
+          "tableFrom": "completedConcept",
+          "tableTo": "concept",
+          "columnsFrom": [
+            "conceptId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.concept": {
+      "name": "concept",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "blockId": {
+          "name": "blockId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "difficultyIndex": {
+          "name": "difficultyIndex",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "concept_blockId_block_id_fk": {
+          "name": "concept_blockId_block_id_fk",
+          "tableFrom": "concept",
+          "tableTo": "block",
+          "columnsFrom": [
+            "blockId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.course": {
+      "name": "course",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
           "notNull": true
         },
         "creatorId": {
@@ -123,27 +614,334 @@
           "notNull": true,
           "default": "now()"
         },
-        "timePerQuestion": {
-          "name": "timePerQuestion",
-          "type": "integer",
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         },
-        "canGoBack": {
-          "name": "canGoBack",
-          "type": "boolean",
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "quiz_creatorId_user_id_fk": {
-          "name": "quiz_creatorId_user_id_fk",
-          "tableFrom": "quiz",
+        "course_creatorId_user_id_fk": {
+          "name": "course_creatorId_user_id_fk",
+          "tableFrom": "course",
           "tableTo": "user",
           "columnsFrom": [
             "creatorId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.oneTimeQuiz": {
+      "name": "oneTimeQuiz",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "creatorId": {
+          "name": "creatorId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "baseQuizId": {
+          "name": "baseQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "oneTimeQuiz_creatorId_user_id_fk": {
+          "name": "oneTimeQuiz_creatorId_user_id_fk",
+          "tableFrom": "oneTimeQuiz",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creatorId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "oneTimeQuiz_baseQuizId_baseQuiz_id_fk": {
+          "name": "oneTimeQuiz_baseQuizId_baseQuiz_id_fk",
+          "tableFrom": "oneTimeQuiz",
+          "tableTo": "baseQuiz",
+          "columnsFrom": [
+            "baseQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.oneTimeQuizAnswer": {
+      "name": "oneTimeQuizAnswer",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "oneTimeQuizId": {
+          "name": "oneTimeQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "baseQuestionId": {
+          "name": "baseQuestionId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answerText": {
+          "name": "answerText",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "isCorrect": {
+          "name": "isCorrect",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "oneTimeQuizAnswer_oneTimeQuizId_oneTimeQuiz_id_fk": {
+          "name": "oneTimeQuizAnswer_oneTimeQuizId_oneTimeQuiz_id_fk",
+          "tableFrom": "oneTimeQuizAnswer",
+          "tableTo": "oneTimeQuiz",
+          "columnsFrom": [
+            "oneTimeQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "oneTimeQuizAnswer_baseQuestionId_baseQuestion_id_fk": {
+          "name": "oneTimeQuizAnswer_baseQuestionId_baseQuestion_id_fk",
+          "tableFrom": "oneTimeQuizAnswer",
+          "tableTo": "baseQuestion",
+          "columnsFrom": [
+            "baseQuestionId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.oneTimeQuizConcept": {
+      "name": "oneTimeQuizConcept",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "oneTimeQuizId": {
+          "name": "oneTimeQuizId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conceptId": {
+          "name": "conceptId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "oneTimeQuizConcept_oneTimeQuizId_oneTimeQuiz_id_fk": {
+          "name": "oneTimeQuizConcept_oneTimeQuizId_oneTimeQuiz_id_fk",
+          "tableFrom": "oneTimeQuizConcept",
+          "tableTo": "oneTimeQuiz",
+          "columnsFrom": [
+            "oneTimeQuizId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "oneTimeQuizConcept_conceptId_concept_id_fk": {
+          "name": "oneTimeQuizConcept_conceptId_concept_id_fk",
+          "tableFrom": "oneTimeQuizConcept",
+          "tableTo": "concept",
+          "columnsFrom": [
+            "conceptId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.placementQuiz": {
+      "name": "placementQuiz",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "blockId": {
+          "name": "blockId",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "placementQuiz_blockId_block_id_fk": {
+          "name": "placementQuiz_blockId_block_id_fk",
+          "tableFrom": "placementQuiz",
+          "tableTo": "block",
+          "columnsFrom": [
+            "blockId"
           ],
           "columnsTo": [
             "id"
@@ -185,6 +983,25 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deletedAt": {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -203,8 +1020,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.userAnswer": {
-      "name": "userAnswer",
+    "public.userBlock": {
+      "name": "userBlock",
       "schema": "",
       "columns": {
         "id": {
@@ -219,20 +1036,27 @@
           "primaryKey": false,
           "notNull": true
         },
-        "questionId": {
-          "name": "questionId",
+        "blockId": {
+          "name": "blockId",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "optionId": {
-          "name": "optionId",
+        "placementQuizId": {
+          "name": "placementQuizId",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "answeredAt": {
-          "name": "answeredAt",
+        "completed": {
+          "name": "completed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -241,9 +1065,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "userAnswer_userId_user_id_fk": {
-          "name": "userAnswer_userId_user_id_fk",
-          "tableFrom": "userAnswer",
+        "userBlock_userId_user_id_fk": {
+          "name": "userBlock_userId_user_id_fk",
+          "tableFrom": "userBlock",
           "tableTo": "user",
           "columnsFrom": [
             "userId"
@@ -254,12 +1078,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "userAnswer_questionId_question_id_fk": {
-          "name": "userAnswer_questionId_question_id_fk",
-          "tableFrom": "userAnswer",
-          "tableTo": "question",
+        "userBlock_blockId_block_id_fk": {
+          "name": "userBlock_blockId_block_id_fk",
+          "tableFrom": "userBlock",
+          "tableTo": "block",
           "columnsFrom": [
-            "questionId"
+            "blockId"
           ],
           "columnsTo": [
             "id"
@@ -267,83 +1091,12 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "userAnswer_optionId_option_id_fk": {
-          "name": "userAnswer_optionId_option_id_fk",
-          "tableFrom": "userAnswer",
-          "tableTo": "option",
+        "userBlock_placementQuizId_placementQuiz_id_fk": {
+          "name": "userBlock_placementQuizId_placementQuiz_id_fk",
+          "tableFrom": "userBlock",
+          "tableTo": "placementQuiz",
           "columnsFrom": [
-            "optionId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.userQuiz": {
-      "name": "userQuiz",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "quizId": {
-          "name": "quizId",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "openedAt": {
-          "name": "openedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "submittedAt": {
-          "name": "submittedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "userQuiz_userId_user_id_fk": {
-          "name": "userQuiz_userId_user_id_fk",
-          "tableFrom": "userQuiz",
-          "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "userQuiz_quizId_quiz_id_fk": {
-          "name": "userQuiz_quizId_quiz_id_fk",
-          "tableFrom": "userQuiz",
-          "tableTo": "quiz",
-          "columnsFrom": [
-            "quizId"
+            "placementQuizId"
           ],
           "columnsTo": [
             "id"

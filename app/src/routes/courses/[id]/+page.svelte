@@ -1,19 +1,19 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { createQuery } from '@tanstack/svelte-query';
-	import getCourseBlocks from './_clientServices.ts/getCourseBlocks';
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { Upload } from '@lucide/svelte';
 	import CourseBlockCard from './_components/CourseBlockCard.svelte';
+	import getBlocks from './_clientServices.ts/getBlocks';
 
 	const courseId = page.params.id ?? '';
 
 	const getCourseBlocksQuery = createQuery({
 		queryKey: ['courseBlocks'],
 		queryFn: async () => {
-			return await getCourseBlocks(courseId);
+			return await getBlocks(courseId);
 		}
 	});
 </script>
@@ -22,7 +22,7 @@
 	<div class="flex w-full justify-end">
 		<Button
 			class="cursor-pointer"
-			onclick={async () => await goto(`/courses/${courseId}/createCourseBlock`)}
+			onclick={async () => await goto(`/courses/${courseId}/createBlock`)}
 		>
 			<Upload />
 			Create course block</Button

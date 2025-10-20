@@ -1,4 +1,4 @@
-import type { Course, CreateCourse } from '../../../../schemas/complexQuizSchemas/courseSchema';
+import type { Course, CreateCourse } from '../../../../schemas/courseSchema';
 
 const createCourse = async (createCourseData: CreateCourse): Promise<Course> => {
 	const response = await fetch(`/api/course`, {

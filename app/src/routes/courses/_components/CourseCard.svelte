@@ -6,7 +6,7 @@
 	import { createMutation } from '@tanstack/svelte-query';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { goto } from '$app/navigation';
-	import type { Course } from '../../../schemas/complexQuizSchemas/courseSchema';
+	import type { Course } from '../../../schemas/courseSchema';
 
 	let { course }: { course: Course } = $props();
 

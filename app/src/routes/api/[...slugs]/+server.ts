@@ -2,8 +2,7 @@ import { Elysia, t } from 'elysia';
 import { openapi } from '@elysiajs/openapi';
 import authApi from './authApi';
 import courseApi from './courseApi';
-import courseBlockApi from './courseBlockApi';
-import complexQuizApi from './complexQuizApi';
+import courseBlockApi from './blockApi';
 import { conceptApi } from './conceptApi';
 const app = new Elysia({
 	prefix: '/api'
@@ -12,7 +11,6 @@ const app = new Elysia({
 	.use(authApi)
 	.use(courseApi)
 	.use(courseBlockApi)
-	.use(complexQuizApi)
 	.use(conceptApi)
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;

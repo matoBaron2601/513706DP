@@ -1,1 +1,0 @@
-ALTER TABLE "quiz" ADD COLUMN "name" varchar NOT NULL;
