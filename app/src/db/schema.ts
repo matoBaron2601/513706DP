@@ -38,6 +38,9 @@ export const baseQuestion = pgTable('baseQuestion', {
 		.references(() => baseQuiz.id),
 	questionText: varchar('questionText').notNull(),
 	correctAnswerText: varchar('correctAnswerText').notNull(),
+	conceptId: varchar('conceptId')
+		.notNull()
+		.references(() => concept.id),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
@@ -279,6 +282,7 @@ export const table = {
 	placementQuiz,
 	userBlock,
 	completedConcept,
+	oneTimeQuizConcept,
 	adaptiveQuiz,
 	adaptiveQuizAnswer,
 	oneTimeQuiz,

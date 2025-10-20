@@ -52,11 +52,12 @@ export class PlacementQuizFacade {
 			await this.baseQuizFacade.createQuestionsAndOptions(
 				{
 					questions: placementQuestions,
-					baseQuizId
+					baseQuizId,
+					conceptId
 				},
 				tx
 			);
 		}
 		return { baseQuizId, placementQuizId };
 	}
-}	
+}

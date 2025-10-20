@@ -1,0 +1,2 @@
+ALTER TABLE "baseQuestion" ADD COLUMN "conceptId" varchar NOT NULL;--> statement-breakpoint
+ALTER TABLE "baseQuestion" ADD CONSTRAINT "baseQuestion_conceptId_concept_id_fk" FOREIGN KEY ("conceptId") REFERENCES "public"."concept"("id") ON DELETE no action ON UPDATE no action;

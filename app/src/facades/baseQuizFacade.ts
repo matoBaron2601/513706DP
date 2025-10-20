@@ -14,10 +14,12 @@ export class BaseQuizFacade {
 	async createQuestionsAndOptions(
 		{
 			questions,
-			baseQuizId
+			baseQuizId,
+			conceptId
 		}: {
 			questions: BaseQuizWithQuestionsAndOptions;
 			baseQuizId: string;
+			conceptId: string;
 		},
 		tx: Transaction
 	): Promise<string[]> {
@@ -28,7 +30,8 @@ export class BaseQuizFacade {
 				{
 					questionText: question.questionText,
 					correctAnswerText: question.correctAnswerText,
-					baseQuizId: baseQuizId
+					baseQuizId: baseQuizId,
+					conceptId: conceptId
 				},
 				tx
 			);

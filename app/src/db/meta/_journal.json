@@ -15,6 +15,13 @@
       "when": 1760964506764,
       "tag": "0001_glossy_valeria_richards",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760968235618,
+      "tag": "0002_perfect_madame_web",
+      "breakpoints": true
     }
   ]
 }
