@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, asc } from 'drizzle-orm';
 import {
 	adaptiveQuiz,
 	type CreateAdaptiveQuizDto,
@@ -55,5 +55,14 @@ export class AdaptiveQuizRepository {
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.userBlockId, userBlockId));
+	}
+
+	async getByUserBlockIdLowerVersion(userBlockIds: string, tx?: Transaction): Promise<AdaptiveQuizDto> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(adaptiveQuiz)
+			.where(eq(adaptiveQuiz.userBlockId, userBlockIds))
+			.orderBy(asc(adaptiveQuiz.version));
+		return result[0]
 	}
 }

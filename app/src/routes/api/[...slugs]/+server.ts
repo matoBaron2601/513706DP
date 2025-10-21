@@ -4,8 +4,9 @@ import authApi from './authApi';
 import courseApi from './courseApi';
 import courseBlockApi from './blockApi';
 import { conceptApi } from './conceptApi';
-import { userBlock } from '../../../db/schema';
 import userBlockApi from './userBlockApi';
+import adaptiveQuizAnswerApi from './adaptiveQuizAnswerApi';
+import adaptiveQuizApi from './adaptiveQuizApi';
 const app = new Elysia({
 	prefix: '/api'
 })
@@ -14,7 +15,9 @@ const app = new Elysia({
 	.use(courseApi)
 	.use(courseBlockApi)
 	.use(conceptApi)
-	.use(userBlockApi);
+	.use(userBlockApi)
+	.use(adaptiveQuizApi)
+	.use(adaptiveQuizAnswerApi)
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
 

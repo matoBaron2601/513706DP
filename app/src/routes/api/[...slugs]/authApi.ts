@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { UserService } from '../../../services/userService';
-import { createUserSchema, updateUserSchema } from '../../../schemas/commonSchemas/userSchema';
+import { createUserSchema, updateUserSchema } from '../../../schemas/userSchema';
 
 const userService = new UserService();
 

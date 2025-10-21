@@ -19,7 +19,7 @@ export const updateBaseQuestionSchema = t.Partial(createBaseQuestionSchema);
 export type UpdateBaseQuestion = Static<typeof updateBaseQuestionSchema>;
 
 // EXTENDED
-export const baseQuestionWithOptionsSchema = t.Intersect([
+export const baseQuestionWithOptionsBlankSchema = t.Intersect([
 	t.Object({
 		questionText: t.String(),
 		correctAnswerText: t.String()
@@ -30,6 +30,15 @@ export const baseQuestionWithOptionsSchema = t.Intersect([
 				optionText: t.Nullable(t.String())
 			})
 		)
+	})
+]);
+
+export type BaseQuestionWithOptionsBlank = Static<typeof baseQuestionWithOptionsBlankSchema>;
+
+export const baseQuestionWithOptionsSchema = t.Intersect([
+	baseQuestionSchema,
+	t.Object({
+		options: t.Array(baseOptionSchema)
 	})
 ]);
 

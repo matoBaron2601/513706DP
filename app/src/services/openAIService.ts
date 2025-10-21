@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { config } from 'dotenv';
 import { ca } from 'zod/v4/locales';
-import type { BaseQuizWithQuestionsAndOptions } from '../schemas/baseQuizSchema';
+import type { BaseQuizWithQuestionsAndOptionsBlank } from '../schemas/baseQuizSchema';
 
 config();
 
@@ -101,7 +101,7 @@ export class OpenAiService {
 		concept: string,
 		concepts: string[],
 		chunks: string[]
-	): Promise<BaseQuizWithQuestionsAndOptions> {
+	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
 		const response = await axios.post(
 			'https://api.openai.com/v1/chat/completions',
 			{
@@ -135,7 +135,7 @@ export class OpenAiService {
 			throw new Error('Invalid quiz format.');
 		}
 
-		return parsedQuiz as BaseQuizWithQuestionsAndOptions;
+		return parsedQuiz as BaseQuizWithQuestionsAndOptionsBlank;
 	}
 
 	async identifyConcepts(text: string): Promise<string[]> {

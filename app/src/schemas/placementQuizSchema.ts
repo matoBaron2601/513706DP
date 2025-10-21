@@ -21,3 +21,5 @@ export type UpdatePlacementQuiz = Static<typeof updatePlacementQuizSchema>;
 // EXTENDED
 
 export const createPlacementQuizWithBlockIdSchema = t.Intersect([createPlacementQuizSchema]);
+export type CreatePlacementQuizWithBlockId = Static<typeof createPlacementQuizWithBlockIdSchema>;
+

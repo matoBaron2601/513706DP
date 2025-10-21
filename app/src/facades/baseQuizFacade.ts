@@ -1,12 +1,19 @@
-import type { BaseQuizWithQuestionsAndOptions } from '../schemas/baseQuizSchema';
+import type { BaseQuestionWithOptions } from '../schemas/baseQuestionSchema';
+import type {
+	BaseQuizWithQuestionsAndOptions,
+	BaseQuizWithQuestionsAndOptionsBlank
+} from '../schemas/baseQuizSchema';
 import { BaseOptionService } from '../services/baseOptionService';
 import { BaseQuestionService } from '../services/baseQuestionService';
+import { BaseQuizService } from '../services/baseQuizService';
 import type { Transaction } from '../types';
 
 export class BaseQuizFacade {
+	private baseQuizService: BaseQuizService;
 	private baseQuestionService: BaseQuestionService;
 	private baseOptionsService: BaseOptionService;
 	constructor() {
+		this.baseQuizService = new BaseQuizService();
 		this.baseQuestionService = new BaseQuestionService();
 		this.baseOptionsService = new BaseOptionService();
 	}
@@ -17,7 +24,7 @@ export class BaseQuizFacade {
 			baseQuizId,
 			conceptId
 		}: {
-			questions: BaseQuizWithQuestionsAndOptions;
+			questions: BaseQuizWithQuestionsAndOptionsBlank;
 			baseQuizId: string;
 			conceptId: string;
 		},
@@ -47,5 +54,34 @@ export class BaseQuizFacade {
 			await this.baseOptionsService.createMany(options, tx);
 		}
 		return questionIds;
+	}
+
+	async getQuestionsWithOptionsByBaseQuizId(
+		baseQuizId: string
+	): Promise<BaseQuizWithQuestionsAndOptions> {
+		const baseQuiz = await this.baseQuizService.getById(baseQuizId);
+		const baseQuizQuestion = await this.baseQuestionService.getByBaseQuizId(baseQuizId);
+		const baseQuizOptions = await this.baseOptionsService.getManyByBaseQuestionIds(
+			baseQuizQuestion.map((q) => q.id)
+		);
+
+		const questionsWithOptions: BaseQuestionWithOptions[] = baseQuizQuestion.map((question) => ({
+			...question,
+			options: baseQuizOptions.filter((option) => option.baseQuestionId === question.id)
+		}));
+
+		return {
+			...baseQuiz,
+			questions: questionsWithOptions
+		};
+	}
+
+	async isAnswerCorrect(questionId: string, answer: string, tx?: Transaction): Promise<boolean> {
+		const question = await this.baseQuestionService.getById(questionId, tx);
+		const options = await this.baseOptionsService.getByBaseQuestionId(questionId, tx);
+		if (options.length > 0) {
+			return answer === question.correctAnswerText;
+		}
+		return true /// OPEN AI ANSWER MATCHING LOGIC CAN BE ADDED HERE IN THE FUTURE
 	}
 }

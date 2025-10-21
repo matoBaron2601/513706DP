@@ -43,4 +43,11 @@ export class BaseOptionService {
 	async getByBaseQuestionId(baseQuestionId: string, tx?: Transaction): Promise<BaseOptionDto[]> {
 		return await this.repo.getByBaseQuestionId(baseQuestionId, tx);
 	}
+
+	async getManyByBaseQuestionIds(
+		baseQuestionIds: string[],
+		tx?: Transaction
+	): Promise<BaseOptionDto[]> {
+		return await this.repo.getManyByBaseQuestionIds(baseQuestionIds, tx);
+	}
 }

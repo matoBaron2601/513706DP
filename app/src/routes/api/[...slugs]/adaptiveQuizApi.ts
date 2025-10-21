@@ -1,6 +1,4 @@
 import { Elysia, t } from 'elysia';
-import { ConceptService } from '../../../services/conceptService';
-import { AdaptiveQuizService } from '../../../services/adaptiveQuizService';
 import { AdaptiveQuizFacade } from '../../../facades/adaptiveQuizFacade';
 
 const adaptiveQuizFacade = new AdaptiveQuizFacade();

@@ -7,7 +7,6 @@ import type {
 	UpdateAdaptiveQuizDto
 } from '../db/schema';
 import { AdaptiveQuizRepository } from '../repositories/adaptiveQuizRepository';
-import { BaseOptionRepository } from '../repositories/baseOptionRepository';
 import type { Transaction } from '../types';
 import { NotFoundError } from './utils/notFoundError';
 
@@ -51,5 +50,10 @@ export class AdaptiveQuizService {
 	async getByUserBlockId(userBlockId: string, tx?: Transaction): Promise<AdaptiveQuizDto[]> {
 		return await this.repo.getByUserBlockId(userBlockId, tx);
 	}
-	
+
+	async getNextQuiz(userBlockId: string, tx?: Transaction): Promise<AdaptiveQuizDto> {
+		const item = await this.repo.getByUserBlockIdLowerVersion(userBlockId, tx);
+		if (!item) throw new NotFoundError(`AdaptiveQuiz with id ${userBlockId} not found`);
+		return item;
+	}
 }

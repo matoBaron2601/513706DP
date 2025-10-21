@@ -54,4 +54,14 @@ export class BaseOptionRepository {
 			.from(baseOption)
 			.where(eq(baseOption.baseQuestionId, baseQuestionId));
 	}
+
+	async getManyByBaseQuestionIds(
+		baseQuestionIds: string[],
+		tx?: Transaction
+	): Promise<BaseOptionDto[]> {
+		return await getDbClient(tx)
+			.select()
+			.from(baseOption)
+			.where(inArray(baseOption.baseQuestionId, baseQuestionIds));
+	}
 }
