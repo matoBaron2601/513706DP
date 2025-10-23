@@ -47,4 +47,10 @@ export class BaseQuestionService {
 	async getByBaseQuizId(baseQuizId: string, tx?: Transaction): Promise<BaseQuestionDto[]> {
 		return await this.repo.getByBaseQuizId(baseQuizId, tx);
 	}
+
+	async getBaseQuizIdByQuestionId(questionId: string, tx?: Transaction): Promise<string> {
+		const item = await this.repo.getBaseQuizIdByQuestionId(questionId, tx);
+		if (!item) throw new NotFoundError(`BaseQuestion with id ${questionId} not found`);
+		return item;
+	}
 }

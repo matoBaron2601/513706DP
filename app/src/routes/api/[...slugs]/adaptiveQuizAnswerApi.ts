@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import { createAdaptiveQuizAnswerSchema } from '../../../schemas/adaptiveQuizAnswerSchema';
+import { createAdaptiveQuizAnswerSchema, submitAdaptiveQuizAnswerSchema } from '../../../schemas/adaptiveQuizAnswerSchema';
 import { AdaptiveQuizAnswerFacade } from '../../../facades/adaptiveQuizAnswerFacade';
 
 const adaptiveQuizAnswerFacade = new AdaptiveQuizAnswerFacade();
@@ -10,7 +10,7 @@ export const adaptiveQuizAnswerApi = new Elysia({ prefix: 'adaptiveQuizAnswer' }
 		return await adaptiveQuizAnswerFacade.submitAnswer(req.body);
 	},
 	{
-		body: createAdaptiveQuizAnswerSchema
+		body: submitAdaptiveQuizAnswerSchema
 	}
 );
 

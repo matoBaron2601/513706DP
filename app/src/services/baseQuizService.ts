@@ -36,5 +36,6 @@ export class BaseQuizService {
 		return await this.repo.getByIds(ids, tx);
 	}
 
+
 	
 }

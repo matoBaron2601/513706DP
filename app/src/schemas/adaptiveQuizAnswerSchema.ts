@@ -17,3 +17,9 @@ export type CreateAdaptiveQuizAnswer = Static<typeof createAdaptiveQuizAnswerSch
 
 export const updateAdaptiveQuizAnswerSchema = t.Partial(createAdaptiveQuizAnswerSchema);
 export type UpdateAdaptiveQuizAnswer = Static<typeof updateAdaptiveQuizAnswerSchema>;
+
+
+// EXTENDED
+
+export const submitAdaptiveQuizAnswerSchema = t.Omit(createAdaptiveQuizAnswerSchema, ['adaptiveQuizId', 'isCorrect']);
+export type SubmitAdaptiveQuizAnswer = Static<typeof submitAdaptiveQuizAnswerSchema>;

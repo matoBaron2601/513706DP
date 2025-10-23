@@ -57,12 +57,23 @@ export class AdaptiveQuizRepository {
 			.where(eq(adaptiveQuiz.userBlockId, userBlockId));
 	}
 
-	async getByUserBlockIdLowerVersion(userBlockIds: string, tx?: Transaction): Promise<AdaptiveQuizDto> {
+	async getByUserBlockIdLowerVersion(
+		userBlockIds: string,
+		tx?: Transaction
+	): Promise<AdaptiveQuizDto> {
 		const result = await getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.userBlockId, userBlockIds))
 			.orderBy(asc(adaptiveQuiz.version));
-		return result[0]
+		return result[0];
+	}
+
+	async getByBaseQuizId(baseQuizId: string, tx?: Transaction): Promise<AdaptiveQuizDto | undefined> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(adaptiveQuiz)
+			.where(eq(adaptiveQuiz.baseQuizId, baseQuizId));
+		return result[0];
 	}
 }

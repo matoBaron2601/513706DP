@@ -56,4 +56,10 @@ export class AdaptiveQuizService {
 		if (!item) throw new NotFoundError(`AdaptiveQuiz with id ${userBlockId} not found`);
 		return item;
 	}
+
+	async getByBaseQuizId(baseQuizId: string, tx?: Transaction): Promise<AdaptiveQuizDto> {
+		const item = await this.repo.getByBaseQuizId(baseQuizId, tx);
+		if (!item) throw new NotFoundError(`AdaptiveQuiz with id ${baseQuizId} not found`);
+		return item;
+	}
 }

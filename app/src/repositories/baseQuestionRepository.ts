@@ -54,4 +54,13 @@ export class BaseQuestionRepository {
 			.from(baseQuestion)
 			.where(eq(baseQuestion.baseQuizId, baseQuizId));
 	}
+
+	async getBaseQuizIdByQuestionId(questionId: string, tx?: Transaction): Promise<string | undefined> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(baseQuestion)
+			.where(eq(baseQuestion.id, questionId))
+			.limit(1);
+		return result[0]?.baseQuizId;
+	}
 }

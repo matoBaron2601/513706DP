@@ -6,7 +6,8 @@ import { baseBaseOptionSchema, baseOptionSchema } from './baseOptionSchema';
 const baseBaseQuestionSchema = t.Object({
 	baseQuizId: t.String(),
 	questionText: t.String(),
-	correctAnswerText: t.String()
+	correctAnswerText: t.String(),
+	conceptId: t.String()
 });
 
 export const baseQuestionSchema = t.Intersect([baseSchema, baseBaseQuestionSchema]);

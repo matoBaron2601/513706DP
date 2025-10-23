@@ -1,12 +1,17 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createMutation, createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import getUserBlock from './_clientServices/getUserBlock';
 	import { getUserByEmail } from '$lib/utils';
 	import getNextAdaptiveQuiz from './_clientServices/getNextAdaptiveQuiz';
 	import getBlockConcepts from './_clientServices/getBlockConcepts';
-
+	import PageWrapper from '$lib/components/PageWrapper.svelte';
+	import Question from './_components/Question.svelte';
+	import submitAdaptiveQuizAnswer from './_clientServices/submitAdaptiveQuizAnswer';
+	import type { CreateAdaptiveQuizAnswer, SubmitAdaptiveQuizAnswer } from '../../../../../schemas/adaptiveQuizAnswerSchema';
 	const blockId = page.params.blockId ?? '';
+
+	let questionIndex = $state(0);
 
 	const getUserBlockQuery = createQuery({
 		queryKey: ['userBlock', blockId],
@@ -25,32 +30,45 @@
 		queryKey: ['nextQuiz', blockId],
 		queryFn: async () => await getNextAdaptiveQuiz($getUserBlockQuery.data.id)
 	});
+
+	const submitAdaptiveQuizAnswerMutation = createMutation({
+		mutationKey: ['submitAdaptiveQuizAnswer'],
+		mutationFn: async (adaptiveQuizAnswer: SubmitAdaptiveQuizAnswer) =>
+			await submitAdaptiveQuizAnswer(adaptiveQuizAnswer)
+	});
+
+	const handleSubmitQuestion = async (
+		optionText: string,
+		isCorrect: boolean,
+		baseQuestionId: string
+	) => {
+		await new Promise((resolve) => setTimeout(resolve, 300));
+		questionIndex += 1;
+		await $submitAdaptiveQuizAnswerMutation.mutateAsync({
+			answerText: optionText,
+			baseQuestionId: baseQuestionId,
+		});
+	};
 </script>
 
-<div class="flex gap-4">
-	Concepts:
-	{#each $getBlockConceptsQuery.data as concept}
-		<p>{concept.name}</p>
-	{/each}
-</div>
-
-<p>
-	getNextQuizQuery data: {$getNextQuizQuery.data?.questions.length ?? 'No quiz found'}
-</p>
-
-{#if $getNextQuizQuery.data}
-	<div>
-		{#each $getNextQuizQuery.data.questions as question}
-			<div class="question-container mt-10">
-				<p>{question.questionText}</p>
-				<ul>
-					{#each question.options as option}
-						<li>{option.optionText}</li>
-					{/each}
-				</ul>
-			</div>
+<PageWrapper
+	><div class="flex gap-4">
+		{#each $getBlockConceptsQuery.data as concept}
+			<p>{concept.name}</p>
 		{/each}
 	</div>
-{:else}
-	<p>No questions available</p>
-{/if}
+
+	{#if $getNextQuizQuery.data}
+		<div>
+			<div class="question-container mt-10">
+				<Question
+					index={questionIndex}
+					question={$getNextQuizQuery.data.questions[questionIndex]}
+					{handleSubmitQuestion}
+				/>
+			</div>
+		</div>
+	{:else}
+		<p>No questions available</p>
+	{/if}</PageWrapper
+>
