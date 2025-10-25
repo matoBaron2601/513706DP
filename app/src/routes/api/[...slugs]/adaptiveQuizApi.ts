@@ -12,9 +12,9 @@ export const adaptiveQuizApi = new Elysia({ prefix: 'adaptiveQuiz' })
 	.get('/nextQuiz/:userBlockId', async (req) => {
 		return await adaptiveQuizFacade.getNextQuiz(req.params.userBlockId);
 	})
-	// .get('/summary/:adaptiveQuizId', async (req) => {
-	// 	return await adaptiveQuizFacade.getSummary(req.params.adaptiveQuizId);
-	// })
+	.post('/complete/:adaptiveQuizId', async (req) => {
+		return await adaptiveQuizFacade.finishAdaptiveQuiz(req.params.adaptiveQuizId);
+	})
 	.get('/complexQuiz/:adaptiveQuizId', async (req) => {
 		return await adaptiveQuizFacade.getComplexAdaptiveQuizById(req.params.adaptiveQuizId);
 	});

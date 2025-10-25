@@ -2,47 +2,5 @@
   "version": "7",
   "dialect": "postgresql",
   "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1760953714718,
-      "tag": "0000_bouncy_secret_warriors",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1760964506764,
-      "tag": "0001_glossy_valeria_richards",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1760968235618,
-      "tag": "0002_perfect_madame_web",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1760972417001,
-      "tag": "0003_fancy_golden_guardian",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1760985225556,
-      "tag": "0004_round_earthquake",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1761392674912,
-      "tag": "0005_sticky_living_tribunal",
-      "breakpoints": true
-    }
   ]
 }

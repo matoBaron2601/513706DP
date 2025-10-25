@@ -2,21 +2,26 @@ import type { AdaptiveQuizAnswer } from '../schemas/adaptiveQuizAnswerSchema';
 import type { AdaptiveQuiz, ComplexAdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
 import type {
 	BaseQuizWithQuestionsAndOptions,
-	BaseQuizWithQuestionsAndOptionsAndFirstUnanswered,
+	BaseQuizWithQuestionsAndOptionsAndFirstUnanswered
 } from '../schemas/baseQuizSchema';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
+import { ConceptProgressRecordService } from '../services/conceptProgressRecordService';
+import { ConceptProgressService } from '../services/conceptProgressService';
 import { BaseQuizFacade } from './baseQuizFacade';
 
 export class AdaptiveQuizFacade {
 	private adaptiveQuizService: AdaptiveQuizService;
 	private baseQuizFacade: BaseQuizFacade;
 	private adaptiveQuizAnswerService: AdaptiveQuizAnswerService;
-
+	private conceptProgressService: ConceptProgressService;
+	private conceptProgressRecordService: ConceptProgressRecordService;
 	constructor() {
 		this.adaptiveQuizService = new AdaptiveQuizService();
 		this.baseQuizFacade = new BaseQuizFacade();
 		this.adaptiveQuizAnswerService = new AdaptiveQuizAnswerService();
+		this.conceptProgressService = new ConceptProgressService();
+		this.conceptProgressRecordService = new ConceptProgressRecordService();
 	}
 
 	async getComplexAdaptiveQuizById(adaptiveQuizId: string): Promise<ComplexAdaptiveQuiz> {
@@ -38,6 +43,40 @@ export class AdaptiveQuizFacade {
 			...adaptiveQuiz,
 			questions: questions
 		};
+	}
+
+	async finishAdaptiveQuiz(adaptiveQuizId: string) : Promise<AdaptiveQuiz> {
+		const updatedAdaptiveQuiz = await this.adaptiveQuizService.update(adaptiveQuizId, {
+			isCompleted: true
+		});
+
+		const complexAdaptiveQuiz = await this.getComplexAdaptiveQuizById(adaptiveQuizId);
+		const conceptIdToQuestionsMap = complexAdaptiveQuiz.questions.reduce<
+			Record<string, typeof complexAdaptiveQuiz.questions>
+		>((acc, question) => {
+			if (!acc[question.conceptId]) {
+				acc[question.conceptId] = [];
+			}
+			acc[question.conceptId].push(question);
+			return acc;
+		}, {});
+
+		for (const conceptId in conceptIdToQuestionsMap) {
+			const questions = conceptIdToQuestionsMap[conceptId];
+			const conceptProgress = await this.conceptProgressService.create({
+				userBlockId: updatedAdaptiveQuiz.userBlockId,
+				conceptId: conceptId,
+				completed: questions.every((q) => q.isCorrect)
+			});
+			const conceptProgressRecord = await this.conceptProgressRecordService.create({
+				conceptProgressId: conceptProgress.id,
+				adaptiveQuizId: adaptiveQuizId,
+				correctCount: questions.filter((q) => q.isCorrect).length,
+				count: questions.length
+			});
+		}
+
+		return updatedAdaptiveQuiz;
 	}
 
 	async getNextQuiz(
@@ -62,30 +101,4 @@ export class AdaptiveQuizFacade {
 			firstUnansweredQuestionId: firstUnansweredQuestion ? firstUnansweredQuestion.id : null
 		};
 	}
-
-	// async getSummary(adaptiveQuizId: string): Promise<SummaryQuiz> {
-	// 	const adaptiveQuiz = await this.adaptiveQuizService.getById(adaptiveQuizId);
-	// 	const baseQuiz = await this.baseQuizFacade.getQuestionsWithOptionsByBaseQuizId(
-	// 		adaptiveQuiz.baseQuizId
-	// 	);
-	// 	const adaptiveQuizAnswers =
-	// 		await this.adaptiveQuizAnswerService.getByAdaptiveQuizId(adaptiveQuizId);
-
-	// 	const questions = baseQuiz.questions.map((question) => {
-	// 		const answer = adaptiveQuizAnswers.find((answer) => answer.baseQuestionId === question.id);
-
-	// 		return {
-	// 			...question,
-	// 			answerText: answer ? answer.answerText : '',
-	// 			isCorrect: answer ? answer.isCorrect : false
-	// 		};
-	// 	});
-
-	// 	const summaryQuiz: SummaryQuiz = {
-	// 		...adaptiveQuiz,
-	// 		questions
-	// 	};
-
-	// 	return summaryQuiz;
-	// }
 }

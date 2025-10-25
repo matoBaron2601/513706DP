@@ -1,15 +1,24 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
+	import type { ComplexAdaptiveQuiz } from '../../../../../../../../../schemas/adaptiveQuizSchema';
 
-	let { adaptiveQuizId }: { adaptiveQuizId: string } = $props();
-
-	const getQuizSummaryQuery = createQuery({
-		queryKey: ['quizSummary'],
-		queryFn: async () => 'test'
-	});
+	let { complexAdaptiveQuiz }: { complexAdaptiveQuiz: ComplexAdaptiveQuiz } = $props();
 </script>
 
-<div>
-	<h2>Quiz Summary</h2>
-	<p>{$getQuizSummaryQuery.data}</p>
+<div class="question-container mt-10">
+	{#each complexAdaptiveQuiz.questions as question, index}
+		<p>{question.questionText}</p>
+		<p>Your answer: {question.userAnswerText ?? 'No answer given'}</p>
+		<p>Correct answer: {question.correctAnswerText}</p>
+
+		<ul>
+			{#each question.options as option}
+				<li>{option.optionText}</li>
+			{/each}
+		</ul>
+
+		{#if index < complexAdaptiveQuiz.questions.length - 1}
+			<hr class="my-4" />
+		{/if}
+	{/each}
 </div>
+

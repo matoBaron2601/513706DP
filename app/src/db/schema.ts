@@ -1,6 +1,6 @@
 import { pgTable, varchar, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
-import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { is, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 
 export const user = pgTable('user', {
 	id: varchar('id')
@@ -44,7 +44,7 @@ export const baseQuestion = pgTable('baseQuestion', {
 	orderIndex: integer('orderIndex').notNull().default(0),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt'),
+	deletedAt: timestamp('deletedAt')
 });
 export type BaseQuestionDto = InferSelectModel<typeof baseQuestion>;
 export type CreateBaseQuestionDto = InferInsertModel<typeof baseQuestion>;
@@ -138,7 +138,7 @@ export type UserBlockDto = InferSelectModel<typeof userBlock>;
 export type CreateUserBlockDto = InferInsertModel<typeof userBlock>;
 export type UpdateUserBlockDto = Partial<CreateUserBlockDto>;
 
-export const completedConcept = pgTable('completedConcept', {
+export const conceptProgress = pgTable('conceptProgress', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
@@ -148,13 +148,35 @@ export const completedConcept = pgTable('completedConcept', {
 	conceptId: varchar('conceptId')
 		.notNull()
 		.references(() => concept.id),
+	completed: boolean('completed').notNull().default(false),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
 });
-export type CompletedConceptDto = InferSelectModel<typeof completedConcept>;
-export type CreateCompletedConceptDto = InferInsertModel<typeof completedConcept>;
-export type UpdateCompletedConceptDto = Partial<CreateCompletedConceptDto>;
+export type ConceptProgressDto = InferSelectModel<typeof conceptProgress>;
+export type CreateConceptProgressDto = InferInsertModel<typeof conceptProgress>;
+export type UpdateConceptProgressDto = Partial<CreateConceptProgressDto>;
+
+export const conceptProgressRecord = pgTable('conceptProgressRecord', {
+	id: varchar('id')
+		.$defaultFn(() => createId())
+		.primaryKey(),
+	conceptProgressId: varchar('conceptProgressId')
+		.notNull()
+		.references(() => conceptProgress.id),
+	adaptiveQuizId: varchar('adaptiveQuizId')
+		.notNull()
+		.references(() => adaptiveQuiz.id),
+	correctCount: integer('correctCount').notNull(),
+	count: integer('count').notNull(),
+	createdAt: timestamp('createdAt').notNull().defaultNow(),
+	updatedAt: timestamp('updatedAt'),
+	deletedAt: timestamp('deletedAt')
+});
+
+export type ConceptProgressRecordDto = InferSelectModel<typeof conceptProgressRecord>;
+export type CreateConceptProgressRecordDto = InferInsertModel<typeof conceptProgressRecord>;
+export type UpdateConceptProgressRecordDto = Partial<CreateConceptProgressRecordDto>;
 
 export const placementQuiz = pgTable('placementQuiz', {
 	id: varchar('id')
@@ -181,13 +203,13 @@ export const adaptiveQuiz = pgTable('adaptiveQuiz', {
 		.primaryKey(),
 	userBlockId: varchar('userBlockId')
 		.notNull()
-		.references(() => userBlock.id),	
+		.references(() => userBlock.id),
 	baseQuizId: varchar('baseQuizId')
 		.notNull()
 		.references(() => baseQuiz.id),
-	placementQuizId: varchar('placementQuizId')
-		.references(() => placementQuiz.id),
+	placementQuizId: varchar('placementQuizId').references(() => placementQuiz.id),
 	version: integer('version').notNull().default(0),
+	isCompleted: boolean('isCompleted').notNull().default(false),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
@@ -282,7 +304,8 @@ export const table = {
 	concept,
 	placementQuiz,
 	userBlock,
-	completedConcept,
+	conceptProgress,
+	conceptProgressRecord,
 	oneTimeQuizConcept,
 	adaptiveQuiz,
 	adaptiveQuizAnswer,

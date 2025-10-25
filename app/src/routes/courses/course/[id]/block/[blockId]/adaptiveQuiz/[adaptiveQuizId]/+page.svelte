@@ -10,6 +10,7 @@
 	import submitAdaptiveQuizAnswer from './_clientServices/submitAdaptiveQuizAnswer';
 	import queryClient from '../../../../../../../queryClient';
 	import Summary from './_components/Summary.svelte';
+	import finishAdaptiveQuiz from './_clientServices/finishAdaptiveQuiz';
 
 	let { data }: { data: PageData } = $props();
 
@@ -29,6 +30,11 @@
 			await submitAdaptiveQuizAnswer(adaptiveQuizAnswer)
 	});
 
+	const finishAdaptiveQuizMutation = createMutation({
+		mutationKey: ['finishAdaptiveQuiz'],
+		mutationFn: async () => await finishAdaptiveQuiz(adaptiveQuizId)
+	});
+
 	const handleSubmitQuestion = async (optionText: string, baseQuestionId: string) => {
 		await $submitAdaptiveQuizAnswerMutation.mutateAsync({
 			answerText: optionText,
@@ -38,40 +44,36 @@
 		questionIndex += 1;
 		if (questionIndex >= ($adaptiveQuizQuery.data?.questions.length ?? 0)) {
 			showSummary = true;
+			await finishAdaptiveQuiz(adaptiveQuizId);
 		}
 	};
 
 	$effect(() => {
-    if ($adaptiveQuizQuery.data && questionIndex === 0) {
-        const unansweredQuestions = $adaptiveQuizQuery.data.questions.filter(
-            (q) => q.userAnswerText === null
-        );
+		if ($adaptiveQuizQuery.data && questionIndex === 0) {
+			const unansweredQuestions = $adaptiveQuizQuery.data.questions.filter(
+				(q) => q.userAnswerText === null
+			);
 
+			if (unansweredQuestions.length > 0) {
+				const smallestOrderIndexQuestion = unansweredQuestions.sort(
+					(a, b) => Number(a.orderIndex) - Number(b.orderIndex)
+				)[0];
 
-        if (unansweredQuestions.length > 0) {
-            const smallestOrderIndexQuestion = unansweredQuestions.sort(
-                (a, b) => Number(a.orderIndex) - Number(b.orderIndex)
-            )[0];
-
-            questionIndex = $adaptiveQuizQuery.data.questions.findIndex(
-                (q) => q.id === smallestOrderIndexQuestion.id
-            );
-        }else{
-			showSummary = true;
+				questionIndex = $adaptiveQuizQuery.data.questions.findIndex(
+					(q) => q.id === smallestOrderIndexQuestion.id
+				);
+			} else {
+				showSummary = true;
+			}
 		}
-    }
-});
-
+	});
 </script>
-
-
-
 
 <PageWrapper>
 	{#if $adaptiveQuizQuery.isLoading}
 		<Spinner />
-	{:else if showSummary}
-		<Summary adaptiveQuizId={adaptiveQuizId} />
+	{:else if $adaptiveQuizQuery.data && showSummary}
+		<Summary complexAdaptiveQuiz={$adaptiveQuizQuery.data} />
 	{:else if $adaptiveQuizQuery.data && $adaptiveQuizQuery.data.questions}
 		<div>
 			<div class="question-container mt-10">

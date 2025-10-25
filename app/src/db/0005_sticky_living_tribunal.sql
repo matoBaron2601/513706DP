@@ -1,1 +1,0 @@
-ALTER TABLE "baseQuestion" ADD COLUMN "orderIndex" integer DEFAULT 0 NOT NULL;
