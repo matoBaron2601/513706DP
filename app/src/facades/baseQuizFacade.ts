@@ -6,42 +6,51 @@ import type {
 import { BaseOptionService } from '../services/baseOptionService';
 import { BaseQuestionService } from '../services/baseQuestionService';
 import { BaseQuizService } from '../services/baseQuizService';
+import { OpenAiService } from '../services/openAIService';
 import type { Transaction } from '../types';
 
 export class BaseQuizFacade {
 	private baseQuizService: BaseQuizService;
 	private baseQuestionService: BaseQuestionService;
 	private baseOptionsService: BaseOptionService;
+	private openAiService: OpenAiService;
 	constructor() {
 		this.baseQuizService = new BaseQuizService();
 		this.baseQuestionService = new BaseQuestionService();
 		this.baseOptionsService = new BaseOptionService();
+		this.openAiService = new OpenAiService();
 	}
 
 	async createQuestionsAndOptions(
 		{
 			questions,
 			baseQuizId,
-			conceptId
+			conceptId,
+			initialOrderIndex
 		}: {
 			questions: BaseQuizWithQuestionsAndOptionsBlank;
 			baseQuizId: string;
 			conceptId: string;
+			initialOrderIndex: number;
 		},
 		tx: Transaction
 	): Promise<string[]> {
 		const questionIds: string[] = [];
+		let orderIndex = initialOrderIndex;
 
-		for (const question of questions.questions) {
+		for (const question of questions.questions.sort((a, b) => Number(a.orderIndex) - Number(b.orderIndex))) {
 			const { id: baseQuestionId } = await this.baseQuestionService.create(
 				{
 					questionText: question.questionText,
 					correctAnswerText: question.correctAnswerText,
 					baseQuizId: baseQuizId,
-					conceptId: conceptId
+					conceptId: conceptId,
+					orderIndex: orderIndex
 				},
 				tx
 			);
+			orderIndex += 1;
+
 			questionIds.push(baseQuestionId);
 
 			if (question.options.length === 0 || question.options === undefined) {
@@ -82,6 +91,10 @@ export class BaseQuizFacade {
 		if (options.length > 0) {
 			return answer === question.correctAnswerText;
 		}
-		return true /// OPEN AI ANSWER MATCHING LOGIC CAN BE ADDED HERE IN THE FUTURE
+		return this.openAiService.isAnswerCorrect(
+			question.questionText,
+			question.correctAnswerText,
+			answer
+		);
 	}
 }

@@ -5,9 +5,9 @@ import type {
 	AdaptiveQuizDto,
 	CreateAdaptiveQuizDto,
 	UpdateAdaptiveQuizDto,
-    AdaptiveQuizAnswerDto,
-    CreateAdaptiveQuizAnswerDto,
-    UpdateAdaptiveQuizAnswerDto
+	AdaptiveQuizAnswerDto,
+	CreateAdaptiveQuizAnswerDto,
+	UpdateAdaptiveQuizAnswerDto
 } from '../db/schema';
 import { AdaptiveQuizAnswerRepository } from '../repositories/adaptiveQuizAnswerRepository';
 import type { Transaction } from '../types';
@@ -26,7 +26,10 @@ export class AdaptiveQuizAnswerService {
 		return item;
 	}
 
-	async create(data: CreateAdaptiveQuizAnswerDto, tx?: Transaction): Promise<AdaptiveQuizAnswerDto> {
+	async create(
+		data: CreateAdaptiveQuizAnswerDto,
+		tx?: Transaction
+	): Promise<AdaptiveQuizAnswerDto> {
 		return await this.repo.create(data, tx);
 	}
 
@@ -50,4 +53,17 @@ export class AdaptiveQuizAnswerService {
 		return await this.repo.getByIds(ids, tx);
 	}
 
+	async getByBaseQuestionId(
+		baseQuestionId: string,
+		tx?: Transaction
+	): Promise<AdaptiveQuizAnswerDto | undefined> {
+		return await this.repo.getByBaseQuestionId(baseQuestionId, tx);
+	}
+
+	async getByAdaptiveQuizId(
+		adaptiveQuizId: string,
+		tx?: Transaction
+	): Promise<AdaptiveQuizAnswerDto[]> {
+		return await this.repo.getByAdaptiveQuizId(adaptiveQuizId, tx);
+	}
 }

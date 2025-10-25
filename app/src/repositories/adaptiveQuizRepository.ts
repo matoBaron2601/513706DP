@@ -69,7 +69,10 @@ export class AdaptiveQuizRepository {
 		return result[0];
 	}
 
-	async getByBaseQuizId(baseQuizId: string, tx?: Transaction): Promise<AdaptiveQuizDto | undefined> {
+	async getByBaseQuizId(
+		baseQuizId: string,
+		tx?: Transaction
+	): Promise<AdaptiveQuizDto | undefined> {
 		const result = await getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)

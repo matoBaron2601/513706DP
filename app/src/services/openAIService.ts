@@ -54,6 +54,7 @@ const createPlacementPrompt = (
 		questions: ({
 			questionText: string;
 			correctAnswerText: string;
+			orderIndex: string;
 			options: {
 				optionText: string;
 			}[];
@@ -75,16 +76,12 @@ const createPlacementPrompt = (
 };
 
 export class OpenAiService {
-	async callOpenAI(
-		chunks: string[],
-		numberOfQuestions: number,
-		prompt: string
-	): Promise<OpenAIChatCompletionResponse> {
-		const response = await axios.post(
+	async callOpenAI(prompt: string) {
+		return await axios.post(
 			'https://api.openai.com/v1/chat/completions',
 			{
 				model: 'gpt-4o-mini',
-				messages: [{ role: 'user', content: '' }]
+				messages: [{ role: 'user', content: prompt }]
 			},
 			{
 				headers: {
@@ -93,8 +90,6 @@ export class OpenAiService {
 				}
 			}
 		);
-
-		return response.data;
 	}
 
 	async createPlacementQuestions(
@@ -102,24 +97,7 @@ export class OpenAiService {
 		concepts: string[],
 		chunks: string[]
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
-		const response = await axios.post(
-			'https://api.openai.com/v1/chat/completions',
-			{
-				model: 'gpt-4o-mini',
-				messages: [
-					{
-						role: 'user',
-						content: createPlacementPrompt(concept, concepts, chunks, 3)
-					}
-				]
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${OPENAI_API_KEY}`,
-					'Content-Type': 'application/json'
-				}
-			}
-		);
+		const response = await this.callOpenAI(createPlacementPrompt(concept, concepts, chunks, 3));
 		const responseContent = response.data.choices[0].message.content
 			.replace(/```json|```/g, '')
 			.trim();
@@ -139,14 +117,7 @@ export class OpenAiService {
 	}
 
 	async identifyConcepts(text: string): Promise<string[]> {
-		const response = await axios.post(
-			'https://api.openai.com/v1/chat/completions',
-			{
-				model: 'gpt-4o-mini',
-				messages: [
-					{
-						role: 'user',
-						content: `
+		const response = await this.callOpenAI(`
 					You are an expert in identifying key concepts from a given text.
 					Thet text will be about some IT topic.
 					Your task is to extract and list the most important concepts mentioned in the text.
@@ -156,17 +127,7 @@ export class OpenAiService {
 					Provide answers as ['concept1', 'concept2', 'concept3'....] and nothing else.
 					Concepts should in order from easiest to most difficult combined from most relevant to less relevant.
 					Here is the text: ${text}
-					`
-					}
-				]
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${OPENAI_API_KEY}`,
-					'Content-Type': 'application/json'
-				}
-			}
-		);
+					`);
 		const content = response.data.choices[0].message.content;
 		const cleanedString = content.replace(/```json|```/g, '').trim();
 		const jsonString = cleanedString.replace(/'/g, '"');
@@ -197,5 +158,24 @@ export class OpenAiService {
 		}
 
 		return true;
+	}
+
+	async isAnswerCorrect(question: string, correctAnswer: string, answer: string): Promise<boolean> {
+		const response = await this.callOpenAI(`
+			You are an expert in evaluating answers to questions.
+			Given the question, the correct answer, and a user's answer, determine if the user's answer is correct.
+			Respond with a simple "Yes" if the answer is correct or "No" if it is incorrect.
+			Do not be hard on users, if the answer is close enough or partially correct, consider it correct. Allow for typos and small mistakes.
+
+			Here are the details:
+
+			Question: ${question}
+			Correct Answer: ${correctAnswer}
+			User's Answer: ${answer}
+
+			Is the user's answer correct? Respond with only "Yes" or "No".
+		`);
+		const content = response.data.choices[0].message.content.trim().toLowerCase();
+		return content === 'yes';
 	}
 }

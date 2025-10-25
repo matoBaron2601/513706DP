@@ -41,6 +41,7 @@ export class PlacementQuizFacade {
 			tx
 		);
 
+		let questionOrder = 0
 		for (const [conceptId, chunks] of Object.entries(contentToDocumentsMap)) {
 			const conceptName = concepts.find((c) => c.id === conceptId)?.name;
 			if (!conceptName || !chunks) continue;
@@ -49,14 +50,18 @@ export class PlacementQuizFacade {
 				concepts.map((c) => c.name),
 				chunks
 			);
+			const numberOfQuestions = placementQuestions.questions.length;
+
 			await this.baseQuizFacade.createQuestionsAndOptions(
 				{
 					questions: placementQuestions,
 					baseQuizId,
-					conceptId
+					conceptId,
+					initialOrderIndex: questionOrder
 				},
 				tx
 			);
+			questionOrder += numberOfQuestions;
 		}
 		return { baseQuizId, placementQuizId };
 	}

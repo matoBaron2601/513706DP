@@ -48,7 +48,7 @@
 		<div class="flex gap-2">
 			<Button
 				onclick={() => {
-					goto(`/courses/${course.id}`);
+					goto(`/courses/course/${course.id}`);
 				}}
 				variant="outline"
 				class="flex-1 cursor-pointer bg-green-200">Open course</Button

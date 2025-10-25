@@ -1,6 +1,6 @@
 import { db } from '../db/client';
 import { UserBlockRepository } from '../repositories/userBlockRepository';
-import type { CreateUserBlock } from '../schemas/userBlockSchema';
+import type { CreateUserBlock, UserBlock } from '../schemas/userBlockSchema';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
 import { PlacementQuizService } from '../services/placementQuizService';
 import { UserBlockService } from '../services/userBlockService';
@@ -15,7 +15,7 @@ export class UserBlockFacade {
 		this.placementQuizService = new PlacementQuizService();
 	}
 
-	async handleUserBlockLogic(createUserBlockData: CreateUserBlock) {
+	async handleUserBlockLogic(createUserBlockData: CreateUserBlock): Promise<UserBlock> {
 		return await db.transaction(async (tx) => {
 			const userBlock = await this.userBlockService.getByBothIdsOrUndefined(
 				createUserBlockData,

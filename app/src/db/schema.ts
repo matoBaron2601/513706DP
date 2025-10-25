@@ -41,9 +41,10 @@ export const baseQuestion = pgTable('baseQuestion', {
 	conceptId: varchar('conceptId')
 		.notNull()
 		.references(() => concept.id),
+	orderIndex: integer('orderIndex').notNull().default(0),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
+	deletedAt: timestamp('deletedAt'),
 });
 export type BaseQuestionDto = InferSelectModel<typeof baseQuestion>;
 export type CreateBaseQuestionDto = InferInsertModel<typeof baseQuestion>;

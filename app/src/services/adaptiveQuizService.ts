@@ -62,4 +62,6 @@ export class AdaptiveQuizService {
 		if (!item) throw new NotFoundError(`AdaptiveQuiz with id ${baseQuizId} not found`);
 		return item;
 	}
+
+	
 }
