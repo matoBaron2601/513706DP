@@ -11,7 +11,9 @@ export type DocumentSearchParams = {
 };
 
 export type QuizDocument = {
-	course_block_id: string;
+	block_id: string;
 	content: string;
+	vector?: number[];
+
 };
 

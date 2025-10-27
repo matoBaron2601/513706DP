@@ -2,10 +2,10 @@ import tiktoken
 def analyze_chunks(chunks, use_tokens=False):
     # Print the chunks of interest
     print("\nNumber of Chunks:", len(chunks))
-    print("\n", "="*50, "200th Chunk", "="*50,"\n", chunks[199])
-    print("\n", "="*50, "201st Chunk", "="*50,"\n", chunks[200])
+    print("\n", "="*50, "200th Chunk", "="*50,"\n", chunks[0])
+    print("\n", "="*50, "201st Chunk", "="*50,"\n", chunks[1])
     
-    chunk1, chunk2 = chunks[199], chunks[200]
+    chunk1, chunk2 = chunks[0], chunks[1]
     
     if use_tokens:
         encoding = tiktoken.get_encoding("cl100k_base")

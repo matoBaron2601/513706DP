@@ -44,7 +44,7 @@
 		questionIndex += 1;
 		if (questionIndex >= ($adaptiveQuizQuery.data?.questions.length ?? 0)) {
 			showSummary = true;
-			await finishAdaptiveQuiz(adaptiveQuizId);
+			await $finishAdaptiveQuizMutation.mutateAsync();
 		}
 	};
 

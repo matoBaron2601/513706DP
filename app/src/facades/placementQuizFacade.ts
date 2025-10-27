@@ -26,7 +26,7 @@ export class PlacementQuizFacade {
 	}
 
 	async createPlacementQuiz(blockId: string, tx: Transaction) {
-		const concepts: ConceptDto[] = await this.conceptService.getManyByBlockId(blockId, tx);
+		const concepts = await this.conceptService.getManyByBlockId(blockId, tx);
 		const contentToDocumentsMap = await this.typesenseService.createContentToDocumentsMap(
 			concepts,
 			blockId

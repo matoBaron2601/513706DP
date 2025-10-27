@@ -47,4 +47,5 @@ export class ConceptService {
 	async getManyByBlockIds(blockIds: string[], tx?: Transaction): Promise<ConceptDto[]> {
 		return await this.repo.getManyByBlockIds(blockIds, tx);
 	}
+
 }

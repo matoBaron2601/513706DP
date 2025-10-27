@@ -63,5 +63,9 @@ export class AdaptiveQuizService {
 		return item;
 	}
 
+	async getLastVersionsByUserBlockId(userBlockId: string, count: number, tx?: Transaction): Promise<AdaptiveQuizDto[]> {
+		return await this.repo.getLastVersionsByUserBlockId(userBlockId, count, tx);
+	}
+
 	
 }

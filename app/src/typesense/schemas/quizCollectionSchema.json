@@ -1,7 +1,8 @@
 {
-	"name": "quizCollection",
-	"fields": [
-		{ "name": "course_block_id", "type": "string" },
-		{ "name": "content", "type": "string" }
-	]
+  "name": "quizCollection",
+  "fields": [
+    { "name": "block_id", "type": "string" },
+    { "name": "content", "type": "string" },
+    { "name": "vector", "type": "float[]", "optional": true }
+  ]
 }

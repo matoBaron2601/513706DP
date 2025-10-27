@@ -1,24 +1,29 @@
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import type { Actions } from './$types.js';
+import type { Actions, PageServerLoad } from './$types.js';
 import { fail } from '@sveltejs/kit';
-import { createBlockFormSchema } from './createBlockFormSchema.js';
+import { createBlockFormSchema } from './formSchemas/createBlockFormSchema.js';
+import { identifyConceptsFormSchema } from './formSchemas/identifyConceptsFormSchema.js';
 
-export const load = async () => {
+export const load: PageServerLoad = async () => {
+	const identifyConceptsForm = await superValidate(zod(identifyConceptsFormSchema));
 	const createBlockForm = await superValidate(zod(createBlockFormSchema));
-	return { createBlockForm };
+	return { identifyConceptsForm, createBlockForm };
 };
 
 export const actions: Actions = {
-	default: async (event) => {
+	identifyConcepts: async (event) => {
+		const form = await superValidate(event, zod(identifyConceptsFormSchema));
+		if (!form.valid) {
+			return fail(400, { identifyConceptsForm: form });
+		}
+		return { identifyConceptsForm: form };
+	},
+	createBlock: async (event) => {
 		const form = await superValidate(event, zod(createBlockFormSchema));
 		if (!form.valid) {
-			return fail(400, {
-				form
-			});
+			return fail(400, { createBlockForm: form });
 		}
-		return {
-			form
-		};
+		return { createBlockForm: form };
 	}
 };

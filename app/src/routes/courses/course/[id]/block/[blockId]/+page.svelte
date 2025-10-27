@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createMutation, createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import { getUserByEmail } from '$lib/utils';
 	import getUserBlock from './_clientServices/getUserBlock';
@@ -9,6 +9,7 @@
 	import getBlockConcepts from './_clientServices/getBlockConcepts';
 	import AdaptiveQuizzesList from './_components/AdaptiveQuizzesList.svelte';
 	import BlockConceptsList from './_components/BlockConceptsList.svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	const blockId = page.params.blockId ?? '';
 	const userEmail = page.data.session?.user?.email ?? '';
@@ -25,6 +26,15 @@
 		queryKey: ['blockConcepts', blockId],
 		queryFn: async () => await getBlockConcepts(blockId)
 	});
+
+	const testMutation = createMutation({
+		mutationKey: ['adaptiveQuizzes', blockId],
+		mutationFn: async () => {
+			await fetch(`/api/adaptiveQuiz/generate/${$userBlockQuery.data.id}`, {
+				method: 'POST'
+			});
+		}
+	});
 </script>
 
 <PageWrapper>
@@ -36,4 +46,10 @@
 			<AdaptiveQuizzesList userBlockId={$userBlockQuery.data.id} />
 		</div>
 	{/if}
+
+	<Button
+		onclick={async () => await $testMutation.mutateAsync()}
+	>
+		Generate Adaptive Quiz
+	</Button>
 </PageWrapper>

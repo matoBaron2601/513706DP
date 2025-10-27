@@ -6,6 +6,13 @@ import { COLLECTION_NAME, type DocumentSearchParams, type QuizDocument } from '.
 import type { SearchResponse } from 'typesense/lib/Typesense/Documents';
 import type { ConceptDto } from '../db/schema';
 
+export class TypesenseError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'TypesenseError';
+	}
+}
+
 export class TypesenseService {
 	private repo: TypesenseRepository;
 	constructor() {
@@ -42,21 +49,23 @@ export class TypesenseService {
 		});
 	}
 
-	async checkDocumentExists(courseBlockId: string): Promise<boolean> {
+	async checkDocumentExists(blockId: string): Promise<boolean> {
 		const searchParams: DocumentSearchParams = {
 			q: '*',
-			query_by: 'course_block_id',
-			filter_by: `course_block_id:=${courseBlockId}`,
+			query_by: 'block_id',
+			filter_by: `block_id:=${blockId}`,
 			per_page: 1
 		};
-		const result = await this.getDocuments(searchParams);
-		return result.found > 0;
+		try {
+			const result = await this.getDocuments(searchParams);
+			return result.found > 0;
+		} catch (error) {
+			throw new TypesenseError('Error checking document existence');
+		}
 	}
 
-	async populateManyQuizCollection(documents: QuizDocument[]) {
-		for (const document of documents) {
-			await this.repo.populateCollection(COLLECTION_NAME, document);
-		}
+	async createMany(documents: QuizDocument[]) {
+		return await this.repo.createMany(COLLECTION_NAME, documents);
 	}
 
 	async createContentToDocumentsMap(
@@ -68,7 +77,7 @@ export class TypesenseService {
 			const typeSenseChunks = await this.getDocuments({
 				q: concept.name,
 				query_by: 'content',
-				filter_by: `course_block_id:=${blockId}`,
+				filter_by: `block_id:=${blockId}`,
 				per_page: 50
 			});
 

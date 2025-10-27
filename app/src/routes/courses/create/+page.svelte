@@ -43,6 +43,8 @@
 			await $createCourseMutation.mutateAsync();
 		}
 	};
+
+
 </script>
 
 <PageWrapper>

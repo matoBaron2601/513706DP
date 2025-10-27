@@ -2,5 +2,19 @@
   "version": "7",
   "dialect": "postgresql",
   "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1761415334638,
+      "tag": "0000_luxuriant_synch",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1761572912282,
+      "tag": "0001_heavy_zaladane",
+      "breakpoints": true
+    }
   ]
 }

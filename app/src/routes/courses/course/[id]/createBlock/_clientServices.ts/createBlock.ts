@@ -1,21 +1,20 @@
-import type { BlockWithDocument } from "../../../../../../schemas/blockSchema";
+import type {
+	CreateBlockRequest,
+	CreateBlockResponse
+} from '../../../../../../schemas/blockSchema';
 
-const createCourseBlock = async (blockWithDocumentData: BlockWithDocument) => {
-	const formData = new FormData();
-
-	formData.append('courseId', blockWithDocumentData.courseId);
-	formData.append('name', blockWithDocumentData.name);
-	formData.append('document', blockWithDocumentData.document);
-
-	const response = await fetch(`/api/block`, {
+const createBlock = async (data: CreateBlockRequest): Promise<CreateBlockResponse> => {
+	const response = await fetch('/api/block/createBlock', {
 		method: 'POST',
-		body: formData
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(data)
 	});
-
 	if (!response.ok) {
-		throw new Error('Failed to create course block');
+		throw new Error('Failed to create block');
 	}
 	return await response.json();
 };
 
-export default createCourseBlock;
+export default createBlock;

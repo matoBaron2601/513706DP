@@ -28,6 +28,7 @@ export class ConceptProgressRecordService {
 		data: CreateConceptProgressRecordDto,
 		tx?: Transaction
 	): Promise<ConceptProgressRecordDto> {
+		console.log('Creating ConceptProgressRecord with data:', data);
 		return await this.repo.create(data, tx);
 	}
 
@@ -52,5 +53,17 @@ export class ConceptProgressRecordService {
 		tx?: Transaction
 	): Promise<ConceptProgressRecordDto[]> {
 		return await this.repo.createMany(data, tx);
+	}
+
+	async getManyByProgressIdsByAdaptiveQuizIds(
+		conceptProgressIds: string[],
+		adaptiveQuizIds: string[],
+		tx?: Transaction
+	): Promise<ConceptProgressRecordDto[]> {
+		return await this.repo.getManyByProgressIdsByAdaptiveQuizIds(
+			conceptProgressIds,
+			adaptiveQuizIds,
+			tx
+		);
 	}
 }

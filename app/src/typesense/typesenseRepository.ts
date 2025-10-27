@@ -22,6 +22,13 @@ export class TypesenseRepository {
 		return await typesenseClient.collections(collectionName).documents().create(document);
 	}
 
+	async createMany(collectionName: string, docs: QuizDocument[]) {
+		return await typesenseClient
+			.collections(collectionName)
+			.documents()
+			.import(docs, { action: 'create' });
+	}
+
 	async getDocuments(
 		collectionName: string,
 		searchParams: DocumentSearchParams

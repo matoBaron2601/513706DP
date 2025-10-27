@@ -91,7 +91,7 @@ export const block = pgTable('block', {
 		.notNull()
 		.references(() => course.id),
 	name: varchar('name').notNull(),
-	document: varchar('file').notNull(),
+	documentPath: varchar('documentPath').notNull(),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
