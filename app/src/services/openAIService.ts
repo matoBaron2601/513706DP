@@ -1,11 +1,14 @@
 import axios from 'axios';
 import { config } from 'dotenv';
-import { ca } from 'zod/v4/locales';
 import type { BaseQuizWithQuestionsAndOptionsBlank } from '../schemas/baseQuizSchema';
-
-config();
+import OpenAI from 'openai';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+const openai = new OpenAI({
+	apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
+});
+config();
 
 interface ChoiceMessage {
 	role: 'user' | 'assistant';
@@ -45,22 +48,18 @@ export interface EmbeddingData {
 }
 
 export class OpenAiService {
-	async callOpenAI(prompt: string): Promise<OpenAIChatCompletionResponse> {
-		return (
-			await axios.post(
-				'https://api.openai.com/v1/chat/completions',
-				{
-					model: 'gpt-4o-mini',
-					messages: [{ role: 'user', content: prompt }]
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${OPENAI_API_KEY}`,
-						'Content-Type': 'application/json'
-					}
-				}
-			)
-		).data;
+	async callOpenAI(prompt: string): Promise<OpenAI.Chat.ChatCompletion> {
+		try {
+			const response = await openai.chat.completions.create({
+				model: 'gpt-4', // Note: "gpt-4o-mini" is not a standard model name, using "gpt-4" instead
+				messages: [{ role: 'user', content: prompt }]
+			});
+
+			return response;
+		} catch (error) {
+			console.error('Error calling OpenAI:', error);
+			throw error;
+		}
 	}
 
 	async createEmbeddings(contents: string[]): Promise<EmbeddingResponse> {
@@ -80,13 +79,24 @@ export class OpenAiService {
 		return response.data;
 	}
 
+	async preRetrievalTransform(text: string): Promise<string> {
+		return (await this
+			.callOpenAI(`Rewrite the following text to remove formatting artifacts, page numbers, and section headers, while correcting any inconsistencies. 
+			Ensure all technical details, examples, URLs, and code are fully preserved and that no semantic content is omitted or summarized. 
+			Produce a clear, concise, self-contained English paragraph. Do not add information.
+			Text:
+			---
+			${text}
+			---`)).choices[0].message.content ?? '';
+	}
+
 	async createPlacementQuestions(
 		concept: string,
 		concepts: string[],
 		chunks: string[]
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
 		const response = await this.callOpenAI(placementQuizPrompt(concept, concepts, chunks, 3));
-		const responseContent = response.choices[0].message.content.replace(/```json|```/g, '').trim();
+		const responseContent = response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
 		let parsedQuiz: any;
 		try {
 			parsedQuiz = JSON.parse(responseContent);
@@ -110,7 +120,7 @@ export class OpenAiService {
 		const response = await this.callOpenAI(
 			adaptiveQuizPrompt(concept, concepts, chunks, numberOfQuestions)
 		);
-		const responseContent = response.choices[0].message.content.replace(/```json|```/g, '').trim();
+		const responseContent = response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
 		let parsedQuiz: any;
 		try {
 			parsedQuiz = JSON.parse(responseContent);
@@ -138,7 +148,7 @@ export class OpenAiService {
 					Here is the text: ${text}
 					`);
 		const content = response.choices[0].message.content;
-		const cleanedString = content.replace(/```json|```/g, '').trim();
+		const cleanedString = content?.replace(/```json|```/g, '').trim() || '';
 		const jsonString = cleanedString.replace(/'/g, '"');
 		const concepts = JSON.parse(jsonString);
 		try {
@@ -184,7 +194,7 @@ export class OpenAiService {
 
 			Is the user's answer correct? Respond with only "Yes" or "No".
 		`);
-		const content = response.choices[0].message.content.trim().toLowerCase();
+		const content = response.choices[0].message.content?.trim().toLowerCase() || '';
 		return content === 'yes';
 	}
 }

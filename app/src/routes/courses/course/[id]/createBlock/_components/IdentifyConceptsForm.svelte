@@ -10,14 +10,17 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import type { Step } from '../+page.svelte';
 	let {
 		data,
 		handleSetDocumentPath,
-		handleSetConcepts
+		handleSetConcepts,
+		handleSetStep,
 	}: {
 		data: PageData;
 		handleSetDocumentPath: (path: string) => void;
 		handleSetConcepts: (identifiedConcepts: { name: string; difficultyIndex: number }[]) => void;
+		handleSetStep: (newStep: Step) => void;
 	} = $props();
 
 	const identifyConceptsMutation = createMutation({
@@ -33,6 +36,7 @@
 					difficultyIndex: index + 1
 				}))
 			);
+			handleSetStep('editConcepts');
 		}
 	});
 

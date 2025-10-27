@@ -1,16 +1,17 @@
 <script lang="ts">
 	import type { PageData } from './$types.js';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
-	import identifyConcepts from './_clientServices.ts/identifyConcepts';
 	import IdentifyConceptsForm from './_components/IdentifyConceptsForm.svelte';
 	import CreateBlockForm from './_components/CreateBlockForm.svelte';
 	import ConceptEditor from './_components/ConcepstEditor.svelte';
 
 	let { data }: { data: PageData } = $props();
 
+	export type Step = 'identifyConceptsForm' | 'editConcepts' | 'createBlock' | 'placementQuiz';
+	let step = $state<Step>('identifyConceptsForm');
+
 	let documentPath = $state('');
 	let concepts = $state<{ name: string; difficultyIndex: number }[]>([]);
-	let conceptsOk = $state(false);
 
 	const handleSetDocumentPath = (path: string) => {
 		documentPath = path;
@@ -20,23 +21,25 @@
 		concepts = identifiedConcepts;
 	};
 
-	const handleSetConceptsOk = (ok: boolean) => {
-		conceptsOk = ok;
+	const handleSetStep = (newStep: Step) => {
+		step = newStep;
 	};
 </script>
 
 <PageWrapper>
-	{#if !documentPath || concepts.length === 0}
-		<IdentifyConceptsForm {data} {handleSetDocumentPath} {handleSetConcepts} />
-	{:else if !conceptsOk}
+	{#if step === 'identifyConceptsForm'}
+		<IdentifyConceptsForm {data} {handleSetDocumentPath} {handleSetConcepts} {handleSetStep} />
+	{:else if step === 'editConcepts'}
 		<ConceptEditor
 			{concepts}
 			on:update={(e) => {
 				concepts = e.detail.concepts;
 			}}
-			{handleSetConceptsOk}
+			{handleSetStep}
 		/>
-	{:else}
-		<CreateBlockForm {data} {documentPath} {concepts} />
+	{:else if step === 'createBlock'}
+		<CreateBlockForm {data} {documentPath} {concepts} {handleSetStep} />
+	{:else if step === 'placementQuiz'}
+		<p>Placement Quiz (to be implemented)</p>
 	{/if}
 </PageWrapper>

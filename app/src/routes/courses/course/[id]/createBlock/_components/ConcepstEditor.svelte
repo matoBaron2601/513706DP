@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import type { Step } from '../+page.svelte';
 
 	type Concept = { name: string; difficultyIndex: number };
 
 	// props (Svelte 5 runes ekvivalent):
 	let {
 		concepts,
-		handleSetConceptsOk
-	}: { concepts: Concept[]; handleSetConceptsOk: (ok: boolean) => void } = $props();
+		handleSetStep
+	}: { concepts: Concept[]; handleSetStep: (newStep: Step) => void } = $props();
 
 	// DISPATCHER S TYPOM EVENTOV
 	const dispatch = createEventDispatcher<{
@@ -124,6 +125,6 @@
 
 	<div class="flex justify-between pt-2">
 		<button class="rounded border px-3 py-1 cursor-pointer" onclick={add}>+ Pridať koncept</button>
-		<button class="rounded border px-3 py-1 cursor-pointer" onclick={() => handleSetConceptsOk(true)}>Submit</button>
+		<button class="rounded border px-3 py-1 cursor-pointer" onclick={() => handleSetStep('createBlock')}>Submit</button>
 	</div>
 </div>

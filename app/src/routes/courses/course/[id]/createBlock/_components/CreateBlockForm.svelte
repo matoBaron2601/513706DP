@@ -14,17 +14,20 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { goto } from '$app/navigation';
+	import type { Step } from '../+page.svelte';
 
 	const courseId = page.params.id ?? '';
 
 	let {
 		data,
 		documentPath,
-		concepts
+		concepts,
+		handleSetStep
 	}: {
 		data: PageData;
 		documentPath: string;
 		concepts: { name: string; difficultyIndex: number }[];
+		handleSetStep: (newStep: Step) => void;
 	} = $props();
 
 	const form = superForm(data.createBlockForm, {
@@ -44,9 +47,8 @@
 				retrievalMethod: $formData.retrievalMethod,
 				useLLMTransformation: $formData.useLLMTransformation
 			}),
-
 		onSuccess: async () => {
-			goto(`/courses/course/${courseId}`);
+			handleSetStep('placementQuiz');
 		}
 	});
 
@@ -120,6 +122,9 @@
 					{#snippet children({ props })}
 						<Form.Label>Use LLM Transformation</Form.Label>
 						<Switch class="cursor-pointer" bind:checked={$formData.useLLMTransformation} />
+						<Form.Description>
+							This may dramatically increase the processing time, but can lead to better results.
+						</Form.Description>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />

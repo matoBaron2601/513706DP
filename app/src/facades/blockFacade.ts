@@ -83,11 +83,23 @@ export class BlockFacade {
 
 			const chunks = await this.chunkerService.chunk(data.chunkingStrategy, fileText);
 
+			const chunksReadyForIndexing = data.useLLMTransformation
+				? await Promise.all(
+						chunks.map(async (chunk) => {
+							if (data.useLLMTransformation) {
+								return await this.openAiService.preRetrievalTransform(chunk);
+							} else {
+								return chunk;
+							}
+						})
+					)
+				: chunks;
+
 			if (data.retrievalMethod === 'hybrid') {
-				const embeddings = await this.openAiService.createEmbeddings(chunks);
-				if (!embeddings.data || embeddings.data.length !== chunks.length) {
+				const embeddings = await this.openAiService.createEmbeddings(chunksReadyForIndexing);
+				if (!embeddings.data || embeddings.data.length !== chunksReadyForIndexing.length) {
 					throw new Error(
-						`Embedding count mismatch: got ${embeddings.data?.length} vs ${chunks.length}`
+						`Embedding count mismatch: got ${embeddings.data?.length} vs ${chunksReadyForIndexing.length}`
 					);
 				}
 				const docs = embeddings.data
@@ -95,13 +107,13 @@ export class BlockFacade {
 					.map((item: EmbeddingData, i: number) => ({
 						block_id: block.id,
 						chunk_index: i,
-						content: chunks[i],
+						content: chunksReadyForIndexing[i],
 						vector: item.embedding
 					}));
 				await this.typesenseService.createMany(docs);
 			} else {
 				await this.typesenseService.createMany(
-					chunks.map((chunk, i) => ({
+					chunksReadyForIndexing.map((chunk, i) => ({
 						block_id: block.id,
 						chunk_index: i,
 						content: chunk
