@@ -52,10 +52,6 @@ export const createBlockRequestSchema = t.Intersect([
 			rtc: 'rtc',
 			semantic: 'semantic'
 		}),
-		retrievalMethod: t.Enum({
-			sparse: 'sparse',
-			hybrid: 'hybrid'
-		}),
 		useLLMTransformation: t.Boolean()
 	})
 ]);
@@ -74,12 +70,13 @@ export const getManyByCourseIdRequestSchema = t.Object({
 });
 export type GetManyByCourseIdRequest = Static<typeof getManyByCourseIdRequestSchema>;
 
-export const getManyByCourseIdResponseSchema = t.Array(
-	t.Intersect([
-		blockSchema,
-		t.Object({
-			concepts: t.Array(t.String())
-		})
-	])
-);
+export const blockWithConceptsSchema = t.Intersect([
+	blockSchema,
+	t.Object({
+		concepts: t.Array(baseConceptSchema)
+	})
+]);
+export type BlockWithConcepts = Static<typeof blockWithConceptsSchema>;
+
+export const getManyByCourseIdResponseSchema = t.Array(blockWithConceptsSchema);
 export type GetManyByCourseIdResponse = Static<typeof getManyByCourseIdResponseSchema>;

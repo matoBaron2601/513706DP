@@ -1,48 +1,48 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { Step } from '../+page.svelte';
-
+	import * as Card from '$lib/components/ui/card/index.js';
+	import Button from '$lib/components/ui/button/button.svelte';
+	import { Input } from '$lib/components/ui/input';
 	type Concept = { name: string; difficultyIndex: number };
 
-	// props (Svelte 5 runes ekvivalent):
-	let {
-		concepts,
-		handleSetStep
-	}: { concepts: Concept[]; handleSetStep: (newStep: Step) => void } = $props();
+	let { concepts, handleSetStep }: { concepts: Concept[]; handleSetStep: (newStep: Step) => void } =
+		$props();
 
-	// DISPATCHER S TYPOM EVENTOV
 	const dispatch = createEventDispatcher<{
 		update: { concepts: Concept[] };
 	}>();
 
-	let items = $state<Concept[]>(concepts ?? []);
-	$effect(() => {
-		items = Array.isArray(concepts) ? [...concepts] : [];
-	});
+	let items = $state<Concept[]>([]);
+
+	const renumber = (arr: Concept[]) => arr.map((c, i) => ({ ...c, difficultyIndex: i + 1 }));
 
 	const emit = (next: Concept[]) => {
-		const cleaned = next.map((c) => ({
-			name: c.name.trim(),
-			difficultyIndex: Number.isFinite(+c.difficultyIndex) ? +c.difficultyIndex : 0
-		}));
-		dispatch('update', { concepts: cleaned }); // ✅ typovo správne
+		const cleaned = renumber(next);
+		items = cleaned;
+		dispatch('update', { concepts: cleaned });
 	};
 
+	$effect(() => {
+		items = renumber(Array.isArray(concepts) ? [...concepts] : []);
+	});
+
 	const add = () => {
-		items = [...items, { name: '', difficultyIndex: 0 }];
-		emit(items);
+		emit([...items, { name: '', difficultyIndex: 0 }]);
 	};
+
 	const removeAt = (i: number) => {
-		items = items.toSpliced(i, 1);
-		emit(items);
+		const copy = [...items];
+		copy.splice(i, 1);
+		emit(copy);
 	};
+
 	const move = (i: number, dir: -1 | 1) => {
 		const j = i + dir;
 		if (j < 0 || j >= items.length) return;
 		const copy = [...items];
 		[copy[i], copy[j]] = [copy[j], copy[i]];
-		items = copy;
-		emit(items);
+		emit(copy);
 	};
 
 	let dragIndex: number | null = null;
@@ -58,73 +58,94 @@
 		const copy = [...items];
 		const [moved] = copy.splice(from, 1);
 		copy.splice(i, 0, moved);
-		items = copy;
 		dragIndex = null;
-		emit(items);
+		emit(copy);
 	};
 
 	const updateName = (i: number, v: string) => {
-		items = items.with(i, { ...items[i], name: v });
-		emit(items);
+		const copy = [...items];
+		copy[i] = { ...copy[i], name: v };
+		emit(copy);
 	};
-	const updateDiff = (i: number, v: string) => {
-		const n = Math.max(0, Number(v) || 0);
-		items = items.with(i, { ...items[i], difficultyIndex: n });
-		emit(items);
+
+	const finalize = () => {
+		const cleaned = items.map((c, i) => ({
+			name: c.name.trim().replace(/\s{2,}/g, ' '),
+			difficultyIndex: i + 1
+		}));
+		items = cleaned;
+		dispatch('update', { concepts: cleaned });
+		handleSetStep('createBlock');
 	};
 </script>
 
-<div class="space-y-3">
-	{#if items.length === 0}
-		<p class="text-sm opacity-70">Zatiaľ žiadne koncepty.</p>
-	{/if}
+<div class="mx-auto p-4 md:w-[50%]">
+	<Card.Title>2. Specify concepts</Card.Title>
+	<Card.Description class="mt-1">
+		You can modify the identified concepts below. You can change their names, reorder them by
+		drag-and-drop or using the arrows, and remove any unnecessary concepts. You can also add new
+		concepts if needed. For best results, ensure that each concept has a clear and distinct name.
+	</Card.Description>
+	<Card.Card class="mx-auto mt-4">
+		<Card.Content>
+			<div class="space-y-3">
+				{#if items.length === 0}
+					<p class="text-sm opacity-70">No concepts yet.</p>
+				{/if}
 
-	{#each items as c, i}
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div
-			class="flex items-center gap-2 rounded border p-2"
-			draggable="true"
-			ondragstart={(e) => onDragStart(i, e)}
-			ondragover={onDragOver}
-			ondrop={(e) => onDrop(i, e)}
-		>
-			<span class="w-6 select-none text-xs opacity-60">{i + 1}</span>
+				{#each items as c, i}
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						class="flex cursor-pointer items-center gap-2 rounded"
+						draggable="true"
+						ondragstart={(e) => onDragStart(i, e)}
+						ondragover={onDragOver}
+						ondrop={(e) => onDrop(i, e)}
+					>
+						<span class="w-6 select-none text-xs opacity-60">{i + 1}.</span>
+						<Input
+							class=" w-60 rounded border px-2 py-1"
+							placeholder="Concept name"
+							value={c.name}
+							oninput={(e) => updateName(i, (e.target as HTMLInputElement).value)}
+						/>
+						<span class="w-28 text-right text-sm tabular-nums" title="difficultyIndex">
+							{c.difficultyIndex}
+						</span>
 
-			<input
-				class="flex-1 rounded border px-2 py-1"
-				placeholder="Názov"
-				value={c.name}
-				oninput={(e) => updateName(i, (e.target as HTMLInputElement).value)}
-			/>
-
-			<input
-				class="w-28 rounded border px-2 py-1 text-right"
-				type="number"
-				min="0"
-				step="1"
-				value={c.difficultyIndex}
-				oninput={(e) => updateDiff(i, (e.target as HTMLInputElement).value)}
-				title="difficultyIndex"
-			/>
-
-			<div class="flex gap-1">
-				<button class="rounded border px-2 py-1" onclick={() => move(i, -1)} disabled={i === 0}
-					>↑</button
+						<div class="flex gap-1">
+							<button
+								class="cursor-pointer rounded border px-2 py-1"
+								onclick={() => move(i, -1)}
+								disabled={i === 0}>↑</button
+							>
+							<button
+								class="cursor-pointer rounded border px-2 py-1"
+								onclick={() => move(i, +1)}
+								disabled={i === items.length - 1}>↓</button
+							>
+							<button
+								class="cursor-pointer rounded border px-2 py-1"
+								onclick={() => removeAt(i)}
+								aria-label="Delete">✕</button
+							>
+						</div>
+					</div>
+				{/each}
+				<Button class="cursor-pointer rounded border px-3 py-1" variant="outline" onclick={add}
+					>+ Add concept</Button
 				>
-				<button
-					class="rounded border px-2 py-1"
-					onclick={() => move(i, +1)}
-					disabled={i === items.length - 1}>↓</button
-				>
-				<button class="rounded border px-2 py-1" onclick={() => removeAt(i)} aria-label="Delete"
-					>✕</button
-				>
+				<div class="flex justify-between pt-2">
+					<Button
+						class="cursor-pointer rounded border px-3 py-1"
+						onclick={() => handleSetStep('identifyConceptsForm')}>Go back</Button
+					>
+
+					<Button class="cursor-pointer rounded border px-3 py-1" onclick={finalize}>
+						Submit concepts
+					</Button>
+				</div>
 			</div>
-		</div>
-	{/each}
-
-	<div class="flex justify-between pt-2">
-		<button class="rounded border px-3 py-1 cursor-pointer" onclick={add}>+ Pridať koncept</button>
-		<button class="rounded border px-3 py-1 cursor-pointer" onclick={() => handleSetStep('createBlock')}>Submit</button>
-	</div>
+		</Card.Content>
+	</Card.Card>
 </div>

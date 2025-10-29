@@ -26,7 +26,6 @@ export const blockApi = new Elysia({ prefix: 'block' })
 	.post(
 		'/createBlock',
 		async (req) => {
-			console.log('Received createBlock request with body:', req.body);
 			return await blockFacade.createBlock(req.body);
 		},
 		{ body: createBlockRequestSchema }

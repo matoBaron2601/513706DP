@@ -27,7 +27,7 @@ export class CourseService {
 	}
 
 	async delete(id: string, tx?: Transaction): Promise<CourseDto> {
-		const item = await this.repo.delete(id, tx);
+		const item = await this.repo.update(id, { deletedAt: new Date() }, tx);
 		if (!item) throw new NotFoundError(`Course with id ${id} not found`);
 		return item;
 	}
@@ -43,4 +43,5 @@ export class CourseService {
 	async getAll(tx?: Transaction): Promise<CourseDto[]> {
 		return await this.repo.getAll(tx);
 	}
+
 }

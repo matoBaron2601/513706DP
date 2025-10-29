@@ -12,7 +12,6 @@ import type {
 	UpdateBlockDto,
 	UpdateConceptProgressDto
 } from '../db/schema';
-import { ConceptRepository } from '../repositories/conceptRepository';
 import { ConceptProgressRepository } from '../repositories/conceptProgressRepository';
 export class ConceptProgressService {
 	private repo: ConceptProgressRepository;
@@ -56,5 +55,20 @@ export class ConceptProgressService {
 
 	async getManyByUserBlockId(userBlockId: string, tx?: Transaction): Promise<ConceptProgressDto[]> {
 		return await this.repo.getManyByUserBlockId(userBlockId, tx);
+	}
+
+	async getOrCreateConceptProgress(
+		data: CreateConceptProgressDto,
+		tx?: Transaction
+	): Promise<ConceptProgressDto> {
+		const existing = await this.repo.getByUserBlockIdAndConceptId(
+			data.userBlockId,
+			data.conceptId,
+			tx
+		);
+		if (existing) {
+			return existing;
+		}
+		return await this.repo.create(data, tx);
 	}
 }

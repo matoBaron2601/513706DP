@@ -7,15 +7,16 @@
 	import { identifyConceptsFormSchema } from '../formSchemas/identifyConceptsFormSchema';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Form from '$lib/components/ui/form/index.js';
-	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import type { Step } from '../+page.svelte';
+	import { Upload } from '@lucide/svelte';
+
 	let {
 		data,
 		handleSetDocumentPath,
 		handleSetConcepts,
-		handleSetStep,
+		handleSetStep
 	}: {
 		data: PageData;
 		handleSetDocumentPath: (path: string) => void;
@@ -66,7 +67,11 @@
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance class="mx-auto p-4 md:w-[50%]">
-	<Card.Title class="text-xl">Create New Block</Card.Title>
+	<Card.Title>1. Upload file</Card.Title>
+	<Card.Description class="mt-1 p-2">
+		Upload a .txt file containing the main content of the block you want to create. The system will
+		analyze the content and identify key concepts for you to review and edit.
+	</Card.Description>
 	<Card.Card class="mx-auto mt-4">
 		<Card.Content class="flex flex-col gap-6">
 			<Form.Field {form} name="file">
@@ -83,11 +88,11 @@
 						/>
 						<Button
 							type="button"
-                            variant="outline"
+							variant="outline"
 							class="w-full cursor-pointer"
 							onclick={() => document.getElementById('fileInput')?.click()}
 						>
-                        
+							<Upload class="mr-2 inline-block h-4 w-4" />
 							Select File
 						</Button>
 						{#if $formData.file}
@@ -101,12 +106,12 @@
 			<Button
 				onclick={handleFormSubmit}
 				class="mx-auto w-full cursor-pointer lg:w-[50%]"
-				disabled={$identifyConceptsMutation.isPending}
+				disabled={$identifyConceptsMutation.isPending || !$formData.file}
 			>
 				{#if $identifyConceptsMutation.isPending}
 					<Spinner />
 				{:else}
-					Submit
+					Uload file
 				{/if}
 			</Button>
 		</Card.Content>

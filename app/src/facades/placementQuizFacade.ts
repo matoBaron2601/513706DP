@@ -1,5 +1,6 @@
 import { db } from '../db/client';
 import type { ConceptDto } from '../db/schema';
+import type { CreatePlacementQuizRequest } from '../schemas/placementQuizSchema';
 import { BaseQuizService } from '../services/baseQuizService';
 import { ConceptService } from '../services/conceptService';
 import { OpenAiService } from '../services/openAIService';
@@ -25,44 +26,49 @@ export class PlacementQuizFacade {
 		this.openAiService = new OpenAiService();
 	}
 
-	async createPlacementQuiz(blockId: string, tx: Transaction) {
-		const concepts = await this.conceptService.getManyByBlockId(blockId, tx);
-		const contentToDocumentsMap = await this.typesenseService.createContentToDocumentsMap(
-			concepts,
-			blockId
-		);
-
-		const { id: baseQuizId } = await this.baseQuizService.create({}, tx);
-		const { id: placementQuizId } = await this.placementQuizService.create(
-			{
-				blockId,
-				baseQuizId
-			},
-			tx
-		);
-
-		let questionOrder = 0
-		for (const [conceptId, chunks] of Object.entries(contentToDocumentsMap)) {
-			const conceptName = concepts.find((c) => c.id === conceptId)?.name;
-			if (!conceptName || !chunks) continue;
-			const placementQuestions = await this.openAiService.createPlacementQuestions(
-				conceptName,
-				concepts.map((c) => c.name),
-				chunks
+	async createPlacementQuiz(data: CreatePlacementQuizRequest) {
+		return db.transaction(async (tx) => {
+			const conceptsData = await this.conceptService.getManyByBlockId(data.blockId, tx);
+			const concepts = conceptsData.sort((a, b) => a.difficultyIndex - b.difficultyIndex);
+			const contentToChunksMap = await this.typesenseService.createContentToChunksMap(
+				concepts,
+				data.blockId
 			);
-			const numberOfQuestions = placementQuestions.questions.length;
-
-			await this.baseQuizFacade.createQuestionsAndOptions(
+			const { id: baseQuizId } = await this.baseQuizService.create({}, tx);
+			const { id: placementQuizId } = await this.placementQuizService.create(
 				{
-					questions: placementQuestions,
-					baseQuizId,
-					conceptId,
-					initialOrderIndex: questionOrder
+					blockId: data.blockId,
+					baseQuizId
 				},
 				tx
 			);
-			questionOrder += numberOfQuestions;
-		}
-		return { baseQuizId, placementQuizId };
+
+			let questionOrder = 0;
+			for (const [conceptId, chunks] of Object.entries(contentToChunksMap)) {
+				console.log('Creating questions for conceptId:', conceptId);
+				const conceptName = concepts.find((c) => c.id === conceptId)?.name;
+				if (!conceptName || !chunks) continue;
+				const placementQuestions = await this.openAiService.createPlacementQuestions(
+					conceptName,
+					concepts.map((c) => c.name),
+					chunks,
+					data.questionsPerConcept
+				);
+				console.log('Generated placement questions:', placementQuestions);
+				const numberOfQuestions = placementQuestions.questions.length;
+
+				await this.baseQuizFacade.createQuestionsAndOptions(
+					{
+						questions: placementQuestions,
+						baseQuizId,
+						conceptId,
+						initialOrderIndex: questionOrder
+					},
+					tx
+				);
+				questionOrder += numberOfQuestions;
+			}
+			return { baseQuizId, placementQuizId };
+		});
 	}
 }

@@ -22,12 +22,14 @@
 		data,
 		documentPath,
 		concepts,
-		handleSetStep
+		handleSetStep,
+		handleSetBlockId
 	}: {
 		data: PageData;
 		documentPath: string;
 		concepts: { name: string; difficultyIndex: number }[];
 		handleSetStep: (newStep: Step) => void;
+		handleSetBlockId: (id: string) => void;
 	} = $props();
 
 	const form = superForm(data.createBlockForm, {
@@ -37,16 +39,17 @@
 
 	const createBlockMutation = createMutation({
 		mutationKey: ['createBlock'],
-		mutationFn: async () =>
-			await createBlock({
+		mutationFn: async () => {
+			const { id: blockId } = await createBlock({
 				courseId,
 				name: $formData.name,
 				documentPath,
 				concepts,
 				chunkingStrategy: $formData.chunkingStrategy,
-				retrievalMethod: $formData.retrievalMethod,
 				useLLMTransformation: $formData.useLLMTransformation
-			}),
+			});
+			handleSetBlockId(blockId);
+		},
 		onSuccess: async () => {
 			handleSetStep('placementQuiz');
 		}
@@ -62,6 +65,10 @@
 </script>
 
 <form method="POST" class="mx-auto p-4 md:w-[50%]" use:enhance onsubmit={handleFormSubmit}>
+	<Card.Title>3. Create block</Card.Title>
+	<Card.Description class="mt-1">
+		Configure the block settings before creating it.
+	</Card.Description>
 	<Card.Card class="mx-auto mt-4">
 		<Card.Content class="flex flex-col gap-6">
 			<Form.Field {form} name="name">
@@ -88,28 +95,6 @@
 									class="cursor-pointer"
 									onclick={() => ($formData.chunkingStrategy = 'semantic')}
 									value="semantic">Semantic</Tabs.Trigger
-								>
-							</Tabs.List>
-						</Tabs.Root>
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Field {form} name="retrievalMethod">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Tabs.Root value={$formData.retrievalMethod} {...props} class="w-[400px]">
-							<Form.Label>Retrieval method</Form.Label>
-							<Tabs.List>
-								<Tabs.Trigger
-									class="cursor-pointer"
-									onclick={() => ($formData.retrievalMethod = 'sparse')}
-									value="sparse">Sparse</Tabs.Trigger
-								>
-								<Tabs.Trigger
-									class="cursor-pointer"
-									onclick={() => ($formData.retrievalMethod = 'hybrid')}
-									value="hybrid">Hybrid</Tabs.Trigger
 								>
 							</Tabs.List>
 						</Tabs.Root>

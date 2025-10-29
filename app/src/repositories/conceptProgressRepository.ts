@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and } from 'drizzle-orm';
 import {
 	block,
 	type CreateBlockDto,
@@ -73,5 +73,19 @@ export class ConceptProgressRepository {
 			.from(conceptProgress)
 			.where(eq(conceptProgress.userBlockId, userBlockId));
 		return result;
+	}
+
+	async getByUserBlockIdAndConceptId(
+		userBlockId: string,
+		conceptId: string,
+		tx?: Transaction
+	): Promise<ConceptProgressDto | undefined> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(conceptProgress)
+			.where(
+				and(eq(conceptProgress.userBlockId, userBlockId), eq(conceptProgress.conceptId, conceptId))
+			);
+		return result[0];
 	}
 }

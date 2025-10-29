@@ -3,7 +3,6 @@ import type { AdaptiveQuizAnswer } from '../schemas/adaptiveQuizAnswerSchema';
 import type { AdaptiveQuiz, ComplexAdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
 import type {
 	BaseQuizWithQuestionsAndOptions,
-	BaseQuizWithQuestionsAndOptionsAndFirstUnanswered
 } from '../schemas/baseQuizSchema';
 import type { Concept } from '../schemas/conceptSchema';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
@@ -13,7 +12,9 @@ import { ConceptProgressRecordService } from '../services/conceptProgressRecordS
 import { ConceptProgressService } from '../services/conceptProgressService';
 import { ConceptService } from '../services/conceptService';
 import { OpenAiService } from '../services/openAIService';
+import { TypesenseService } from '../typesense/typesenseService';
 import { BaseQuizFacade } from './baseQuizFacade';
+import { ConceptFacade } from './conceptFacade';
 
 export class AdaptiveQuizFacade {
 	private adaptiveQuizService: AdaptiveQuizService;
@@ -24,6 +25,8 @@ export class AdaptiveQuizFacade {
 	private baseQuizService: BaseQuizService;
 	private openAiService: OpenAiService;
 	private conceptService: ConceptService;
+	private typesenseService: TypesenseService;
+	private conceptFacade: ConceptFacade;
 	constructor() {
 		this.adaptiveQuizService = new AdaptiveQuizService();
 		this.baseQuizFacade = new BaseQuizFacade();
@@ -33,6 +36,8 @@ export class AdaptiveQuizFacade {
 		this.baseQuizService = new BaseQuizService();
 		this.openAiService = new OpenAiService();
 		this.conceptService = new ConceptService();
+		this.typesenseService = new TypesenseService();
+		this.conceptFacade = new ConceptFacade();
 	}
 
 	async getComplexAdaptiveQuizById(adaptiveQuizId: string): Promise<ComplexAdaptiveQuiz> {
@@ -46,7 +51,7 @@ export class AdaptiveQuizFacade {
 			const answer = adaptiveQuizAnswers.find((answer) => answer.baseQuestionId === question.id);
 			return {
 				...question,
-				userAnswerText: answer?.answerText || null,
+				userAnswerText: answer?.answerText === '' ? '' : (answer?.answerText ?? null),
 				isCorrect: answer?.isCorrect || null
 			};
 		});
@@ -67,6 +72,7 @@ export class AdaptiveQuizFacade {
 			);
 
 			const complexAdaptiveQuiz = await this.getComplexAdaptiveQuizById(adaptiveQuizId);
+			const isPlacementQuiz = complexAdaptiveQuiz.version === 0;
 			const conceptIdToQuestionsMap = complexAdaptiveQuiz.questions.reduce<
 				Record<string, typeof complexAdaptiveQuiz.questions>
 			>((acc, question) => {
@@ -79,11 +85,13 @@ export class AdaptiveQuizFacade {
 
 			for (const conceptId in conceptIdToQuestionsMap) {
 				const questions = conceptIdToQuestionsMap[conceptId];
-				const conceptProgress = await this.conceptProgressService.create(
+				const completed = isPlacementQuiz ? questions.every((q) => q.isCorrect) : false;
+
+				const conceptProgress = await this.conceptProgressService.getOrCreateConceptProgress(
 					{
 						userBlockId: updatedAdaptiveQuiz.userBlockId,
 						conceptId: conceptId,
-						completed: questions.every((q) => q.isCorrect)
+						completed
 					},
 					tx
 				);
@@ -97,6 +105,8 @@ export class AdaptiveQuizFacade {
 					tx
 				);
 			}
+
+			await this.conceptFacade.updateConceptProgress(updatedAdaptiveQuiz.userBlockId);
 
 			return updatedAdaptiveQuiz;
 		});
@@ -144,36 +154,39 @@ export class AdaptiveQuizFacade {
 			const { id: adaptiveQuizId } = await this.adaptiveQuizService.create(
 				{
 					userBlockId,
-					baseQuizId
+					baseQuizId,
+					version: lastAdaptiveQuizzes.length
+						? Math.max(...lastAdaptiveQuizzes.map((aq) => aq.version)) + 1
+						: 1,
+					isCompleted: false
 				},
 				tx
 			);
-
 			let questionOrder = 0;
 			for (const [conceptId, progress] of Object.entries(conceptProgressMap)) {
 				if (progress.percentage >= 80) {
 					await this.conceptProgressService.update(conceptId, { completed: true }, tx);
 				} else {
-					for (let i = 0; i < progress.difference; i++) {
-						const questions = await this.openAiService.createAdaptiveQuizQuestions(
+					const questions = await this.openAiService.createAdaptiveQuizQuestions(
+						progress.concept.name,
+						Object.values(conceptProgressMap).map((c) => c.concept.name),
+						await this.typesenseService.getChunksByConcept(
 							progress.concept.name,
-							Object.values(conceptProgressMap).map((c) => c.concept.name),
-							[],
-							progress.difference
-						);
-						const numberOfQuestions = questions.questions.length;
-
-						await this.baseQuizFacade.createQuestionsAndOptions(
-							{
-								questions: questions,
-								baseQuizId,
-								conceptId,
-								initialOrderIndex: questionOrder
-							},
-							tx
-						);
-						questionOrder += numberOfQuestions;
-					}
+							progress.concept.blockId
+						),
+						progress.difference
+					);
+					const numberOfQuestions = questions.questions.length;
+					await this.baseQuizFacade.createQuestionsAndOptions(
+						{
+							questions: questions,
+							baseQuizId,
+							conceptId: progress.concept.id,
+							initialOrderIndex: questionOrder
+						},
+						tx
+					);
+					questionOrder += numberOfQuestions;
 				}
 			}
 			return { baseQuizId, adaptiveQuizId };

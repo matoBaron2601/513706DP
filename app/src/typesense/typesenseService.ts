@@ -1,5 +1,5 @@
 import { TypesenseRepository } from './typesenseRepository';
-import quizCollectionSchema from './schemas/quizCollectionSchema.json';
+import typesenseSchema from './schemas/typesenseSchema.json';
 import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import type { CollectionSchema } from 'typesense/lib/Typesense/Collection';
 import { COLLECTION_NAME, type DocumentSearchParams, type QuizDocument } from './types';
@@ -24,32 +24,18 @@ export class TypesenseService {
 	}
 
 	async createQuizCollection(): Promise<CollectionSchema> {
-		return this.repo.createCollection(quizCollectionSchema as CollectionCreateSchema);
+		return this.repo.createCollection(typesenseSchema as CollectionCreateSchema);
 	}
 
 	async deleteQuizCollection(): Promise<CollectionSchema> {
 		return this.repo.deleteCollection(COLLECTION_NAME);
 	}
 
-	async getDocuments({
-		q,
-		query_by,
-		filter_by,
-		sort_by,
-		per_page,
-		page
-	}: DocumentSearchParams): Promise<SearchResponse<object>> {
-		return this.repo.getDocuments(COLLECTION_NAME, {
-			q,
-			query_by,
-			filter_by,
-			sort_by,
-			per_page,
-			page
-		});
+	async createMany(documents: QuizDocument[]) {
+		return await this.repo.createMany(COLLECTION_NAME, documents);
 	}
 
-	async checkDocumentExists(blockId: string): Promise<boolean> {
+	async chunkForThisBlockIdAlreadyExists(blockId: string): Promise<boolean> {
 		const searchParams: DocumentSearchParams = {
 			q: '*',
 			query_by: 'block_id',
@@ -64,15 +50,11 @@ export class TypesenseService {
 		}
 	}
 
-	async createMany(documents: QuizDocument[]) {
-		return await this.repo.createMany(COLLECTION_NAME, documents);
-	}
-
-	async createContentToDocumentsMap(
+	async createContentToChunksMap(
 		concepts: ConceptDto[],
 		blockId: string
 	): Promise<Record<string, string[]>> {
-		const contentToDocumentsMap: Record<string, string[]> = {};
+		const contentToChunksMap: Record<string, string[]> = {};
 		for (const concept of concepts) {
 			const typeSenseChunks = await this.getDocuments({
 				q: concept.name,
@@ -84,13 +66,45 @@ export class TypesenseService {
 			const chunks =
 				typeSenseChunks.hits?.map((hit) => (hit.document as { content: string }).content) ?? [];
 			for (const chunk of chunks) {
-				if (!contentToDocumentsMap[concept.id]) {
-					contentToDocumentsMap[concept.id] = [];
+				if (!contentToChunksMap[concept.id]) {
+					contentToChunksMap[concept.id] = [];
 				}
-				contentToDocumentsMap[concept.id].push(chunk);
+				contentToChunksMap[concept.id].push(chunk);
 			}
 		}
 
-		return contentToDocumentsMap;
+		return contentToChunksMap;
+	}
+
+	async getChunksByConcept(conceptName: string, blockId: string): Promise<string[]> {
+		const chunks = await this.getDocuments({
+			q: conceptName,
+			query_by: 'content,vector',
+			filter_by: `block_id:=${blockId}`,
+			per_page: 50,
+			sort_by: '_text_match:desc',
+			prefix:false,
+		});
+		return chunks.hits?.map((hit) => (hit.document as { content: string }).content) ?? [];
+	}
+
+	private async getDocuments({
+		q,
+		query_by,
+		filter_by,
+		sort_by,
+		per_page,
+		prefix,
+		page
+	}: DocumentSearchParams): Promise<SearchResponse<object>> {
+		return this.repo.getDocuments(COLLECTION_NAME, {
+			q,
+			query_by,
+			filter_by,
+			sort_by,
+			per_page,
+			page,
+			prefix
+		});
 	}
 }

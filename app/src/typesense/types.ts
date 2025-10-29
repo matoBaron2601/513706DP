@@ -1,4 +1,4 @@
-export const COLLECTION_NAME = 'quizCollection';
+export const COLLECTION_NAME = 'typesenseSchema';
 
 export type DocumentSearchParams = {
 	q: string;
@@ -8,12 +8,11 @@ export type DocumentSearchParams = {
 	sort_by?: string;
 	page?: number;
 	per_page?: number;
+	prefix?: boolean;
 };
 
 export type QuizDocument = {
 	block_id: string;
 	content: string;
-	vector?: number[];
-
 };
 

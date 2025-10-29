@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, isNull } from 'drizzle-orm';
 import { course, type CreateCourseDto, type UpdateCourseDto, type CourseDto } from '../db/schema';
 import type { Transaction } from '../types';
 import getDbClient from './utils/getDbClient';
@@ -41,6 +41,6 @@ export class CourseRepository {
 	}
 
 	async getAll(tx?: Transaction): Promise<CourseDto[]> {
-		return await getDbClient(tx).select().from(course);
+		return await getDbClient(tx).select().from(course).where(isNull(course.deletedAt));
 	}
 }

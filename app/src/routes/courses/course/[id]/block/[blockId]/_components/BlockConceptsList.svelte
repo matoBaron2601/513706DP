@@ -1,12 +1,21 @@
 <script lang="ts">
-	import type { Concept } from '../../../../../schemas/conceptSchema';
+	import { createQuery } from '@tanstack/svelte-query';
 	import BlockConceptCard from './BlockConceptCard.svelte';
+	import getConceptProgressByUserBlockId from '../_clientServices/getConceptProgressByUserBlockId';
+	import { page } from '$app/state';
 
-	let { concepts }: { concepts: Concept[] } = $props();
+	const blockId = page.params.blockId ?? '';
+
+	let { userBlockId }: { userBlockId: string } = $props();
+
+	const getBlockConceptsQuery = createQuery({
+		queryKey: ['blockConcepts', userBlockId],
+		queryFn: async () => await getConceptProgressByUserBlockId({ userBlockId })
+	});
 </script>
 
-<div class="flex gap-4">
-	{#each concepts as concept}
+<div class="flex w-full gap-4">
+	{#each $getBlockConceptsQuery.data as concept}
 		<BlockConceptCard {concept} />
 	{/each}
 </div>

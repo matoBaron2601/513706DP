@@ -51,7 +51,7 @@ export class OpenAiService {
 	async callOpenAI(prompt: string): Promise<OpenAI.Chat.ChatCompletion> {
 		try {
 			const response = await openai.chat.completions.create({
-				model: 'gpt-4', // Note: "gpt-4o-mini" is not a standard model name, using "gpt-4" instead
+				model: 'gpt-4o-mini', // Note: "gpt-4o-mini" is not a standard model name, using "gpt-4" instead
 				messages: [{ role: 'user', content: prompt }]
 			});
 
@@ -80,23 +80,31 @@ export class OpenAiService {
 	}
 
 	async preRetrievalTransform(text: string): Promise<string> {
-		return (await this
-			.callOpenAI(`Rewrite the following text to remove formatting artifacts, page numbers, and section headers, while correcting any inconsistencies. 
+		return (
+			(
+				await this
+					.callOpenAI(`Rewrite the following text to remove formatting artifacts, page numbers, and section headers, while correcting any inconsistencies. 
 			Ensure all technical details, examples, URLs, and code are fully preserved and that no semantic content is omitted or summarized. 
 			Produce a clear, concise, self-contained English paragraph. Do not add information.
 			Text:
 			---
 			${text}
-			---`)).choices[0].message.content ?? '';
+			---`)
+			).choices[0].message.content ?? ''
+		);
 	}
 
 	async createPlacementQuestions(
 		concept: string,
 		concepts: string[],
-		chunks: string[]
+		chunks: string[],
+		questionsPerConcept: number
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
-		const response = await this.callOpenAI(placementQuizPrompt(concept, concepts, chunks, 3));
-		const responseContent = response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
+		const response = await this.callOpenAI(
+			placementQuizPrompt(concept, concepts, chunks, questionsPerConcept)
+		);
+		const responseContent =
+			response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
 		let parsedQuiz: any;
 		try {
 			parsedQuiz = JSON.parse(responseContent);
@@ -120,7 +128,8 @@ export class OpenAiService {
 		const response = await this.callOpenAI(
 			adaptiveQuizPrompt(concept, concepts, chunks, numberOfQuestions)
 		);
-		const responseContent = response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
+		const responseContent =
+			response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
 		let parsedQuiz: any;
 		try {
 			parsedQuiz = JSON.parse(responseContent);

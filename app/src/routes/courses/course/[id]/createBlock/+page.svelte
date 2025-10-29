@@ -4,42 +4,59 @@
 	import IdentifyConceptsForm from './_components/IdentifyConceptsForm.svelte';
 	import CreateBlockForm from './_components/CreateBlockForm.svelte';
 	import ConceptEditor from './_components/ConcepstEditor.svelte';
+	import PlacementQuiz from './_components/PlacementQuiz.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	export type Step = 'identifyConceptsForm' | 'editConcepts' | 'createBlock' | 'placementQuiz';
 	let step = $state<Step>('identifyConceptsForm');
 
+	let blockId = $state('');
 	let documentPath = $state('');
 	let concepts = $state<{ name: string; difficultyIndex: number }[]>([]);
 
-	const handleSetDocumentPath = (path: string) => {
+	const setDocumentPath = (path: string) => {
 		documentPath = path;
 	};
 
-	const handleSetConcepts = (identifiedConcepts: { name: string; difficultyIndex: number }[]) => {
+	const setConcepts = (identifiedConcepts: { name: string; difficultyIndex: number }[]) => {
 		concepts = identifiedConcepts;
 	};
 
-	const handleSetStep = (newStep: Step) => {
+	const setStep = (newStep: Step) => {
 		step = newStep;
+	};
+
+	const setBlockId = (id: string) => {
+		blockId = id;
 	};
 </script>
 
 <PageWrapper>
 	{#if step === 'identifyConceptsForm'}
-		<IdentifyConceptsForm {data} {handleSetDocumentPath} {handleSetConcepts} {handleSetStep} />
+		<IdentifyConceptsForm
+			{data}
+			handleSetDocumentPath={setDocumentPath}
+			handleSetConcepts={setConcepts}
+			handleSetStep={setStep}
+		/>
 	{:else if step === 'editConcepts'}
 		<ConceptEditor
 			{concepts}
 			on:update={(e) => {
 				concepts = e.detail.concepts;
 			}}
-			{handleSetStep}
+			handleSetStep={setStep}
 		/>
 	{:else if step === 'createBlock'}
-		<CreateBlockForm {data} {documentPath} {concepts} {handleSetStep} />
+		<CreateBlockForm
+			{data}
+			{documentPath}
+			{concepts}
+			handleSetStep={setStep}
+			handleSetBlockId={setBlockId}
+		/>
 	{:else if step === 'placementQuiz'}
-		<p>Placement Quiz (to be implemented)</p>
+		<PlacementQuiz {data} {blockId} />
 	{/if}
 </PageWrapper>

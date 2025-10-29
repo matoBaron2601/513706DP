@@ -11,7 +11,8 @@ export class TypesenseRepository {
 	}
 
 	async createCollection(schema: CollectionCreateSchema): Promise<CollectionSchema> {
-		return await typesenseClient.collections().create(schema);
+		const result = await typesenseClient.collections().create(schema);
+		return result;
 	}
 
 	async deleteCollection(name: string): Promise<CollectionSchema> {

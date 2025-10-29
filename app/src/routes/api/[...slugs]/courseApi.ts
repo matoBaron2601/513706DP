@@ -5,7 +5,6 @@ import { CourseService } from '../../../services/courseService';
 const courseService = new CourseService();
 
 export const courseApi = new Elysia({ prefix: 'course' })
-
 	.get('/', async () => {
 		return await courseService.getAll();
 	})
@@ -17,6 +16,9 @@ export const courseApi = new Elysia({ prefix: 'course' })
 		{
 			body: createCourseSchema
 		}
-	);
+	)
+	.delete('/:id', async (req) => {
+		return await courseService.delete(req.params.id);
+	});
 
 export default courseApi;

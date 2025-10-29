@@ -54,6 +54,8 @@
 				(q) => q.userAnswerText === null
 			);
 
+			console.log('unansweredQuestions', unansweredQuestions);
+
 			if (unansweredQuestions.length > 0) {
 				const smallestOrderIndexQuestion = unansweredQuestions.sort(
 					(a, b) => Number(a.orderIndex) - Number(b.orderIndex)

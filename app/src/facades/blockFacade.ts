@@ -72,7 +72,9 @@ export class BlockFacade {
 				tx
 			);
 
-			const blockDataExists = await this.typesenseService.checkDocumentExists(block.id);
+			const blockDataExists = await this.typesenseService.chunkForThisBlockIdAlreadyExists(
+				block.id
+			);
 			if (blockDataExists) {
 				throw new Error(`Typesense document for block with id ${block.id} does already exist`);
 			}
@@ -95,31 +97,14 @@ export class BlockFacade {
 					)
 				: chunks;
 
-			if (data.retrievalMethod === 'hybrid') {
-				const embeddings = await this.openAiService.createEmbeddings(chunksReadyForIndexing);
-				if (!embeddings.data || embeddings.data.length !== chunksReadyForIndexing.length) {
-					throw new Error(
-						`Embedding count mismatch: got ${embeddings.data?.length} vs ${chunksReadyForIndexing.length}`
-					);
-				}
-				const docs = embeddings.data
-					.sort((a: EmbeddingData, b: EmbeddingData) => a.index - b.index)
-					.map((item: EmbeddingData, i: number) => ({
-						block_id: block.id,
-						chunk_index: i,
-						content: chunksReadyForIndexing[i],
-						vector: item.embedding
-					}));
-				await this.typesenseService.createMany(docs);
-			} else {
-				await this.typesenseService.createMany(
-					chunksReadyForIndexing.map((chunk, i) => ({
-						block_id: block.id,
-						chunk_index: i,
-						content: chunk
-					}))
-				);
-			}
+			await this.typesenseService.createMany(
+				chunksReadyForIndexing.map((chunk, i) => ({
+					block_id: block.id,
+					chunk_index: i,
+					content: chunk
+				}))
+			);
+
 			return {
 				...block,
 				concepts: data.concepts.map((concept) => ({

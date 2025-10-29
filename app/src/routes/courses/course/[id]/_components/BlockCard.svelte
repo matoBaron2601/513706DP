@@ -7,7 +7,7 @@
 	import { goto } from '$app/navigation';
 	import type { BlockWithConcepts } from '../../../../../schemas/blockSchema';
 
-	let { block }: { block: BlockWithConcepts } = $props();
+	let { block }: { block: BlockWithConcepts} = $props();
 </script>
 
 <Card.Root class="min-w-50 relative">

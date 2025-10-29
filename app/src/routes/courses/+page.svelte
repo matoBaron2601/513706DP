@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { createQuery } from '@tanstack/svelte-query';
 	import getCourses from './_clientServices/getCourses';
 	import CourseCard from './_components/CourseCard.svelte';

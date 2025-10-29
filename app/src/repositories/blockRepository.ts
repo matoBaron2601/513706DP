@@ -43,4 +43,12 @@ export class BlockRepository {
 	async getManyByCourseId(courseId: string, tx?: Transaction): Promise<BlockDto[]> {
 		return await getDbClient(tx).select().from(block).where(eq(block.courseId, courseId));
 	}
+
+	async deleteByCourseId(courseId: string, tx?: Transaction): Promise<BlockDto[]> {
+		return await getDbClient(tx)
+			.update(block)
+			.set({ deletedAt: new Date() })
+			.where(eq(block.courseId, courseId))
+			.returning();
+	}
 }

@@ -6,7 +6,7 @@
 	import getAdaptiveQuizzesByBlockId from './_clientServices/getAdaptiveQuizzesByUserBlockId';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import getBlockConcepts from './_clientServices/getBlockConcepts';
+	import getBlockConcepts from './_clientServices/getConceptProgressByUserBlockId';
 	import AdaptiveQuizzesList from './_components/AdaptiveQuizzesList.svelte';
 	import BlockConceptsList from './_components/BlockConceptsList.svelte';
 	import { Button } from '$lib/components/ui/button';
@@ -22,11 +22,6 @@
 		}
 	});
 
-	const getBlockConceptsQuery = createQuery({
-		queryKey: ['blockConcepts', blockId],
-		queryFn: async () => await getBlockConcepts(blockId)
-	});
-
 	const testMutation = createMutation({
 		mutationKey: ['adaptiveQuizzes', blockId],
 		mutationFn: async () => {
@@ -35,19 +30,21 @@
 			});
 		}
 	});
+	
 </script>
 
 <PageWrapper>
-	{#if $userBlockQuery.isLoading || $getBlockConceptsQuery.isLoading}
+	{#if $userBlockQuery.isLoading}
 		<Spinner />
-	{:else if $userBlockQuery.data && $getBlockConceptsQuery.data}
-		<div class="flex flex-col gap-8">
-			<BlockConceptsList concepts={$getBlockConceptsQuery.data} />
+	{:else if $userBlockQuery.data}
+		<div class="flex flex-col gap-8 mt-4">
+			<BlockConceptsList userBlockId={$userBlockQuery.data.id} />
+			<hr/>
 			<AdaptiveQuizzesList userBlockId={$userBlockQuery.data.id} />
 		</div>
 	{/if}
 
-	<Button
+	<Button class="mt-40"
 		onclick={async () => await $testMutation.mutateAsync()}
 	>
 		Generate Adaptive Quiz

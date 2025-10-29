@@ -18,9 +18,9 @@
 {#if $adaptiveQuizzesQuery.isLoading}
 	<Spinner />
 {:else}
-	<ul class="list-disc pl-5">
+	<div class="flex w-full gap-4">
 		{#each $adaptiveQuizzesQuery.data as adaptiveQuiz}
 			<AdaptiveQuizCard {adaptiveQuiz} />
 		{/each}
-	</ul>
+	</div>
 {/if}

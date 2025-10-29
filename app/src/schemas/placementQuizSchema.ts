@@ -16,10 +16,12 @@ export type CreatePlacementQuiz = Static<typeof createPlacementQuizSchema>;
 export const updatePlacementQuizSchema = t.Partial(createPlacementQuizSchema);
 export type UpdatePlacementQuiz = Static<typeof updatePlacementQuizSchema>;
 
-
-
 // EXTENDED
-
 export const createPlacementQuizWithBlockIdSchema = t.Intersect([createPlacementQuizSchema]);
 export type CreatePlacementQuizWithBlockId = Static<typeof createPlacementQuizWithBlockIdSchema>;
 
+export const createPlacementQuizRequestSchema = t.Object({
+	blockId: t.String(),
+	questionsPerConcept: t.Number()
+});
+export type CreatePlacementQuizRequest = Static<typeof createPlacementQuizRequestSchema>;

@@ -89,4 +89,8 @@ export class BlockService {
 		await fs.writeFile(filePath, dataToWrite);
 		return fileName;
 	}
+
+	async deleteByCourseId(courseId: string, tx?: Transaction): Promise<BlockDto[]> {
+		return await this.repo.deleteByCourseId(courseId, tx);
+	}
 }
