@@ -51,7 +51,7 @@ export class OpenAiService {
 	async callOpenAI(prompt: string): Promise<OpenAI.Chat.ChatCompletion> {
 		try {
 			const response = await openai.chat.completions.create({
-				model: 'gpt-4o-mini', // Note: "gpt-4o-mini" is not a standard model name, using "gpt-4" instead
+				model: 'gpt-4o-mini',
 				messages: [{ role: 'user', content: prompt }]
 			});
 
@@ -60,38 +60,6 @@ export class OpenAiService {
 			console.error('Error calling OpenAI:', error);
 			throw error;
 		}
-	}
-
-	async createEmbeddings(contents: string[]): Promise<EmbeddingResponse> {
-		const response = await axios.post(
-			'https://api.openai.com/v1/embeddings',
-			{
-				model: 'text-embedding-3-small',
-				input: contents
-			},
-			{
-				headers: {
-					Authorization: `Bearer ${OPENAI_API_KEY}`,
-					'Content-Type': 'application/json'
-				}
-			}
-		);
-		return response.data;
-	}
-
-	async preRetrievalTransform(text: string): Promise<string> {
-		return (
-			(
-				await this
-					.callOpenAI(`Rewrite the following text to remove formatting artifacts, page numbers, and section headers, while correcting any inconsistencies. 
-			Ensure all technical details, examples, URLs, and code are fully preserved and that no semantic content is omitted or summarized. 
-			Produce a clear, concise, self-contained English paragraph. Do not add information.
-			Text:
-			---
-			${text}
-			---`)
-			).choices[0].message.content ?? ''
-		);
 	}
 
 	async createPlacementQuestions(
@@ -117,6 +85,21 @@ export class OpenAiService {
 		}
 
 		return parsedQuiz as BaseQuizWithQuestionsAndOptionsBlank;
+	}
+
+	async preRetrievalTransform(text: string): Promise<string> {
+		return (
+			(
+				await this
+					.callOpenAI(`Rewrite the following text to remove formatting artifacts, page numbers, and section headers, while correcting any inconsistencies. 
+			Ensure all technical details, examples, URLs, and code are fully preserved and that no semantic content is omitted or summarized. 
+			Produce a clear, concise, self-contained English paragraph. Do not add information.
+			Text:
+			---
+			${text}
+			---`)
+			).choices[0].message.content ?? ''
+		);
 	}
 
 	async createAdaptiveQuizQuestions(
@@ -240,6 +223,8 @@ const placementQuizPrompt = (
 	You can either crate a question with 4 options where one is correct
 	OR
 	you can create a question with blank list [] and it will be fill in question.
+
+	Both types of questions can be programming question with code snippets (you must provide code snippets).
 	Which to choose is up to you, just make sure that the question makes sense and an answer can be found in the chunks.
 
 	Ensure that questions are about a concept ${concept} and are relevant to the provided chunks.
@@ -276,5 +261,19 @@ const adaptiveQuizPrompt = (
 				optionText: string;
 			}[];
 		})[];
-	}`;
+	}
+		
+	
+	You can either crate a question with 4 options where one is correct
+	OR
+	you can create a question with blank list [] and it will be fill in question.
+
+	Both types of questions can be programming question with code snippets (you must provide code snippets).
+	Which to choose is up to you, just make sure that the question makes sense and an answer can be found in the chunks.
+
+	Ensure that questions are about a concept ${concept} and are relevant to the provided chunks.
+	Ensure that the JSON is properly formatted and valid.
+
+	Do not include any explanations or additional text outside the JSON structure.
+	Your response must be a valid JSON object as per the schema provided above.`;
 };

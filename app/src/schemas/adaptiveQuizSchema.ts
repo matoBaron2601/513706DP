@@ -8,7 +8,8 @@ export const baseAdaptiveQuizSchema = t.Object({
 	userBlockId: t.String(),
 	version: t.Number(),
 	placementQuizId: t.Nullable(t.String()),
-	isCompleted: t.Boolean()
+	isCompleted: t.Boolean(),
+	readyForAnswering: t.Boolean()
 });
 
 export const adaptiveQuizSchema = t.Intersect([baseSchema, baseAdaptiveQuizSchema]);

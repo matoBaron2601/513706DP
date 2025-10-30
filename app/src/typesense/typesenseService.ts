@@ -1,10 +1,10 @@
 import { TypesenseRepository } from './typesenseRepository';
-import typesenseSchema from './schemas/typesenseSchema.json';
 import type { CollectionCreateSchema } from 'typesense/lib/Typesense/Collections';
 import type { CollectionSchema } from 'typesense/lib/Typesense/Collection';
 import { COLLECTION_NAME, type DocumentSearchParams, type QuizDocument } from './types';
 import type { SearchResponse } from 'typesense/lib/Typesense/Documents';
 import type { ConceptDto } from '../db/schema';
+import typesenseSchema from './schemas/typesenseSchema';
 
 export class TypesenseError extends Error {
 	constructor(message: string) {
@@ -48,32 +48,6 @@ export class TypesenseService {
 		} catch (error) {
 			throw new TypesenseError('Error checking document existence');
 		}
-	}
-
-	async createContentToChunksMap(
-		concepts: ConceptDto[],
-		blockId: string
-	): Promise<Record<string, string[]>> {
-		const contentToChunksMap: Record<string, string[]> = {};
-		for (const concept of concepts) {
-			const typeSenseChunks = await this.getDocuments({
-				q: concept.name,
-				query_by: 'content',
-				filter_by: `block_id:=${blockId}`,
-				per_page: 50
-			});
-
-			const chunks =
-				typeSenseChunks.hits?.map((hit) => (hit.document as { content: string }).content) ?? [];
-			for (const chunk of chunks) {
-				if (!contentToChunksMap[concept.id]) {
-					contentToChunksMap[concept.id] = [];
-				}
-				contentToChunksMap[concept.id].push(chunk);
-			}
-		}
-
-		return contentToChunksMap;
 	}
 
 	async getChunksByConcept(conceptName: string, blockId: string): Promise<string[]> {

@@ -4,7 +4,8 @@ import { baseSchema } from './baseSchema';
 
 const baseCourseSchema = t.Object({
 	name: t.String(),
-	creatorId: t.String()
+	creatorId: t.String(),
+	published: t.Boolean()
 });
 
 export const courseSchema = t.Intersect([baseSchema, baseCourseSchema]);

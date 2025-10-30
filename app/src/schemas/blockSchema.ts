@@ -6,11 +6,12 @@ import { baseConceptSchema } from './conceptSchema';
 const baseBlockSchema = t.Object({
 	courseId: t.String(),
 	name: t.String(),
-	documentPath: t.String()
+	documentPath: t.String(),
+	completed: t.Boolean()
 });
 
 export const blockSchema = t.Intersect([baseSchema, baseBlockSchema]);
-export type CourseBlock = Static<typeof blockSchema>;
+export type Block = Static<typeof blockSchema>;
 
 export const createBlockSchema = t.Intersect([baseBlockSchema]);
 export type CreateBlock = Static<typeof createBlockSchema>;

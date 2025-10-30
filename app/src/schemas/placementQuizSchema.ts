@@ -25,3 +25,11 @@ export const createPlacementQuizRequestSchema = t.Object({
 	questionsPerConcept: t.Number()
 });
 export type CreatePlacementQuizRequest = Static<typeof createPlacementQuizRequestSchema>;
+
+export const createPlacementQuizResponseSchema = t.Object({
+	placementQuizId: t.String(),
+	baseQuizId: t.String(),
+	numberOfConcepts: t.Number(),
+	questionsIds: t.Array(t.String())
+});
+export type CreatePlacementQuizResponse = Static<typeof createPlacementQuizResponseSchema>;
