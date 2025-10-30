@@ -7,7 +7,7 @@
 	import { goto } from '$app/navigation';
 	import type { BlockWithConcepts } from '../../../../../schemas/blockSchema';
 
-	let { block }: { block: BlockWithConcepts} = $props();
+	let { block }: { block: BlockWithConcepts } = $props();
 </script>
 
 <Card.Root class="min-w-50 relative">
@@ -16,6 +16,10 @@
 		<div class="flex items-center gap-2">
 			<Tally5Icon size={16} />
 			<p class="truncate">{`Concepts: ${block.concepts.length}`}</p>
+		</div>
+		<div class="flex items-center gap-2">
+			<Tally5Icon size={16} />
+			<p class="truncate">{`Status: ${block.completed ? 'Completed' : 'Not completed'}`}</p>
 		</div>
 		<div class="flex flex-col gap-2">
 			<Button

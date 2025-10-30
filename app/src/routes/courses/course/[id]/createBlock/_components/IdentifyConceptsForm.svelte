@@ -23,6 +23,7 @@
 		handleSetConcepts: (identifiedConcepts: { name: string; difficultyIndex: number }[]) => void;
 		handleSetStep: (newStep: Step) => void;
 	} = $props();
+	
 
 	const identifyConceptsMutation = createMutation({
 		mutationKey: ['identifyConcepts'],
@@ -54,6 +55,7 @@
 	};
 
 	const handleFileUpload = async (event: Event) => {
+
 		const input = event.target as HTMLInputElement;
 		if (input.files && input.files.length > 0) {
 			const file = input.files[0];

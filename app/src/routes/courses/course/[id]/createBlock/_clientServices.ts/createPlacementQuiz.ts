@@ -1,9 +1,11 @@
-import type { IdentifyConceptsResponse } from '../../../../../../schemas/blockSchema';
-import type { CreatePlacementQuizRequest } from '../../../../../../schemas/placementQuizSchema';
+import type {
+	CreatePlacementQuizRequest,
+	CreatePlacementQuizResponse
+} from '../../../../../../schemas/placementQuizSchema';
 
 const createPlacementQuiz = async (
 	data: CreatePlacementQuizRequest
-): Promise<IdentifyConceptsResponse> => {
+): Promise<CreatePlacementQuizResponse> => {
 	const response = await fetch(`/api/placementQuiz`, {
 		method: 'POST',
 		headers: {

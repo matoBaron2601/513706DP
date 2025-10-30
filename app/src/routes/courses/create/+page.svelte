@@ -14,6 +14,7 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 
 	let { data }: { data: PageData } = $props();
 
@@ -26,7 +27,8 @@
 			);
 			await createCourse({
 				name: $formData.name,
-				creatorId: userId.id
+				creatorId: userId.id,
+				published: true
 			});
 			goto('/courses');
 		}
@@ -43,8 +45,6 @@
 			await $createCourseMutation.mutateAsync();
 		}
 	};
-
-
 </script>
 
 <PageWrapper>
@@ -62,17 +62,26 @@
 					<Form.Description>Specify course name</Form.Description>
 					<Form.FieldErrors />
 				</Form.Field>
-				<Button
-					type="submit"
-					class="mx-auto w-full cursor-pointer lg:w-[50%]"
-					disabled={$createCourseMutation.isPending}
-				>
-					{#if $createCourseMutation.isPending}
-						<Spinner />
-					{:else}
-						Create Course
-					{/if}
-				</Button>
+				<Form.Field {form} name="published">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Publish</Form.Label>
+							<Checkbox {...props} class="cursor-pointer" bind:checked={$formData.published} />
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Specify course publication status</Form.Description>
+
+					<Form.FieldErrors />
+				</Form.Field>
+				<div class="flex justify-end">
+					<Button type="submit" class="cursor-pointer" disabled={$createCourseMutation.isPending}>
+						{#if $createCourseMutation.isPending}
+							<Spinner />
+						{:else}
+							Create
+						{/if}
+					</Button>
+				</div>
 			</Card.Content>
 		</Card.Card>
 	</form>

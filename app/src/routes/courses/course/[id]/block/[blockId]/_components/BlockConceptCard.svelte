@@ -1,8 +1,14 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
+	import { onMount } from 'svelte';
 	import type { ComplexConcept } from '../../../../../../../schemas/conceptSchema';
 	const { concept }: { concept: ComplexConcept } = $props();
 	const completed = concept.conceptProgress.completed;
+
+	onMount(() => {
+		console.log('concept in BlockConceptCard:', concept);
+	});
+
 
 	const totalCorrectCount = concept.conceptProgressRecords.reduce(
 		(acc, record) => acc + record.correctCount,

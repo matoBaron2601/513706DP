@@ -13,7 +13,6 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { goto } from '$app/navigation';
 	import type { Step } from '../+page.svelte';
 
 	const courseId = page.params.id ?? '';
@@ -45,6 +44,7 @@
 				name: $formData.name,
 				documentPath,
 				concepts,
+				completed: false,
 				chunkingStrategy: $formData.chunkingStrategy,
 				useLLMTransformation: $formData.useLLMTransformation
 			});
@@ -66,9 +66,7 @@
 
 <form method="POST" class="mx-auto p-4 md:w-[50%]" use:enhance onsubmit={handleFormSubmit}>
 	<Card.Title>3. Create block</Card.Title>
-	<Card.Description class="mt-1">
-		Configure the block settings before creating it.
-	</Card.Description>
+	<Card.Description class="mt-1">Configure the block settings before creating it.</Card.Description>
 	<Card.Card class="mx-auto mt-4">
 		<Card.Content class="flex flex-col gap-6">
 			<Form.Field {form} name="name">

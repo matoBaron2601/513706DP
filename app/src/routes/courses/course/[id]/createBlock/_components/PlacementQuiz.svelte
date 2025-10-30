@@ -24,7 +24,7 @@
 	const createPlacementQuizMutation = createMutation({
 		mutationKey: ['createPlacementQuiz'],
 		mutationFn: async () => {
-			await createPlacementQuiz({
+			const result = await createPlacementQuiz({
 				questionsPerConcept: $formData.questionsPerConcept ?? 3,
 				blockId: blockId
 			});

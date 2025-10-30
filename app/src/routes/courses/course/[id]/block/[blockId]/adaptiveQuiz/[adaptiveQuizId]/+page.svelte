@@ -77,15 +77,13 @@
 	{:else if $adaptiveQuizQuery.data && showSummary}
 		<Summary complexAdaptiveQuiz={$adaptiveQuizQuery.data} />
 	{:else if $adaptiveQuizQuery.data && $adaptiveQuizQuery.data.questions}
-		<div>
-			<div class="question-container mt-10">
-				<Question
-					index={questionIndex}
-					question={$adaptiveQuizQuery.data.questions[questionIndex]}
-					{handleSubmitQuestion}
-					{data}
-				/>
-			</div>
+		<div class="mt-32 h-full">
+			<Question
+				index={questionIndex}
+				question={$adaptiveQuizQuery.data.questions[questionIndex]}
+				{handleSubmitQuestion}
+				{data}
+			/>
 		</div>
 	{/if}
 </PageWrapper>

@@ -4,21 +4,26 @@
 	let {
 		onOptionClick,
 		optionText,
-		optionIndex
+		optionIndex,
+		reviewCorrect = false,
+		reviewSelected = false
+
 	}: {
-		onOptionClick: () => void;
+		onOptionClick?: () => void;
 		optionText: string;
 		optionIndex: number;
+		reviewCorrect?: boolean;
+		reviewSelected?: boolean;
 	} = $props();
 
 </script>
 
 <Card.Root
-	class={`h-16 w-full cursor-pointer p-0`}
+	class={`h-16 w-full cursor-pointer p-0 ${reviewSelected ? 'bg-red-200' : ''} ${reviewCorrect ? 'bg-green-200' : ''} `}
 	onclick={onOptionClick}
 >
 	<Card.Content class="m-0 flex h-full items-center p-1 pl-2">
-		<div class="flex w-12 items-center justify-center rounded bg-gray-200 p-1">
+		<div class="flex min-w-12 items-center justify-center rounded bg-gray-200 p-1">
 			<span class="text-4xl font-bold text-gray-800"
 				>{String.fromCharCode('A'.charCodeAt(0) + optionIndex)}</span
 			>

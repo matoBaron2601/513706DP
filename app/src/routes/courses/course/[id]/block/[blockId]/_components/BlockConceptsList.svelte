@@ -14,8 +14,11 @@
 	});
 </script>
 
-<div class="flex w-full gap-4">
-	{#each $getBlockConceptsQuery.data as concept}
-		<BlockConceptCard {concept} />
-	{/each}
-</div>
+{#if $getBlockConceptsQuery.data?.length !== 0}
+	<div class="flex w-full gap-4">
+		{#each $getBlockConceptsQuery.data as concept}
+			<BlockConceptCard {concept} />
+			<hr />
+		{/each}
+	</div>
+{/if}
