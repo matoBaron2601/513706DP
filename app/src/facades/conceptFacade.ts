@@ -37,7 +37,6 @@ export class ConceptFacade {
 			await this.conceptProgressService.getManyByUserBlockId(data.userBlockId);
 		const lastAdaptiveQuizzes: AdaptiveQuiz[] =
 			await this.adaptiveQuizService.getLastVersionsByUserBlockId(data.userBlockId, 3);
-
 		const conceptProgressRecords =
 			await this.conceptProgressRecordService.getManyByProgressIdsByAdaptiveQuizIds(
 				conceptsProgresses.map((cp) => cp.id),
@@ -78,21 +77,23 @@ export class ConceptFacade {
 				lastAdaptiveQuizzes.map((aq) => aq.id)
 			);
 
-		const conceptStats = new Map<string, { correctCount: number; totalCount: number }>();
+		const conceptStats: Record<string, { correctCount: number; totalCount: number }> = {};
 
-		for (const record of conceptProgressRecords) {
-			const id = record.conceptProgressId;
-			const current = conceptStats.get(id) ?? { correctCount: 0, totalCount: 0 };
-			conceptStats.set(id, {
-				correctCount: current.correctCount + (record.correctCount ?? 0),
-				totalCount: current.totalCount + (record.count ?? 0)
-			});
+		for (const progress of conceptsProgresses) {
+			const records = conceptProgressRecords.filter(
+				(record) => record.conceptProgressId === progress.id
+			);
+			const count = records.reduce((sum, record) => sum + (record.count ?? 0), 0);
+			const correctCount = records.reduce((sum, record) => sum + (record.correctCount ?? 0), 0);
+			const percentage = Math.round((correctCount / count) * 100);
+			conceptStats[progress.id] = { correctCount, totalCount: count };
 		}
 
-		for (const stat of conceptStats.entries()) {
-			const [conceptProgressId, stats] = stat;
-			if (stats.correctCount / stats.totalCount > 0.8) {
-				await this.conceptProgressService.update(conceptProgressId, { completed: true });
+		for (const stat of Object.entries(conceptStats)) {
+			const percentage = Math.round((stat[1].correctCount / stat[1].totalCount) * 100);
+			console.log(`ConceptProgress ID: ${stat[0]}, Stats:${stat[1]} Percentage: ${percentage}%`);
+			if (percentage >= 80) {
+				await this.conceptProgressService.update(stat[0], { completed: true });
 			}
 		}
 	}

@@ -1,9 +1,7 @@
 import { db } from '../db/client';
 import type { AdaptiveQuizAnswer } from '../schemas/adaptiveQuizAnswerSchema';
 import type { AdaptiveQuiz, ComplexAdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
-import type {
-	BaseQuizWithQuestionsAndOptions,
-} from '../schemas/baseQuizSchema';
+import type { BaseQuizWithQuestionsAndOptions } from '../schemas/baseQuizSchema';
 import type { Concept } from '../schemas/conceptSchema';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
@@ -62,7 +60,7 @@ export class AdaptiveQuizFacade {
 	}
 
 	async finishAdaptiveQuiz(adaptiveQuizId: string): Promise<AdaptiveQuiz> {
-		return await db.transaction(async (tx) => {
+		const finishAdaptiveQuiz = await db.transaction(async (tx) => {
 			const updatedAdaptiveQuiz = await this.adaptiveQuizService.update(
 				adaptiveQuizId,
 				{
@@ -110,9 +108,33 @@ export class AdaptiveQuizFacade {
 
 			return updatedAdaptiveQuiz;
 		});
+		const createNewAdaptiveQuiz = await db.transaction(async (tx) => {
+			const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
+				finishAdaptiveQuiz.userBlockId,
+				3,
+				tx
+			);
+			const { id: baseQuizId } = await this.baseQuizService.create({}, tx);
+			const { id: adaptiveQuizId } = await this.adaptiveQuizService.create(
+				{
+					userBlockId: finishAdaptiveQuiz.userBlockId,
+					baseQuizId,
+					version: lastAdaptiveQuizzes.length
+						? Math.max(...lastAdaptiveQuizzes.map((aq) => aq.version)) + 1
+						: 1,
+					isCompleted: false,
+					readyForAnswering: false
+				},
+				tx
+			);
+			return { baseQuizId, adaptiveQuizId };
+		});
+
+		this.generateAdaptiveQuiz(finishAdaptiveQuiz.userBlockId, createNewAdaptiveQuiz.baseQuizId, createNewAdaptiveQuiz.adaptiveQuizId);
+		return finishAdaptiveQuiz;
 	}
 
-	async generateAdaptiveQuiz(userBlockId: string) {
+	async generateAdaptiveQuiz(userBlockId: string, baseQuizId:string, adaptiveQuizId:string) {
 		return await db.transaction(async (tx) => {
 			const conceptProgresses = await this.conceptProgressService.getManyByUserBlockId(
 				userBlockId,
@@ -123,6 +145,9 @@ export class AdaptiveQuizFacade {
 				3,
 				tx
 			);
+			if (lastAdaptiveQuizzes.find((aq) => aq.isCompleted === false)) {
+				throw new Error('There is already an ongoing adaptive quiz for this user block.');
+			}
 			const conceptProgressIds = conceptProgresses.map((cp) => cp.id);
 			const lastAdaptiveQuizzesIds = lastAdaptiveQuizzes.map((aq) => aq.id);
 			const conceptProgressRecords =
@@ -136,32 +161,20 @@ export class AdaptiveQuizFacade {
 				{ percentage: number; difference: number; concept: Concept }
 			> = {};
 
-			for (const record of conceptProgressRecords) {
-				const percentage = Math.round((record.correctCount / record.count) * 100);
-				const difference = record.count - record.correctCount;
-				const conceptId =
-					conceptProgresses.find((cp) => cp.id === record.conceptProgressId)?.conceptId ?? '';
-				const concept = await this.conceptService.getById(conceptId);
-
-				conceptProgressMap[record.conceptProgressId] = {
-					percentage,
-					difference,
-					concept
+			for (const conceptProgress of conceptProgresses) {
+				const records = conceptProgressRecords.filter(
+					(record) => record.conceptProgressId === conceptProgress.id
+				);
+				const concept = await this.conceptService.getById(conceptProgress.conceptId, tx);
+				const totalCount = records.reduce((sum, record) => sum + record.count, 0);
+				const correctCount = records.reduce((sum, record) => sum + record.correctCount, 0);
+				conceptProgressMap[conceptProgress.conceptId] = {
+					concept,
+					difference: totalCount - correctCount,
+					percentage: 8
 				};
 			}
 
-			const { id: baseQuizId } = await this.baseQuizService.create({}, tx);
-			const { id: adaptiveQuizId } = await this.adaptiveQuizService.create(
-				{
-					userBlockId,
-					baseQuizId,
-					version: lastAdaptiveQuizzes.length
-						? Math.max(...lastAdaptiveQuizzes.map((aq) => aq.version)) + 1
-						: 1,
-					isCompleted: false
-				},
-				tx
-			);
 			let questionOrder = 0;
 			for (const [conceptId, progress] of Object.entries(conceptProgressMap)) {
 				if (progress.percentage >= 80) {
@@ -189,6 +202,8 @@ export class AdaptiveQuizFacade {
 					questionOrder += numberOfQuestions;
 				}
 			}
+			await this.adaptiveQuizService.update(adaptiveQuizId, { readyForAnswering: true }, tx);
+
 			return { baseQuizId, adaptiveQuizId };
 		});
 	}

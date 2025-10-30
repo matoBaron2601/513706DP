@@ -1,0 +1,1 @@
+ALTER TABLE "adaptiveQuiz" ADD COLUMN "readyForAnswering" boolean DEFAULT false NOT NULL;

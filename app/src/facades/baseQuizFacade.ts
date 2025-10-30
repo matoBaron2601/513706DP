@@ -1,4 +1,6 @@
-import type { BaseQuestionWithOptions } from '../schemas/baseQuestionSchema';
+import { db } from '../db/client';
+import type { CreateBaseOptionDto, CreateBaseQuestionDto } from '../db/schema';
+import type { BaseQuestion, BaseQuestionWithOptions } from '../schemas/baseQuestionSchema';
 import type {
 	BaseQuizWithQuestionsAndOptions,
 	BaseQuizWithQuestionsAndOptionsBlank
@@ -21,48 +23,44 @@ export class BaseQuizFacade {
 		this.openAiService = new OpenAiService();
 	}
 
-	async createQuestionsAndOptions(
-		{
-			questions,
-			baseQuizId,
-			conceptId,
-			initialOrderIndex
-		}: {
-			questions: BaseQuizWithQuestionsAndOptionsBlank;
-			baseQuizId: string;
-			conceptId: string;
-			initialOrderIndex: number;
-		},
-		tx: Transaction
-	): Promise<string[]> {
-		const questionIds: string[] = [];
-		let orderIndex = initialOrderIndex;
-
-		for (const question of questions.questions.sort((a, b) => Number(a.orderIndex) - Number(b.orderIndex))) {
-			const { id: baseQuestionId } = await this.baseQuestionService.create(
-				{
-					questionText: question.questionText,
-					correctAnswerText: question.correctAnswerText,
-					baseQuizId: baseQuizId,
-					conceptId: conceptId,
-					orderIndex: orderIndex
-				},
-				tx
-			);
-			orderIndex += 1;
-
-			questionIds.push(baseQuestionId);
-
-			if (question.options.length === 0 || question.options === undefined) {
-				continue;
+	async createBaseQuestionsAndOptions({
+		data,
+		baseQuizId
+	}: {
+		data: Map<string, BaseQuizWithQuestionsAndOptionsBlank>;
+		baseQuizId: string;
+	}): Promise<string[]> {
+		return db.transaction(async (tx) => {
+			const questionIds: string[] = [];
+			for (const [conceptId, questions] of data) {
+				for (const question of questions.questions) {
+					const { id: baseQuestionId } = await this.baseQuestionService.create(
+						{
+							questionText: question.questionText,
+							correctAnswerText: question.correctAnswerText,
+							baseQuizId: baseQuizId,
+							conceptId: conceptId,
+							orderIndex: question.orderIndex
+						},
+						tx
+					);
+					questionIds.push(baseQuestionId);
+					if (question.options.length === 0 || question.options === undefined) {
+						continue;
+					}
+					await this.baseOptionsService.createMany(
+						question.options.map(
+							(option): CreateBaseOptionDto => ({
+								optionText: option.optionText,
+								baseQuestionId: baseQuestionId
+							})
+						),
+						tx
+					);
+				}
 			}
-			const options = question.options.map((option) => ({
-				optionText: option.optionText,
-				baseQuestionId: baseQuestionId
-			}));
-			await this.baseOptionsService.createMany(options, tx);
-		}
-		return questionIds;
+			return questionIds;
+		});
 	}
 
 	async getQuestionsWithOptionsByBaseQuizId(

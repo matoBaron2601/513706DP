@@ -1,4 +1,4 @@
-import { eq, inArray, asc,desc } from 'drizzle-orm';
+import { eq, inArray, asc,desc, and } from 'drizzle-orm';
 import {
 	adaptiveQuiz,
 	type CreateAdaptiveQuizDto,
@@ -84,7 +84,7 @@ export class AdaptiveQuizRepository {
 		return await getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
-			.where(eq(adaptiveQuiz.userBlockId, userBlockId))
+			.where(and(eq(adaptiveQuiz.userBlockId, userBlockId), eq(adaptiveQuiz.isCompleted, true), eq(adaptiveQuiz.readyForAnswering, true)))
 			.orderBy(desc(adaptiveQuiz.version))
 			.limit(count);
 	}

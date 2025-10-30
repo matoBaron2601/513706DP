@@ -15,8 +15,5 @@ export const adaptiveQuizApi = new Elysia({ prefix: 'adaptiveQuiz' })
 	.get('/complexQuiz/:adaptiveQuizId', async (req) => {
 		return await adaptiveQuizFacade.getComplexAdaptiveQuizById(req.params.adaptiveQuizId);
 	})
-	.post('/generate/:userBlockId', async (req) => {
-		return await adaptiveQuizFacade.generateAdaptiveQuiz(req.params.userBlockId);
-	});
 
 export default adaptiveQuizApi;

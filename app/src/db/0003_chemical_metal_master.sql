@@ -1,0 +1,1 @@
+ALTER TABLE "block" ADD COLUMN "completed" boolean DEFAULT false NOT NULL;

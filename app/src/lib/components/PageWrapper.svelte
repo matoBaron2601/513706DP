@@ -16,7 +16,7 @@
 		<Sidebar.Trigger />
 		<Breadcrumb {unknownParamText} />
 	</div>
-	<div class={`h-[calc(100%-3.5rem)] w-full p-4  ${className ?? ''}`}>
+	<div class={`h-[calc(100%-3.5rem)] w-full p-4  ${className ?? ''} `}>
 		{@render children()}
 	</div>
 </div>

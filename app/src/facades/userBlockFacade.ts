@@ -35,7 +35,8 @@ export class UserBlockFacade {
 				{
 					userBlockId: createdUserBlock.id,
 					baseQuizId: placementQuiz.baseQuizId,
-					placementQuizId: placementQuiz.id
+					placementQuizId: placementQuiz.id,
+					readyForAnswering:true
 				},
 				tx
 			);
