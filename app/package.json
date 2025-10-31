@@ -77,11 +77,15 @@
 		"drizzle-kit": "^0.31.5",
 		"drizzle-orm": "^0.44.5",
 		"elysia": "^1.4.6",
+		"file-type": "^21.0.0",
 		"formdata-node": "^6.0.3",
 		"google-auth-library": "10.1.0",
+		"minio": "^8.0.6",
+		"mino": "^0.0.0",
 		"openai": "^6.7.0",
 		"pdf-parse": "^2.2.16",
 		"pg": "^8.16.3",
+		"short-unique-id": "^5.3.2",
 		"svelte-forms-lib": "^2.0.1",
 		"typesense": "^2.1.0"
 	}

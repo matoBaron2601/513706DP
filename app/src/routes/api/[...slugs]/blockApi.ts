@@ -4,10 +4,10 @@ import {
 	createBlockRequestSchema,
 	identifyConceptsRequestSchema
 } from '../../../schemas/blockSchema';
-import { BlockService } from '../../../services/blockService';
+import { BucketService } from '../../../services/bucketService';
 
 const blockFacade = new BlockFacade();
-const blockService = new BlockService()
+const bucketService = new BucketService();
 
 export const blockApi = new Elysia({ prefix: 'block' })
 	.get('/courseId/:id', async (req) => {
@@ -16,7 +16,7 @@ export const blockApi = new Elysia({ prefix: 'block' })
 	.post(
 		'/identifyConcepts',
 		async (req) => {
-			const documentName = await blockService.saveFile(req.body.document);
+			const documentName = await bucketService.uploadFile(req.body.document);
 			return await blockFacade.identifyConcepts(documentName);
 		},
 		{

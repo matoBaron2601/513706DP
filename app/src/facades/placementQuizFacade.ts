@@ -57,6 +57,8 @@ export class PlacementQuizFacade {
 		return placementQuiz
 	}
 
+	
+
 	async generatePlacementQuizQuestions(
 		questionsPerConcept: number,
 		blockId: string

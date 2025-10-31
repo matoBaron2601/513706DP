@@ -8,6 +8,7 @@ import userBlockApi from './userBlockApi';
 import adaptiveQuizAnswerApi from './adaptiveQuizAnswerApi';
 import adaptiveQuizApi from './adaptiveQuizApi';
 import { placementQuizApi } from './placementQuizApi';
+import { bucketApi } from './bucketApi';
 const app = new Elysia({
 	prefix: '/api'
 })
@@ -19,7 +20,8 @@ const app = new Elysia({
 	.use(userBlockApi)
 	.use(adaptiveQuizApi)
 	.use(adaptiveQuizAnswerApi)
-	.use(placementQuizApi);
+	.use(placementQuizApi)
+	.use(bucketApi)
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
 
