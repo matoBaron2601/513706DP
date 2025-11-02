@@ -5,6 +5,9 @@ import { CourseService } from '../../../services/courseService';
 const courseService = new CourseService();
 
 export const courseApi = new Elysia({ prefix: 'course' })
+	.get('/:id', async (req) => {
+		return await courseService.getById(req.params.id);
+	})
 	.get('/', async () => {
 		return await courseService.getAll();
 	})

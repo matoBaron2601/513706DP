@@ -11,13 +11,29 @@
 	import queryClient from '../../../../../../../queryClient';
 	import Summary from './_components/Summary.svelte';
 	import finishAdaptiveQuiz from './_clientServices/finishAdaptiveQuiz';
+	import getCourseById from '../../../../_clientServices.ts/getCourseById';
+	import getBlockByBlockId from '../../_clientServices/getBlockByBlockId';
 
 	let { data }: { data: PageData } = $props();
+	const courseId = page.params.id ?? '';
+	const blockId = page.params.blockId ?? '';
 
 	let questionIndex = $state(0);
 	let showSummary = $state(false);
 
 	const adaptiveQuizId = page.params.adaptiveQuizId ?? '';
+
+	const courseQuery = createQuery({
+		queryKey: ['course'],
+		queryFn: async () => await getCourseById(courseId)
+	});
+
+	const blockQuery = createQuery({
+		queryKey: ['block', blockId],
+		queryFn: async () => {
+			return await getBlockByBlockId(blockId);
+		}
+	});
 
 	const adaptiveQuizQuery = createQuery({
 		queryKey: ['adaptiveQuiz', adaptiveQuizId],
@@ -74,7 +90,12 @@
 <PageWrapper
 	breadcrumbItems={[
 		{ text: 'Courses', href: '/courses' },
-		{ text: 'Create', isCurrent: true }
+		{ text: `Course: ${$courseQuery.data?.name}`, href: `/courses/course/${page.params.id}` },
+		{ text: `Block: ${$blockQuery.data?.name}`, href: `/courses/course/${page.params.id}/block/${page.params.blockId}` },
+		{
+			text: `Adaptive Quiz v${$adaptiveQuizQuery.data?.version}`,
+			isCurrent: true
+		}
 	]}
 >
 	{#if $adaptiveQuizQuery.isLoading}
