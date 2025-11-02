@@ -78,7 +78,7 @@
 					goto(`/courses/course/${course.id}`);
 				}}
 				variant="outline"
-				class="flex-1 cursor-pointer bg-green-200">Open course</Button
+				class="flex-1 cursor-pointer bg-[#f8e8d2] hover:bg-[#f8e8d2] hover:shadow-md">Open course</Button
 			>
 		</div>
 	</Card.Content>

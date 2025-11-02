@@ -5,7 +5,7 @@
 	let { complexAdaptiveQuiz }: { complexAdaptiveQuiz: ComplexAdaptiveQuiz } = $props();
 </script>
 
-<div class="mx-auto mt-10 flex max-w-[55%] flex-col gap-10">
+<div class="flex max-w-[55%] flex-col gap-10">
 	{#each complexAdaptiveQuiz.questions as question, index}
 		<div>
 			<h1 class="text-2xl font-bold">{`${index + 1}. ${question.questionText}`}</h1>

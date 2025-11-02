@@ -17,17 +17,20 @@
 	});
 </script>
 
-<PageWrapper>
-	<div class="flex w-full justify-end">
-		<Button
-			class="cursor-pointer"
-			onclick={async () => await goto(page.url.pathname + '/createBlock')}
-		>
-			<Upload />
-			Create block</Button
-		>
-	</div>
-	<div class="mx-auto mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+<PageWrapper
+	breadcrumbItems={[
+		{ text: 'Course', href: `/course/${courseId}`, isCurrent: true },
+		{ text: courseId, href: `/course/${courseId}`, isCurrent: true }
+	]}
+>
+	<Button
+		class="cursor-pointer text-black absolute right-8 top-20"
+		onclick={async () => await goto(page.url.pathname + '/createBlock')}
+	>
+		<Upload />
+		Create block</Button
+	>
+	<div class="mx-auto grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 		{#each $blockQuery.data as block}
 			<CourseBlockCard {block} />
 		{/each}

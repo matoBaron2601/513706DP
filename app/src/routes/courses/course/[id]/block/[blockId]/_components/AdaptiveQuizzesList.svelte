@@ -38,7 +38,7 @@
 {#if $adaptiveQuizzesQuery.isLoading}
 	<Spinner />
 {:else}
-	<div class="flex w-full gap-4">
+	<div class="flex flex-wrap w-full gap-4 lg:max-w-[80%]">
 		{#each $adaptiveQuizzesQuery.data?.sort((a, b) => a.version - b.version) as adaptiveQuiz}
 			<AdaptiveQuizCard {adaptiveQuiz} />
 		{/each}

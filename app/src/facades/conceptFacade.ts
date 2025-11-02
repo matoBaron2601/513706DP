@@ -62,7 +62,7 @@ export class ConceptFacade {
 		return complexConcepts;
 	}
 
-	async updateConceptProgress(userBlockId: string): Promise<void> {
+	async updateConceptProgress(userBlockId: string): Promise<boolean> {
 		const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
 			userBlockId,
 			3
@@ -70,32 +70,38 @@ export class ConceptFacade {
 
 		const conceptsProgresses: ConceptProgress[] =
 			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
+		const filteredConceptProgresses = conceptsProgresses.filter((cp) => !cp.completed);
 
 		const conceptProgressRecords =
 			await this.conceptProgressRecordService.getManyByProgressIdsByAdaptiveQuizIds(
-				conceptsProgresses.map((cp) => cp.id),
+				filteredConceptProgresses.map((cp) => cp.id),
 				lastAdaptiveQuizzes.map((aq) => aq.id)
 			);
-
 		const conceptStats: Record<string, { correctCount: number; totalCount: number }> = {};
 
-		for (const progress of conceptsProgresses) {
+		for (const progress of filteredConceptProgresses) {
 			const records = conceptProgressRecords.filter(
 				(record) => record.conceptProgressId === progress.id
 			);
 			const count = records.reduce((sum, record) => sum + (record.count ?? 0), 0);
 			const correctCount = records.reduce((sum, record) => sum + (record.correctCount ?? 0), 0);
-			const percentage = Math.round((correctCount / count) * 100);
 			conceptStats[progress.id] = { correctCount, totalCount: count };
 		}
 
 		for (const stat of Object.entries(conceptStats)) {
 			const percentage = Math.round((stat[1].correctCount / stat[1].totalCount) * 100);
-			console.log(`ConceptProgress ID: ${stat[0]}, Stats:${stat[1]} Percentage: ${percentage}%`);
 			if (percentage >= 80) {
 				await this.conceptProgressService.update(stat[0], { completed: true });
 			}
 		}
+
+		const conceptsProgressesAfterUpdate: ConceptProgress[] =
+			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
+		const allCompleted = conceptsProgressesAfterUpdate.every((cp) => cp.completed);
+		if (allCompleted) {
+			await this.userBlockService.update(userBlockId, { completed: true });
+		}
+		return allCompleted;
 	}
 
 	async getConceptProgressPercentage(

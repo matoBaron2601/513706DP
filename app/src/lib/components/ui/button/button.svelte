@@ -70,7 +70,7 @@
 	<button
 		bind:this={ref}
 		data-slot="button"
-		class={cn(buttonVariants({ variant, size }), className)}
+		class={cn(buttonVariants({ variant, size }), "bg-[#f8e8d2] hover:bg-[#f8e8d2] hover:shadow-md text-black", className)}
 		{type}
 		{disabled}
 		{...restProps}

@@ -68,7 +68,7 @@
 	};
 </script>
 
-<form method="POST" enctype="multipart/form-data" use:enhance class="mx-auto p-4 md:w-[50%]">
+<form method="POST" enctype="multipart/form-data" use:enhance class="p-4 md:w-[50%]">
 	<Card.Title>1. Upload file</Card.Title>
 	<Card.Description class="mt-1 p-2">
 		Upload a .txt file containing the main content of the block you want to create. The system will

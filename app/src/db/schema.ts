@@ -1,6 +1,7 @@
 import { pgTable, varchar, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import { command } from '$app/server';
 
 export const user = pgTable('user', {
 	id: varchar('id')
@@ -93,7 +94,6 @@ export const block = pgTable('block', {
 		.references(() => course.id),
 	name: varchar('name').notNull(),
 	documentPath: varchar('documentPath').notNull(),
-	completed: boolean('completed').notNull().default(false),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
@@ -131,6 +131,7 @@ export const userBlock = pgTable('userBlock', {
 	blockId: varchar('blockId')
 		.notNull()
 		.references(() => block.id),
+	completed: boolean('completed').notNull().default(false),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')

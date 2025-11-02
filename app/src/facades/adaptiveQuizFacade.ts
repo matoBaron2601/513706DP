@@ -113,10 +113,15 @@ export class AdaptiveQuizFacade {
 			}
 			await this.conceptProgressRecordService.createMany(conceptProgressRecords, tx);
 
-			await this.conceptFacade.updateConceptProgress(updatedAdaptiveQuiz.userBlockId);
-
 			return updatedAdaptiveQuiz;
 		});
+
+		const allConceptsCompleted = await this.conceptFacade.updateConceptProgress(
+			finishAdaptiveQuiz.userBlockId
+		);
+		if (allConceptsCompleted) {
+			return finishAdaptiveQuiz;
+		}
 		const createNewAdaptiveQuiz = await db.transaction(async (tx) => {
 			const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
 				finishAdaptiveQuiz.userBlockId,

@@ -47,8 +47,8 @@
 	};
 </script>
 
-<PageWrapper>
-	<form method="POST" use:enhance class="mx-auto p-4 md:w-[50%]" onsubmit={handleFormSubmit}>
+<PageWrapper breadcrumbItems={[{ text: 'Courses', href: '/courses' }, { text: 'Create', isCurrent: true }]}>
+	<form method="POST" use:enhance class="p-4 md:w-[50%]" onsubmit={handleFormSubmit}>
 		<Card.Title class="text-xl">Create New Course</Card.Title>
 		<Card.Card class="mx-auto mt-4">
 			<Card.Content class="flex flex-col gap-6">
@@ -56,7 +56,7 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Name</Form.Label>
-							<Input {...props} bind:value={$formData.name} />
+							<Input class="" {...props} bind:value={$formData.name} />
 						{/snippet}
 					</Form.Control>
 					<Form.Description>Specify course name</Form.Description>
@@ -66,7 +66,11 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Publish</Form.Label>
-							<Checkbox {...props} class="cursor-pointer" bind:checked={$formData.published} />
+							<Checkbox
+								{...props}
+								class="cursor-pointer"
+								bind:checked={$formData.published}
+							/>
 						{/snippet}
 					</Form.Control>
 					<Form.Description>Specify course publication status</Form.Description>
@@ -74,7 +78,7 @@
 					<Form.FieldErrors />
 				</Form.Field>
 				<div class="flex justify-end">
-					<Button type="submit" class="cursor-pointer" disabled={$createCourseMutation.isPending}>
+					<Button type="submit" class="cursor-pointer " disabled={$createCourseMutation.isPending}>
 						{#if $createCourseMutation.isPending}
 							<Spinner />
 						{:else}

@@ -16,7 +16,7 @@ export class BucketService {
 		const arrayBuffer = await file.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
 
-		const objectName = file.name.endsWith('.txt') ? file.name : `${file.name}.txt`;
+		const objectName = `${file.name.split('.txt')[0]}_${new Date().toISOString()}.txt`;
 
 		await MinioClient.putObject(BUCKET, objectName, buffer, buffer.length, {
 			'Content-Type': file.type || 'text/plain; charset=utf-8'

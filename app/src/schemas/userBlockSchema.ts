@@ -5,6 +5,7 @@ import { baseSchema } from './baseSchema';
 const baseUserBlockSchema = t.Object({
     userId: t.String(),
     blockId: t.String(),
+    completed: t.Boolean()
 });
 
 export const userBlockSchema = t.Intersect([baseSchema, baseUserBlockSchema]);

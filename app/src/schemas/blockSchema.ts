@@ -7,7 +7,6 @@ const baseBlockSchema = t.Object({
 	courseId: t.String(),
 	name: t.String(),
 	documentPath: t.String(),
-	completed: t.Boolean()
 });
 
 export const blockSchema = t.Intersect([baseSchema, baseBlockSchema]);

@@ -1,49 +1,37 @@
 <script lang="ts">
 	import * as Breadcrumb from '$lib/components/ui/breadcrumb/index.js';
-	import { Params } from '$lib/types';
-	import { page } from '$app/state';
+	import type { BreadcrumbItem } from './PageWrapper.svelte';
 
-	let { unknownParamText }: { unknownParamText?: string } = $props();
-
-	let params: Params[] = page.url.pathname.split('/').filter(Boolean) as Params[];
-
-	const pageMap: Record<Params, { name: string; href: string }> = {
-		[Params.dataset]: { name: 'Dataset', href: '' },
-		[Params.custom]: { name: 'Custom', href: '/dataset/custom' },
-		[Params.default]: { name: 'Default', href: '/dataset/default' },
-		[Params.quiz]: { name: 'Quiz', href: '' },
-		[Params.create]: { name: 'Create', href: '/quiz/create' },
-		[Params.history]: { name: 'History', href: '/quiz/history' },
-		[Params.attended]: { name: 'Attended', href: '/quiz/attended' },
-		[Params.created]: { name: 'Created', href: '/quiz/created' },
-		[Params.list]: { name: 'List', href: '' }
-	};
-
+	// Props
+	export let breadcrumbItems: BreadcrumbItem[] = [];
 </script>
 
 <Breadcrumb.Root>
 	<Breadcrumb.List>
 		<Breadcrumb.Item>
-			{#if params.length == 0}
-				<Breadcrumb.Page>{'Home'}</Breadcrumb.Page>
+			{#if breadcrumbItems.length === 0}
+				<Breadcrumb.Page>Home</Breadcrumb.Page>
 			{:else}
-				<Breadcrumb.Link href={'/'}>{'Home'}</Breadcrumb.Link>
-				<Breadcrumb.Separator />
+				<Breadcrumb.Link
+					class="rounded-2xl p-0.5 px-1.5 hover:bg-[#f7e7d0] hover:shadow-2xl"
+					href="/">Home</Breadcrumb.Link
+				>
+				<Breadcrumb.Separator class="text-[#694018]" />
 			{/if}
 		</Breadcrumb.Item>
-		{#each params as page, i (page)}
+
+		{#each breadcrumbItems as item, i (item.text)}
 			<Breadcrumb.Item>
-				{#if pageMap[page]}
-					{#if pageMap[page].href !== '' && i < params.length - 1}
-						<Breadcrumb.Link href={pageMap[page].href}>{pageMap[page].name}</Breadcrumb.Link>
-					{:else}
-						<Breadcrumb.Page>{pageMap[page].name}</Breadcrumb.Page>
-					{/if}
+				{#if item.isCurrent || !item.href}
+					<Breadcrumb.Page aria-current="page">{item.text}</Breadcrumb.Page>
 				{:else}
-					<Breadcrumb.Page>{unknownParamText}</Breadcrumb.Page>
+					<Breadcrumb.Link class="rounded-2xl p-1 px-2 hover:bg-[#f7e7d0]" href={item.href}
+						>{item.text}</Breadcrumb.Link
+					>
 				{/if}
-				{#if i < params.length - 1}
-					<Breadcrumb.Separator />
+
+				{#if i < breadcrumbItems.length - 1}
+					<Breadcrumb.Separator class="text-[#694018]" />
 				{/if}
 			</Breadcrumb.Item>
 		{/each}

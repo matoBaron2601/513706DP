@@ -31,13 +31,13 @@
 					<Button
 						onclick={() => goto(page.url.pathname + `/adaptiveQuiz/${adaptiveQuiz.id}`)}
 						variant="outline"
-						class="flex-1 cursor-pointer bg-green-200">Review quiz</Button
+						class="flex-1 cursor-pointer">Review quiz</Button
 					>
 				{:else}
 					<Button
 						onclick={() => goto(page.url.pathname + `/adaptiveQuiz/${adaptiveQuiz.id}`)}
 						variant="outline"
-						class="flex-1 cursor-pointer bg-green-200">Start quiz</Button
+						class="flex-1 cursor-pointer">Start quiz</Button
 					>
 				{/if}
 			</div>

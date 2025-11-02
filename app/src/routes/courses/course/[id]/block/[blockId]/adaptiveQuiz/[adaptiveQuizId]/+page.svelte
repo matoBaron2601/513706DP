@@ -71,19 +71,22 @@
 	});
 </script>
 
-<PageWrapper>
+<PageWrapper
+	breadcrumbItems={[
+		{ text: 'Courses', href: '/courses' },
+		{ text: 'Create', isCurrent: true }
+	]}
+>
 	{#if $adaptiveQuizQuery.isLoading}
 		<Spinner />
 	{:else if $adaptiveQuizQuery.data && showSummary}
 		<Summary complexAdaptiveQuiz={$adaptiveQuizQuery.data} />
 	{:else if $adaptiveQuizQuery.data && $adaptiveQuizQuery.data.questions}
-		<div class="mt-32 h-full">
-			<Question
-				index={questionIndex}
-				question={$adaptiveQuizQuery.data.questions[questionIndex]}
-				{handleSubmitQuestion}
-				{data}
-			/>
-		</div>
+		<Question
+			index={questionIndex}
+			question={$adaptiveQuizQuery.data.questions[questionIndex]}
+			{handleSubmitQuestion}
+			{data}
+		/>
 	{/if}
 </PageWrapper>

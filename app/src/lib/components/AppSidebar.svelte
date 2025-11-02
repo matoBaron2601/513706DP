@@ -3,14 +3,9 @@
 	import { page } from '$app/state';
 	import { signOut } from '@auth/sveltekit/client';
 
-	import {
-		House,
-		Columns3CogIcon,
-		PlusIcon,
-	} from '@lucide/svelte';
+	import { House, Columns3CogIcon, PlusIcon } from '@lucide/svelte';
 	import Button from './ui/button/button.svelte';
-
-
+	import logo from './logo.png';
 	const items = [
 		{
 			title: 'Home',
@@ -60,19 +55,21 @@
 	];
 </script>
 
-<Sidebar.Root>
-	<Sidebar.Content class=" h-full">
-		<Sidebar.GroupLabel>OnlyDevs Quizzes</Sidebar.GroupLabel>
-		<Sidebar.Group class="flex h-full flex-col justify-between">
+<Sidebar.Root class="border border-gray-100">
+	<Sidebar.Content class="h-full border border-gray-100 bg-gray-100">
+		<a href="/">
+			<img src={logo} alt="Owl mascot" class="translate-2 h-20 w-20 rounded-full object-cover" /></a
+		>
+		<Sidebar.Group class="mt-5 flex h-full flex-col justify-between">
 			<Sidebar.GroupContent>
 				<Sidebar.Menu>
 					{#each items as item (item.title)}
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton>
+							<Sidebar.MenuButton class="text-black hover:bg-[#f8e8d2] hover:shadow-md">
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
 										<item.icon />
-										<span>{item.title}</span>
+										<span >{item.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

@@ -64,7 +64,7 @@
 	};
 </script>
 
-<form method="POST" class="mx-auto p-4 md:w-[50%]" use:enhance onsubmit={handleFormSubmit}>
+<form method="POST" class="p-4 md:w-[50%]" use:enhance onsubmit={handleFormSubmit}>
 	<Card.Title>3. Create block</Card.Title>
 	<Card.Description class="mt-1">Configure the block settings before creating it.</Card.Description>
 	<Card.Card class="mx-auto mt-4">

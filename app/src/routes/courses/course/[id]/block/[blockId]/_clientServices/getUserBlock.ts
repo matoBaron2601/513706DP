@@ -1,4 +1,4 @@
-import type { CreateUserBlock, UserBlock } from '../../../../../schemas/userBlockSchema';
+import type { CreateUserBlock, UserBlock } from "../../../../../../../schemas/userBlockSchema";
 
 const getUserBlock = async (createUserBlock: CreateUserBlock): Promise<UserBlock> => {
 	const response = await fetch(`/api/userBlock`, {
