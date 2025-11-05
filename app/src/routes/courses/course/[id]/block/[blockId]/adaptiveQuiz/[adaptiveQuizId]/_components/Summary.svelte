@@ -9,6 +9,13 @@
 	{#each complexAdaptiveQuiz.questions as question, index}
 		<div>
 			<h1 class="text-2xl font-bold">{`${index + 1}. ${question.questionText}`}</h1>
+			{#if question.codeSnippet}
+				<pre
+					class="overflow-x-auto whitespace-pre rounded-lg bg-[#f8e8d2] p-3 font-mono text-sm"><code
+						>{question.codeSnippet}</code
+					>
+  </pre>
+			{/if}
 			<div class="mt-4 flex flex-col gap-2">
 				{#if question.options.length > 0}
 					{#each question.options as option}

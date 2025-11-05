@@ -199,76 +199,59 @@ const placementQuizPrompt = (
 	numberOfQuestions: number
 ) => {
 	return `
-	You are an expert quiz creator. You are part of a Retrieval-Augmented Generation (RAG) system that creates quizzes based on provided content chunks and parameters.
+You are an expert quiz creator in a RAG system.
 
-Your task:
-Create a placement quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks> below.
+Create a placement quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks>.
 
 You must NOT create questions about other related concepts:
-${concepts.filter((c) => c !== concept).join(', ')}
+${concepts.filter((c)=>c!==concept).join(', ')}
 
----
+--- HARD RULES (MUST PASS) ---
+1) questionText is plain sentences only. **No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
+2) Any code MUST appear **only** in codeSnippet (never in questionText).
+3) For A1/A2 (theory): codeSnippet MUST be an empty string "".
+4) For B1/B2 (practical): codeSnippet MUST be non-empty (max 10 lines). Do not include answers in code.
+5) At least 40% questions are practical (B1/B2).
+6) Do not include explanations; output **only** the JSON object.
 
-### Question Types
+--- Question Types ---
+A) Theoretical — about ${concept}
+   A1: Multiple Choice (4 options, 1 correct)
+   A2: Fill-in-the-Blank (no options)
+B) Practical — real-world/coding application of ${concept}, start with “Given the following code snippet” or similar
+   B1: Multiple Choice (4 options, 1 correct) + short codeSnippet
+   B2: Fill-in-the-Blank + short codeSnippet
 
-You must include **both** theoretical and practical questions in every quiz:
-
-A) Theoretical questions — test understanding of ${concept}:
-1. Multiple Choice Questions (4 options, 1 correct)
-2. Fill-in-the-Blank Questions (no options)
-
-B) Practical questions — test real-world or coding application of ${concept}. The question starts with "Given the following code snippet" or similar phrasing:
-1. Multiple Choice Questions (4 options, 1 correct) — must include a short relevant code snippet.
-2. Fill-in-the-Blank Questions — must include a short relevant code snippet.
-
-At least **40%** of the questions must be practical (type B).  
-If no code examples exist in the chunks, you must still create realistic code scenarios relevant to the concept.
-Do not include codeSnippet in questionText. Do not give answers in code snippets.
-Include questinonType property in each question with value "A1", "A2", "B1" or "B2" depending on the type of question.
----
-
-### Content Requirements
-- All questions must be directly about ${concept}.
-- Do not include or reference other concepts listed above.
-- Each question must be answerable by someone with general knowledge of ${concept}, even if they haven’t seen the chunks.
-- Code snippets must be short (max 10 lines) and directly relevant.
-- Do not include explanations or reasoning — only the JSON object.
-
----
-
-### Output Format
-You must return a **valid JSON object** following this schema exactly:
-
+--- Output Schema (exact) ---
 {
   "questions": [
     {
-      "questionText": string,
+      "questionText": string,        // no code / no backticks
       "correctAnswerText": string,
       "orderIndex": string,
-      "codeSnippet": string,
-	  "questionType": "B1" | "B2" | "A1" | "A2",
-      "options": [
-        { "optionText": string }
-      ]
+      "codeSnippet": string,         // "" for A1/A2; non-empty for B1/B2
+      "questionType": "B1" | "B2" | "A1" | "A2",
+      "options": [ { "optionText": string } ] // empty [] for A2/B2
     }
   ]
 }
 
-If a question is Fill-in-the-Blank, the options array must be empty ([]).
+--- Content Requirements ---
+- All questions directly about ${concept}. Ignore other listed concepts.
+- Each question answerable with general knowledge of ${concept}, even without the chunks.
+- Practical questions must include a short, relevant codeSnippet (≤10 lines).
+- Do **not** put any code or backticks in questionText.
 
----
-
-### Chunks
+--- Chunks ---
 START OF CHUNKS DATA
 ${JSON.stringify(chunks)}
 END OF CHUNKS DATA
 
----
+--- Final Instructions ---
+- Produce exactly ${numberOfQuestions} total questions with a mix of A and B.
+- Validate the HARD RULES yourself. If any rule is violated, **regenerate internally** until all rules pass.
+- Return **only** the JSON object. No extra text.
 
-### Final Instructions
-- Produce **exactly ${numberOfQuestions}** total questions.
-- Include a **mix** of both theoretical (A) and practical (B) types.
-- Ensure valid JSON with no extra text, comments, or explanations outside the JSON object.
 
 	`;
 };
@@ -280,38 +263,59 @@ const adaptiveQuizPrompt = (
 	numberOfQuestions: number
 ) => {
 	return `
-	You are an expert quiz creator. You are part of RAG system that creates quizzes based on provided content chunks and parameters.
-	Your task is to create an adaptive quiz about a concept=${concept} with a specified number of questions=${numberOfQuestions} based solely on the provided <chunks> which are provided below.
-	Other concepts from the block, that you should NOT create questons about are =${concepts.filter((c) => c !== concept).join(', ')}.
-	
-	Chunks: 
-	START OF CHUNKS DATA
-	${JSON.stringify(chunks)}
-	END OF CHUNKS DATA
+You are an expert quiz creator in a RAG system.
 
-	Your output should strictly adhere to the following JSON schema:
-	{
-		questions: ({
-			questionText: string;
-			correctAnswerText: string;
-			orderIndex: string;
-			options: {
-				optionText: string;
-			}[];
-		})[];
-	}
-		
-	
-	You can either crate a question with 4 options where one is correct
-	OR
-	you can create a question with blank list [] and it will be fill in question.
+Create a adaptive quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks>.
 
-	Both types of questions can be programming question with code snippets (you must provide code snippets).
-	Which to choose is up to you, just make sure that the question makes sense and an answer can be found in the chunks.
+You must NOT create questions about other related concepts:
+${concepts.filter((c)=>c!==concept).join(', ')}
 
-	Ensure that questions are about a concept ${concept} and are relevant to the provided chunks.
-	Ensure that the JSON is properly formatted and valid.
+--- HARD RULES (MUST PASS) ---
+1) questionText is plain sentences only. **No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
+2) Any code MUST appear **only** in codeSnippet (never in questionText).
+3) For A1/A2 (theory): codeSnippet MUST be an empty string "".
+4) For B1/B2 (practical): codeSnippet MUST be non-empty (max 10 lines). Do not include answers in code.
+5) At least 40% questions are practical (B1/B2).
+6) Do not include explanations; output **only** the JSON object.
 
-	Do not include any explanations or additional text outside the JSON structure.
-	Your response must be a valid JSON object as per the schema provided above.`;
+--- Question Types ---
+A) Theoretical — about ${concept}
+   A1: Multiple Choice (4 options, 1 correct)
+   A2: Fill-in-the-Blank (no options)
+B) Practical — real-world/coding application of ${concept}, start with “Given the following code snippet” or similar
+   B1: Multiple Choice (4 options, 1 correct) + short codeSnippet
+   B2: Fill-in-the-Blank + short codeSnippet
+
+--- Output Schema (exact) ---
+{
+  "questions": [
+    {
+      "questionText": string,        // no code / no backticks
+      "correctAnswerText": string,
+      "orderIndex": string,
+      "codeSnippet": string,         // "" for A1/A2; non-empty for B1/B2
+      "questionType": "B1" | "B2" | "A1" | "A2",
+      "options": [ { "optionText": string } ] // empty [] for A2/B2
+    }
+  ]
+}
+
+--- Content Requirements ---
+- All questions directly about ${concept}. Ignore other listed concepts.
+- Each question answerable with general knowledge of ${concept}, even without the chunks.
+- Practical questions must include a short, relevant codeSnippet (≤10 lines).
+- Do **not** put any code or backticks in questionText.
+
+--- Chunks ---
+START OF CHUNKS DATA
+${JSON.stringify(chunks)}
+END OF CHUNKS DATA
+
+--- Final Instructions ---
+- Produce exactly ${numberOfQuestions} total questions with a mix of A and B.
+- Validate the HARD RULES yourself. If any rule is violated, **regenerate internally** until all rules pass.
+- Return **only** the JSON object. No extra text.
+
+
+	`;
 };

@@ -189,12 +189,22 @@ export class AdaptiveQuizFacade {
 					percentage: 8
 				};
 			}
-
+			console.log('Concept Progress Map:', conceptProgressMap);
 			const generatedQuestions = await this.generateAdaptiveQuizQuestions(conceptProgressMap);
+			console.log('Generated Questions:', generatedQuestions);
+			for (const [conceptId, questions] of generatedQuestions) {
+				console.log(`Concept ID: ${conceptId}, Questions:`, questions);
+				for (const question of questions.questions) {
+					console.log(
+						`Question: ${question.questionText}, Type: ${question.questionType}, Code Snippet: ${question.codeSnippet}, Correct Answer: ${question.correctAnswerText}, Options: ${JSON.stringify(question.options)}`
+					);
+				}
+			}
 			const questionsIds = await this.baseQuizFacade.createBaseQuestionsAndOptions({
 				data: generatedQuestions,
 				baseQuizId
 			});
+			console.log('Created Question IDs:', questionsIds);
 
 			await this.adaptiveQuizService.update(adaptiveQuizId, { readyForAnswering: true }, tx);
 
