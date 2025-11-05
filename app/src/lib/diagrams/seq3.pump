@@ -1,0 +1,32 @@
+@startuml
+title Adaptive Quiz Generation – Sequence
+
+actor "Course Attendant" as QE
+participant "Backend" as AO
+database "PostgreSQL" as DB
+database "Typesense" as TS
+participant "LLM" as LLM
+
+QE -> AO: Complete quiz
+activate AO
+
+alt has not-completed concepts
+  loop for each not-completed concept
+    AO -> DB: Get quiz progress
+    DB --> AO: quiz progress
+
+    AO -> TS: Retrieve chunks(concept, quiz progress)
+    TS --> AO: Chunks
+
+    AO -> AO: Determine N based on quiz progress
+
+    AO -> LLM: Generate N questions(quiz progress, chunks)
+    LLM --> AO: Questions
+
+    AO -> DB: Save questions
+    DB --> AO: OK
+  end
+end
+
+deactivate AO
+@enduml

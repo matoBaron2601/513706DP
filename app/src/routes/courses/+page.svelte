@@ -3,8 +3,6 @@
 	import getCourses from './_clientServices/getCourses';
 	import CourseCard from './_components/CourseCard.svelte';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 
 	const getCoursesQuery = createQuery({
 		queryKey: ['courses'],

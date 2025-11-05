@@ -1,0 +1,59 @@
+@startuml
+left to right direction
+skinparam usecase {
+  BorderColor #888
+  ArrowColor #555
+  BackgroundColor #EFEFEF
+}
+
+actor "Course Creator" as CC
+actor "User" as U
+actor "Course Attendant" as CA
+U -|> CC
+U -|> CA
+actor "System"
+
+rectangle " " {
+usecase createCourse
+usecase createBlock
+usecase uploadDocument
+usecase identifyConcepts
+usecase selectBlockParameters
+usecase chunkDocument
+usecase generatePlacementQuiz
+usecase generateAdaptiveQuiz
+usecase generateOneTimeQuiz
+
+usecase attendQuiz
+usecase answerQuestion
+usecase viewQuizHistory
+
+
+CC --> createCourse
+CC --> createBlock
+createBlock --> uploadDocument : <<includes>>
+createBlock --> identifyConcepts : <<includes>>
+createBlock --> selectBlockParameters : <<includes>>
+createBlock --> chunkDocument : <<includes>>
+
+
+System --> chunkDocument
+System --> identifyConcepts 
+System --> generatePlacementQuiz
+generatePlacementQuiz --> createBlock : <<extends>>
+System --> generateAdaptiveQuiz
+System --> generateOneTimeQuiz
+
+CA --> attendQuiz
+attendQuiz --> answerQuestion : <<includes>>
+CA --> viewQuizHistory
+
+
+
+}
+
+
+
+
+
+@enduml

@@ -1,0 +1,68 @@
+@startuml
+actor "Course Creator" as User
+participant "Backend" as API
+participant "LLM" as LLM
+database "Postgres" as PG
+participant "Recursive Chunker" as RChunker
+participant "Semantic Chunker" as SChunker
+database "Typesense" as TS
+title Placement Quiz Generation – Sequence
+
+User -> API : 1. Submit document
+activate API
+API -> LLM : 2. Identify concepts
+activate LLM
+LLM --> API : 3. Identified concepts
+deactivate LLM
+API --> User : 4. Identified concepts
+deactivate API
+
+User -> API : 5. Edit/add/confirm concepts
+activate API
+API -> PG : 6. Save concepts
+activate PG
+PG --> API : 7. OK
+deactivate PG
+
+User -> API : 8. Select RAG params
+note right of User
+Params:
+chunker: Enum  
+llmTransformation: Bool  
+blockName: string
+end note
+
+API -> PG : 9. Create block
+activate PG
+PG --> API : 10. OK
+deactivate PG
+
+alt params.chunker == "recursive"
+    API -> RChunker : 11. Perform recursive chunking
+    activate RChunker
+    RChunker --> API : 12. Chunks
+    deactivate RChunker
+else params.chunker == "semantic"
+    API -> SChunker : 11. Perform semantic chunking
+    activate SChunker
+    SChunker --> API : 12. Chunks
+    deactivate SChunker
+end
+
+alt params.llmTransformation == true
+    API -> LLM : 13. Transform chunks
+    activate LLM
+    LLM --> API : 14. Transformed chunks
+    deactivate LLM
+end
+
+API -> TS : 15. Save (transformed) chunks
+activate TS
+TS --> API : 16. OK
+deactivate TS
+
+API --> User : 17. Confirm block creation
+deactivate API
+
+' New final step: fire-and-forget trigger on BE; detailed flow in another diagram
+@enduml

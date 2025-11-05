@@ -1,0 +1,41 @@
+@startuml
+title Placement Quiz Generation – Sequence
+
+actor "Course Creator" as User
+participant "Backend" as S
+database "PostgreSQL" as DB
+database "Typesense" as TS
+participant "LLM" as LLM
+
+User -> S: 1. Initiate quiz generation (numQuestionsPerConcept)
+activate S
+
+loop for each concept
+  S -> TS: 2. Retrieve corresponding chunks
+  activate TS
+  TS --> S: 3. Chunks
+  deactivate TS
+
+  S -> LLM: 4. Create [numQuestionsPerConcept] questions (chunks)
+  activate LLM
+  LLM --> S: 5. Question
+  deactivate LLM
+
+  S -> DB: 6. Save question
+  activate DB
+  DB --> S: 7. OK
+  deactivate DB
+end
+
+S -> User: 8. Return saved questions
+deactivate S
+
+User -> S: 9. Edit questions
+activate S
+S -> DB: 10. Update questions
+activate DB
+DB --> S: 11. OK
+deactivate DB
+S --> User: 12. OK
+deactivate S
+@enduml
