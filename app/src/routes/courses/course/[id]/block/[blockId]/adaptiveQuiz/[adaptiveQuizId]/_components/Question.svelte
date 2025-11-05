@@ -28,23 +28,18 @@
 
 	const handleOptionClick = (optionId: string) => {
 		const selectedOption = question.options.find((option) => option.id === optionId);
-		handleSubmitQuestion(
-			selectedOption?.optionText ?? '',
-			question.id
-		);
+		handleSubmitQuestion(selectedOption?.optionText ?? '', question.id);
 	};
 
 	const handleSubmitAnswer = () => {
-		handleSubmitQuestion(
-			$formData.text,
-			question.id
-		);
+		handleSubmitQuestion($formData.text, question.id);
 	};
 </script>
 
-
 <div class="flex flex-col gap-4 lg:max-w-[55%]">
 	<h1 class="text-2xl font-bold">{`${index + 1}. ${question.questionText}`}</h1>
+	<pre><code>{question.codeSnippet}</code></pre>
+
 	{#if question.options.length > 0}
 		{#each question.options as option}
 			<Option
@@ -54,17 +49,17 @@
 			/>
 		{/each}
 	{:else if question.options.length === 0}
-		<form method="POST"  use:enhance class="mx-auto p-4 md:w-[50%]" onsubmit={handleSubmitAnswer}>
+		<form method="POST" use:enhance class="mx-auto p-4 md:w-[50%]" onsubmit={handleSubmitAnswer}>
 			<Form.Field {form} name="text">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Input {...props} bind:value={$formData.text} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Specify your answer</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
-			<Button type="submit" class={"cursor-pointer"}>Submit</Button>
+				<Form.Control>
+					{#snippet children({ props })}
+						<Input {...props} bind:value={$formData.text} />
+					{/snippet}
+				</Form.Control>
+				<Form.Description>Specify your answer</Form.Description>
+				<Form.FieldErrors />
+			</Form.Field>
+			<Button type="submit" class={'cursor-pointer'}>Submit</Button>
 		</form>
 	{/if}
 </div>

@@ -2,7 +2,6 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 import {
-	baseQuestionSchema,
 	baseQuestionWithOptionsBlankSchema,
 	baseQuestionWithOptionsSchema,
 } from './baseQuestionSchema';

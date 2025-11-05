@@ -40,7 +40,9 @@ export class BaseQuizFacade {
 							correctAnswerText: question.correctAnswerText,
 							baseQuizId: baseQuizId,
 							conceptId: conceptId,
-							orderIndex: question.orderIndex
+							orderIndex: question.orderIndex,
+							codeSnippet: question.codeSnippet,
+							questionType: question.questionType
 						},
 						tx
 					);

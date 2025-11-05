@@ -8,7 +8,8 @@ const baseBaseQuestionSchema = t.Object({
 	questionText: t.String(),
 	correctAnswerText: t.String(),
 	conceptId: t.String(),
-	orderIndex: t.Number()
+	orderIndex: t.Number(),
+	codeSnippet: t.String()
 });
 
 export const baseQuestionSchema = t.Intersect([baseSchema, baseBaseQuestionSchema]);
@@ -25,7 +26,9 @@ export const baseQuestionWithOptionsBlankSchema = t.Intersect([
 	t.Object({
 		questionText: t.String(),
 		correctAnswerText: t.String(),
-		orderIndex: t.Number()
+		orderIndex: t.Number(),
+		codeSnippet: t.String(),
+		questionType: t.String()
 	}),
 	t.Object({
 		options: t.Array(

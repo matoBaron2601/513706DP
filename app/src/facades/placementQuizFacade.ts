@@ -1,6 +1,9 @@
 import { db } from '../db/client';
 import type { block, ConceptDto } from '../db/schema';
-import type { BaseQuizWithQuestionsAndOptions, BaseQuizWithQuestionsAndOptionsBlank } from '../schemas/baseQuizSchema';
+import type {
+	BaseQuizWithQuestionsAndOptions,
+	BaseQuizWithQuestionsAndOptionsBlank
+} from '../schemas/baseQuizSchema';
 import type { Concept } from '../schemas/conceptSchema';
 import type {
 	CreatePlacementQuizRequest,
@@ -48,16 +51,27 @@ export class PlacementQuizFacade {
 			data.blockId
 		);
 
+		console.log('Generated placement questions:', generatedQuestions);
+		for (const [conceptId, quiz] of generatedQuestions) {
+			console.log(`Concept ID: ${conceptId}`);
+			for (const question of quiz.questions) {
+				console.log(`  Question: ${question.questionText}`);
+				console.log(`    Correct Answer: ${question.correctAnswerText}`);
+				console.log(`    Code Snippet: ${question.codeSnippet}`);
+				for (const option of question.options) {
+					console.log(`      Option: ${option.optionText}`);
+				}
+			}
+		}
+
 		const questionsIds = await this.baseQuizFacade.createBaseQuestionsAndOptions({
 			data: generatedQuestions,
 			baseQuizId
 		});
 
 		const placementQuiz = await this.baseQuizFacade.getQuestionsWithOptionsByBaseQuizId(baseQuizId);
-		return placementQuiz
+		return placementQuiz;
 	}
-
-	
 
 	async generatePlacementQuizQuestions(
 		questionsPerConcept: number,

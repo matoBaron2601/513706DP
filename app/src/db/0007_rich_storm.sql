@@ -1,0 +1,1 @@
+ALTER TABLE "baseQuestion" ADD COLUMN "questionType" varchar NOT NULL;

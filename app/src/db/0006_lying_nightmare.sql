@@ -1,0 +1,1 @@
+ALTER TABLE "baseQuestion" ADD COLUMN "codeSnippet" varchar DEFAULT '' NOT NULL;
