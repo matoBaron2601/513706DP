@@ -1,3 +1,4 @@
+import { get } from 'http';
 import { db } from '../db/client';
 import type { AdaptiveQuizAnswer } from '../schemas/adaptiveQuizAnswerSchema';
 import type { AdaptiveQuiz, ComplexAdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
@@ -21,6 +22,8 @@ import { UserBlockService } from '../services/userBlockService';
 import { TypesenseService } from '../typesense/typesenseService';
 import { BaseQuizFacade } from './baseQuizFacade';
 import { ConceptFacade } from './conceptFacade';
+import type { ConceptProgress } from '../schemas/conceptProgressSchema';
+import { adaptiveQuiz } from '../db/schema';
 
 export class AdaptiveQuizFacade {
 	private adaptiveQuizService: AdaptiveQuizService;
@@ -53,7 +56,7 @@ export class AdaptiveQuizFacade {
 		const baseQuiz: BaseQuizWithQuestionsAndOptions =
 			await this.baseQuizFacade.getQuestionsWithOptionsByBaseQuizId(adaptiveQuiz.baseQuizId);
 		const adaptiveQuizAnswers: AdaptiveQuizAnswer[] =
-			await this.adaptiveQuizAnswerService.getByAdaptiveQuizId(adaptiveQuizId);
+			await this.adaptiveQuizAnswerService.getManyByAdaptiveQuizId(adaptiveQuizId);
 
 		const questions = baseQuiz.questions.map((question) => {
 			const answer = adaptiveQuizAnswers.find((answer) => answer.baseQuestionId === question.id);
@@ -70,176 +73,98 @@ export class AdaptiveQuizFacade {
 	}
 
 	async finishAdaptiveQuiz(adaptiveQuizId: string): Promise<AdaptiveQuiz> {
-		const finishAdaptiveQuiz = await db.transaction(async (tx) => {
-			const updatedAdaptiveQuiz = await this.adaptiveQuizService.update(
-				adaptiveQuizId,
-				{
-					isCompleted: true
-				},
-				tx
-			);
-
-			const complexAdaptiveQuiz = await this.getComplexAdaptiveQuizById(adaptiveQuizId);
-			const isPlacementQuiz = complexAdaptiveQuiz.version === 0;
-
-			const conceptIdToQuestionsMap = complexAdaptiveQuiz.questions.reduce<
-				Record<string, typeof complexAdaptiveQuiz.questions>
-			>((acc, question) => {
-				if (!acc[question.conceptId]) {
-					acc[question.conceptId] = [];
-				}
-				acc[question.conceptId].push(question);
-				return acc;
-			}, {});
-
-			const conceptProgressRecords: CreateConceptProgressRecord[] = [];
-			for (const conceptId in conceptIdToQuestionsMap) {
-				const questions = conceptIdToQuestionsMap[conceptId];
-
-				const conceptProgress = await this.conceptProgressService.getOrCreateConceptProgress(
-					{
-						userBlockId: updatedAdaptiveQuiz.userBlockId,
-						conceptId
-					},
-					tx
-				);
-
-				conceptProgressRecords.push({
-					conceptProgressId: conceptProgress.id,
-					adaptiveQuizId,
-					correctCount: questions.filter((q) => q.isCorrect).length,
-					count: questions.length
-				});
-			}
-			await this.conceptProgressRecordService.createMany(conceptProgressRecords, tx);
-
-			return updatedAdaptiveQuiz;
+		const updatedAdaptiveQuiz = await this.adaptiveQuizService.update(adaptiveQuizId, {
+			isCompleted: true
 		});
-
+		const userBlockId = updatedAdaptiveQuiz.userBlockId;
 		const allConceptsCompleted = await this.conceptFacade.updateConceptProgress(
-			finishAdaptiveQuiz.userBlockId
+			userBlockId,
+			adaptiveQuizId
 		);
 		if (allConceptsCompleted) {
-			return finishAdaptiveQuiz;
+			return updatedAdaptiveQuiz;
 		}
-		const createNewAdaptiveQuiz = await db.transaction(async (tx) => {
-			const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
-				finishAdaptiveQuiz.userBlockId,
-				3,
-				tx
-			);
+
+		const { baseQuizId, newAdaptiveQuizId } = await db.transaction(async (tx) => {
+			const lastAdaptiveQuiz =
+				await this.adaptiveQuizService.getLastAdaptiveQuizByUserBlockId(userBlockId);
+
 			const { id: baseQuizId } = await this.baseQuizService.create({}, tx);
 			const { id: adaptiveQuizId } = await this.adaptiveQuizService.create(
 				{
-					userBlockId: finishAdaptiveQuiz.userBlockId,
+					userBlockId,
 					baseQuizId,
-					version: lastAdaptiveQuizzes.length
-						? Math.max(...lastAdaptiveQuizzes.map((aq) => aq.version)) + 1
-						: 1,
+					version: lastAdaptiveQuiz.version + 1,
 					isCompleted: false,
 					readyForAnswering: false
 				},
 				tx
 			);
-			return { baseQuizId, adaptiveQuizId };
+			return { baseQuizId, newAdaptiveQuizId: adaptiveQuizId };
 		});
 
-		this.generateAdaptiveQuiz(
-			finishAdaptiveQuiz.userBlockId,
-			createNewAdaptiveQuiz.baseQuizId,
-			createNewAdaptiveQuiz.adaptiveQuizId
-		);
-		return finishAdaptiveQuiz;
+		this.generateAdaptiveQuiz(userBlockId, baseQuizId, newAdaptiveQuizId);
+
+		return updatedAdaptiveQuiz;
 	}
 
-	async generateAdaptiveQuiz(userBlockId: string, baseQuizId: string, adaptiveQuizId: string) {
-		return await db.transaction(async (tx) => {
-			const conceptProgresses = await this.conceptProgressService.getManyByUserBlockId(
-				userBlockId,
-				tx
+	async generateAdaptiveQuiz(
+		userBlockId: string,
+		baseQuizId: string,
+		adaptiveQuizId: string
+	): Promise<boolean> {
+		const { blockId: blockId } = await this.userBlockService.getById(userBlockId);
+		const concepts = await this.conceptService.getManyByBlockId(blockId);
+		const prioritizedConcepts = await this.calculateConceptPriority(userBlockId);
+		for (const concept of prioritizedConcepts) {
+			const deficit = Math.max(0, 0.8 - concept.score);
+			const numberOfQuestions = Math.ceil(Math.min(Math.max(8 * deficit, 2), 6));
+			const currentConcept = concepts.find((c) => c.id === concept.conceptId);
+			const questions = await this.generateAdaptiveQuizQuestions(
+				blockId,
+				currentConcept?.name ?? '',
+				concepts.map((c) => c.name).filter((name) => name !== currentConcept?.name),
+				numberOfQuestions
 			);
-			const filteredConceptProgresses = conceptProgresses.filter((cp) => !cp.completed);
-			const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
-				userBlockId,
-				3,
-				tx
-			);
-			const conceptProgressRecords =
-				await this.conceptProgressRecordService.getManyByProgressIdsByAdaptiveQuizIds(
-					filteredConceptProgresses.map((cp) => cp.id),
-					lastAdaptiveQuizzes.map((aq) => aq.id),
-					tx
-				);
-
-			const conceptProgressMap: Record<
-				string,
-				{ percentage: number; difference: number; concept: Concept }
-			> = {};
-
-			for (const conceptProgress of conceptProgresses) {
-				const records = conceptProgressRecords.filter(
-					(record) => record.conceptProgressId === conceptProgress.id
-				);
-				const concept = await this.conceptService.getById(conceptProgress.conceptId, tx);
-				const totalCount = records.reduce((sum, record) => sum + record.count, 0);
-				const correctCount = records.reduce((sum, record) => sum + record.correctCount, 0);
-				conceptProgressMap[conceptProgress.conceptId] = {
-					concept,
-					difference: totalCount - correctCount,
-					percentage: 8
-				};
-			}
-			console.log('Concept Progress Map:', conceptProgressMap);
-			const generatedQuestions = await this.generateAdaptiveQuizQuestions(conceptProgressMap);
-			console.log('Generated Questions:', generatedQuestions);
-			for (const [conceptId, questions] of generatedQuestions) {
-				console.log(`Concept ID: ${conceptId}, Questions:`, questions);
-				for (const question of questions.questions) {
-					console.log(
-						`Question: ${question.questionText}, Type: ${question.questionType}, Code Snippet: ${question.codeSnippet}, Correct Answer: ${question.correctAnswerText}, Options: ${JSON.stringify(question.options)}`
-					);
-				}
-			}
-			const questionsIds = await this.baseQuizFacade.createBaseQuestionsAndOptions({
-				data: generatedQuestions,
-				baseQuizId
+			await this.baseQuizFacade.createBaseQuestionsAndOptions({
+				data: new Map([[concept.conceptId, questions]]),
+				baseQuizId: baseQuizId
 			});
-			console.log('Created Question IDs:', questionsIds);
-
-			await this.adaptiveQuizService.update(adaptiveQuizId, { readyForAnswering: true }, tx);
-
-			return { baseQuizId, adaptiveQuizId };
-		});
+		}
+		await this.adaptiveQuizService.update(adaptiveQuizId, { readyForAnswering: true });
+		return true;
 	}
 
-	async generateAdaptiveQuizQuestions(
-		conceptProgressMap: Record<string, { percentage: number; difference: number; concept: Concept }>
-	): Promise<Map<string, BaseQuizWithQuestionsAndOptionsBlank>> {
-		const concepts = Object.values(conceptProgressMap).map((c) => c.concept);
-
-		const conceptIdChunksMap = new Map(
-			await Promise.all(
-				concepts.map(async (c) => {
-					const chunks = await this.typesenseService.getChunksByConcept(c.name, c.blockId);
-					return [c.id, chunks] as const;
-				})
-			)
+	private async generateAdaptiveQuizQuestions(
+		blockId: string,
+		conceptName: string,
+		conceptNames: string[],
+		numberOfQuestions: number
+	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
+		const chunks = await this.typesenseService.getChunksByConcept(conceptName, blockId);
+		const questions = await this.openAiService.createAdaptiveQuizQuestions(
+			conceptName,
+			conceptNames,
+			chunks,
+			numberOfQuestions
 		);
+		return questions;
+	}
 
-		return new Map(
-			await Promise.all(
-				concepts.map(async (concept) => {
-					const chunks = conceptIdChunksMap.get(concept.id) || [];
-					const placementQuestions = await this.openAiService.createAdaptiveQuizQuestions(
-						concept.name,
-						concepts.map((c) => c.name),
-						chunks,
-						conceptProgressMap[concept.id].difference
-					);
+	private async calculateConceptPriority(userBlockId: string): Promise<ConceptProgress[]> {
+		const conceptProgresses =
+			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
 
-					return [concept.id, placementQuestions] as const;
-				})
-			)
-		);
+		if (!conceptProgresses.length) return [];
+
+		const topConceptProgresses = conceptProgresses
+			.map((cp) => ({
+				...cp,
+				priority: 0.6 * (1 - cp.score) + 0.3 * Math.sqrt(cp.variance ?? 0)
+			}))
+			.sort((a, b) => b.priority - a.priority)
+			.slice(0, 3);
+
+		return topConceptProgresses;
 	}
 }

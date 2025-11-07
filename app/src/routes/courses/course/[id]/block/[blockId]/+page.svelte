@@ -47,7 +47,7 @@
 	]}
 >
 	{#if $userBlockQuery.data}
-		<div class="mt-4 flex flex-col gap-8">
+		<div class="mt-4 flex flex-col">
 			<BlockConceptsList userBlockId={$userBlockQuery.data.id} />
 			<AdaptiveQuizzesList userBlockId={$userBlockQuery.data.id} />
 		</div>

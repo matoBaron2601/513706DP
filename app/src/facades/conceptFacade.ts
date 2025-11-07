@@ -12,6 +12,9 @@ import { ConceptProgressRecordService } from '../services/conceptProgressRecordS
 import { ConceptProgressService } from '../services/conceptProgressService';
 import { ConceptService } from '../services/conceptService';
 import { UserBlockService } from '../services/userBlockService';
+import { userBlock } from '../db/schema';
+import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
+import { BaseQuestionService } from '../services/baseQuestionService';
 
 export class ConceptFacade {
 	private conceptService: ConceptService;
@@ -19,6 +22,8 @@ export class ConceptFacade {
 	private conceptProgressRecordService: ConceptProgressRecordService;
 	private adaptiveQuizService: AdaptiveQuizService;
 	private userBlockService: UserBlockService;
+	private adaptiveQuizAnswerService: AdaptiveQuizAnswerService;
+	private baseQuestionService: BaseQuestionService;
 
 	constructor() {
 		this.conceptService = new ConceptService();
@@ -26,6 +31,8 @@ export class ConceptFacade {
 		this.conceptProgressRecordService = new ConceptProgressRecordService();
 		this.adaptiveQuizService = new AdaptiveQuizService();
 		this.userBlockService = new UserBlockService();
+		this.adaptiveQuizAnswerService = new AdaptiveQuizAnswerService();
+		this.baseQuestionService = new BaseQuestionService();
 	}
 
 	async getConceptProgressByUserBlockId(
@@ -62,39 +69,66 @@ export class ConceptFacade {
 		return complexConcepts;
 	}
 
-	async updateConceptProgress(userBlockId: string): Promise<boolean> {
-		const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
-			userBlockId,
-			3
-		);
+	async updateConceptProgress(userBlockId: string, adaptiveQuizId: string): Promise<boolean> {
+		const conceptsProgresses =
+			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
 
-		const conceptsProgresses: ConceptProgress[] =
-			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
-		const filteredConceptProgresses = conceptsProgresses.filter((cp) => !cp.completed);
+		const adaptiveQuizAnswers =
+			await this.adaptiveQuizAnswerService.getManyByAdaptiveQuizId(adaptiveQuizId);
+		const baseQuestionIds = adaptiveQuizAnswers.map((a) => a.baseQuestionId);
+		const baseQuestions = await this.baseQuestionService.getManyByIds(baseQuestionIds);
 
-		const conceptProgressRecords =
-			await this.conceptProgressRecordService.getManyByProgressIdsByAdaptiveQuizIds(
-				filteredConceptProgresses.map((cp) => cp.id),
-				lastAdaptiveQuizzes.map((aq) => aq.id)
-			);
-		const conceptStats: Record<string, { correctCount: number; totalCount: number }> = {};
+		const conceptIdToProgressId = new Map(conceptsProgresses.map((cp) => [cp.conceptId, cp.id]));
 
-		for (const progress of filteredConceptProgresses) {
-			const records = conceptProgressRecords.filter(
-				(record) => record.conceptProgressId === progress.id
-			);
-			const count = records.reduce((sum, record) => sum + (record.count ?? 0), 0);
-			const correctCount = records.reduce((sum, record) => sum + (record.correctCount ?? 0), 0);
-			conceptStats[progress.id] = { correctCount, totalCount: count };
-		}
+		const conceptProgressAnswersMap = adaptiveQuizAnswers
+			.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+			.reduce<Record<string, typeof adaptiveQuizAnswers>>((acc, answer) => {
+				const baseQuestion = baseQuestions.find((bq) => bq.id === answer.baseQuestionId);
+				if (!baseQuestion) return acc;
 
-		for (const stat of Object.entries(conceptStats)) {
-			const percentage = Math.round((stat[1].correctCount / stat[1].totalCount) * 100);
-			if (percentage >= 80) {
-				await this.conceptProgressService.update(stat[0], { completed: true });
+				const conceptProgressId = conceptIdToProgressId.get(baseQuestion.conceptId);
+				if (!conceptProgressId) return acc;
+
+				if (!acc[conceptProgressId]) acc[conceptProgressId] = [];
+				acc[conceptProgressId].push(answer);
+
+				return acc;
+			}, {});
+
+		for (const [conceptProgressId, answers] of Object.entries(conceptProgressAnswersMap)) {
+			const conceptProgress = conceptsProgresses.find((cp) => cp.id === conceptProgressId);
+			if (!conceptProgress) continue; //ERROR?
+			const correct = conceptProgress.correct + answers.filter((a) => a.isCorrect).length;
+			const asked = conceptProgress.asked + answers.length;
+			const alfa = +((conceptProgress?.alfa ?? 1) + correct).toFixed(2);
+			const beta = +((conceptProgress?.beta ?? 1) + asked - correct).toFixed(2);
+			const score = +(alfa / (alfa + beta)).toFixed(2);
+			const variance = +((alfa * beta) / ((alfa + beta) ** 2 * (alfa + beta + 1))).toFixed(2);
+
+			let streak = conceptProgress.streak;
+			for (let i = answers.length - 1; i >= 0; i--) {
+				if (answers[i].isCorrect) {
+					streak++;
+				} else {
+					streak = 0;
+					break;
+				}
 			}
+			await this.conceptProgressService.update(conceptProgress.id, {
+				correct,
+				asked,
+				alfa,
+				beta,
+				score,
+				variance,
+				streak
+			});
 		}
+		await this.updateCompleteness(userBlockId);
+		return await this.checkAllConceptsCompleted(userBlockId);
+	}
 
+	async checkAllConceptsCompleted(userBlockId: string): Promise<boolean> {
 		const conceptsProgressesAfterUpdate: ConceptProgress[] =
 			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
 		const allCompleted = conceptsProgressesAfterUpdate.every((cp) => cp.completed);
@@ -104,32 +138,33 @@ export class ConceptFacade {
 		return allCompleted;
 	}
 
-	async getConceptProgressPercentage(
-		userBlockId: string,
-		conceptProgressId: string
-	): Promise<number> {
-		const lastAdaptiveQuizzes = await this.adaptiveQuizService.getLastVersionsByUserBlockId(
-			userBlockId,
-			3
-		);
+	async updateCompleteness(userBlockId: string) {
+		const conceptsProgresses =
+			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
 
-		const conceptProgressRecords =
-			await this.conceptProgressRecordService.getManyByProgressIdsByAdaptiveQuizIds(
-				[conceptProgressId],
-				lastAdaptiveQuizzes.map((aq) => aq.id)
-			);
+		const idsToComplete: string[] = [];
 
-		let correctCount = 0;
-		let totalCount = 0;
+		for (const cp of conceptsProgresses) {
+			const criterium1 = cp.score >= 0.8;
+			const criterium2 = cp.streak >= 3;
+			const criterium4 = cp.asked >= 5;
 
-		for (const record of conceptProgressRecords) {
-			correctCount += record.correctCount ?? 0;
-			totalCount += record.count ?? 0;
+			const a = cp.alfa,
+				b = cp.beta;
+			const variance = (a * b) / ((a + b) ** 2 * (a + b + 1));
+			const width = 2 * 1.96 * Math.sqrt(variance);
+
+			const criterium3 = width <= 0.15;
+
+			if (criterium1 && criterium2 && criterium3 && criterium4) {
+				idsToComplete.push(cp.id);
+			}
 		}
 
-		if (totalCount === 0) return 0;
+		if (idsToComplete.length > 0) {
+			await this.conceptProgressService.updateMany(idsToComplete, { completed: true });
+		}
 
-		const percentage = (correctCount / totalCount) * 100;
-		return Math.round(percentage * 100) / 100;
+		return true;
 	}
 }

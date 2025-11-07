@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, integer, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { command } from '$app/server';
@@ -153,6 +153,13 @@ export const conceptProgress = pgTable('conceptProgress', {
 	conceptId: varchar('conceptId')
 		.notNull()
 		.references(() => concept.id),
+	correct: integer('correct').notNull().default(0),
+	asked: integer('asked').notNull().default(0),
+	alfa: doublePrecision('alfa').notNull().default(0),
+	beta: doublePrecision('beta').notNull().default(0),
+	score: doublePrecision('score').notNull().default(0),
+	variance: doublePrecision('variance').notNull().default(0),
+	streak: integer('streak').notNull().default(0),
 	completed: boolean('completed').notNull().default(false),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
@@ -174,6 +181,7 @@ export const conceptProgressRecord = pgTable('conceptProgressRecord', {
 		.references(() => adaptiveQuiz.id),
 	correctCount: integer('correctCount').notNull(),
 	count: integer('count').notNull(),
+	streak: integer('streak').notNull().default(0),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')

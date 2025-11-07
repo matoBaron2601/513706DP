@@ -40,6 +40,14 @@ export class ConceptProgressService {
 		return item;
 	}
 
+	async updateMany(
+		ids: string[],
+		data: UpdateConceptProgressDto,
+		tx?: Transaction
+	): Promise<ConceptProgressDto[]> {
+		return await this.repo.updateMany(ids, data, tx);
+	}
+
 	async delete(id: string, tx?: Transaction): Promise<ConceptProgressDto> {
 		const item = await this.repo.delete(id, tx);
 		if (!item) throw new NotFoundError(`ConceptProgress with id ${id} not found`);
@@ -70,5 +78,12 @@ export class ConceptProgressService {
 			return existing;
 		}
 		return await this.repo.create(data, tx);
+	}
+
+	async getManyIncompleteByUserBlockId(
+		userBlockId: string,
+		tx?: Transaction
+	): Promise<ConceptProgressDto[]> {
+		return await this.repo.getManyIncompleteByUserBlockId(userBlockId, tx);
 	}
 }

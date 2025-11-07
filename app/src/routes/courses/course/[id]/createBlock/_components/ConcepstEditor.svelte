@@ -79,7 +79,7 @@
 	};
 </script>
 
-<div class="p-4 md:w-[50%]">
+<div class="p-4">
 	<Card.Title>2. Specify concepts</Card.Title>
 	<Card.Description class="mt-1">
 		You can modify the identified concepts below. You can change their names, reorder them by

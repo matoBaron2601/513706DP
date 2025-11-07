@@ -1,4 +1,4 @@
-import { eq, inArray, asc,desc, and } from 'drizzle-orm';
+import { eq, inArray, asc, desc, and } from 'drizzle-orm';
 import {
 	adaptiveQuiz,
 	type CreateAdaptiveQuizDto,
@@ -80,12 +80,47 @@ export class AdaptiveQuizRepository {
 		return result[0];
 	}
 
-	async getLastVersionsByUserBlockId(userBlockId: string, count: number, tx?: Transaction): Promise<AdaptiveQuizDto[]> {
+	async getLastAdaptiveQuizByUserBlockId(
+		userBlockId: string
+	): Promise<AdaptiveQuizDto | undefined> {
+		const result = await getDbClient()
+			.select()
+			.from(adaptiveQuiz)
+			.where(eq(adaptiveQuiz.userBlockId, userBlockId))
+			.orderBy(desc(adaptiveQuiz.version))
+			.limit(1);
+		return result[0];
+	}
+
+	async getLastVersionsByUserBlockId(
+		userBlockId: string,
+		count: number,
+		tx?: Transaction
+	): Promise<AdaptiveQuizDto[]> {
 		return await getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
-			.where(and(eq(adaptiveQuiz.userBlockId, userBlockId), eq(adaptiveQuiz.isCompleted, true), eq(adaptiveQuiz.readyForAnswering, true)))
+			.where(
+				and(
+					eq(adaptiveQuiz.userBlockId, userBlockId),
+					eq(adaptiveQuiz.isCompleted, true),
+					eq(adaptiveQuiz.readyForAnswering, true)
+				)
+			)
 			.orderBy(desc(adaptiveQuiz.version))
 			.limit(count);
+	}
+
+	async getLastIncompletedByUserBlockId(
+		userBlockId: string,
+		tx?: Transaction
+	): Promise<AdaptiveQuizDto | undefined> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(adaptiveQuiz)
+			.where(and(eq(adaptiveQuiz.userBlockId, userBlockId), eq(adaptiveQuiz.isCompleted, false)))
+			.orderBy(desc(adaptiveQuiz.version))
+			.limit(1);
+		return result[0];
 	}
 }

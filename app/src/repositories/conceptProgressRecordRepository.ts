@@ -1,4 +1,4 @@
-import { eq, inArray, and } from 'drizzle-orm';
+import { eq, inArray, and, desc } from 'drizzle-orm';
 import type { Transaction } from '../types';
 import getDbClient from './utils/getDbClient';
 import {
@@ -78,5 +78,24 @@ export class ConceptProgressRecordRepository {
 				)
 			);
 		return result;
+	}
+
+	async getLatestByProgressIdAndAdaptiveQuizId(
+		conceptProgressId: string,
+		adaptiveQuizId: string,
+		tx?: Transaction
+	): Promise<ConceptProgressRecordDto | null> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(conceptProgressRecord)
+			.where(
+				and(
+					eq(conceptProgressRecord.conceptProgressId, conceptProgressId),
+					eq(conceptProgressRecord.adaptiveQuizId, adaptiveQuizId)
+				)
+			)
+			.orderBy(desc(conceptProgressRecord.createdAt))
+			.limit(1);
+		return result[0] || null;
 	}
 }

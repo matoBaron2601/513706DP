@@ -48,7 +48,7 @@
 </script>
 
 <PageWrapper breadcrumbItems={[{ text: 'Courses', href: '/courses' }, { text: 'Create', isCurrent: true }]}>
-	<form method="POST" use:enhance class="p-4 md:w-[50%]" onsubmit={handleFormSubmit}>
+	<form method="POST" use:enhance class="p-4" onsubmit={handleFormSubmit}>
 		<Card.Title class="text-xl">Create New Course</Card.Title>
 		<Card.Card class="mx-auto mt-4">
 			<Card.Content class="flex flex-col gap-6">

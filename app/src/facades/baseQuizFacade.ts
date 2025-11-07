@@ -31,6 +31,7 @@ export class BaseQuizFacade {
 		baseQuizId: string;
 	}): Promise<string[]> {
 		return db.transaction(async (tx) => {
+			console.log('Creating base questions and options...');
 			const questionIds: string[] = [];
 			for (const [conceptId, questions] of data) {
 				for (const question of questions.questions) {

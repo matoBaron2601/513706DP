@@ -15,7 +15,7 @@
 	}: { children: any; breadcrumbItems: BreadcrumbItem[]; className?: string } = $props();
 </script>
 
-<div>
+<div class="lg:max-w-[80%] xl:max-w-[70%]">
 	<div
 		class={'sticky top-0 z-10 flex h-14 items-center gap-2 border-b border-gray-100 bg-gray-100 p-4'}
 	>

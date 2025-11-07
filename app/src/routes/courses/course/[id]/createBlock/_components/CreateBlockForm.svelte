@@ -44,7 +44,6 @@
 				name: $formData.name,
 				documentPath,
 				concepts,
-				completed: false,
 				chunkingStrategy: $formData.chunkingStrategy,
 				useLLMTransformation: $formData.useLLMTransformation
 			});

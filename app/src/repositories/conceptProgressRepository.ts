@@ -67,6 +67,19 @@ export class ConceptProgressRepository {
 		return result;
 	}
 
+	async updateMany(
+		ids: string[],
+		updateData: UpdateConceptProgressDto,
+		tx?: Transaction
+	): Promise<ConceptProgressDto[]> {
+		const result = await getDbClient(tx)
+			.update(conceptProgress)
+			.set(updateData)
+			.where(inArray(conceptProgress.id, ids))
+			.returning();
+		return result;
+	}
+
 	async getManyByUserBlockId(userBlockId: string, tx?: Transaction): Promise<ConceptProgressDto[]> {
 		const result = await getDbClient(tx)
 			.select()
@@ -87,5 +100,18 @@ export class ConceptProgressRepository {
 				and(eq(conceptProgress.userBlockId, userBlockId), eq(conceptProgress.conceptId, conceptId))
 			);
 		return result[0];
+	}
+
+	async getManyIncompleteByUserBlockId(
+		userBlockId: string,
+		tx?: Transaction
+	): Promise<ConceptProgressDto[]> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(conceptProgress)
+			.where(
+				and(eq(conceptProgress.userBlockId, userBlockId), eq(conceptProgress.completed, false))
+			);
+		return result;
 	}
 }

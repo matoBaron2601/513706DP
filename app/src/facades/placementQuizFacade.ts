@@ -51,19 +51,6 @@ export class PlacementQuizFacade {
 			data.blockId
 		);
 
-		console.log('Generated placement questions:', generatedQuestions);
-		for (const [conceptId, quiz] of generatedQuestions) {
-			console.log(`Concept ID: ${conceptId}`);
-			for (const question of quiz.questions) {
-				console.log(`  Question: ${question.questionText}`);
-				console.log(`    Correct Answer: ${question.correctAnswerText}`);
-				console.log(`    Code Snippet: ${question.codeSnippet}`);
-				for (const option of question.options) {
-					console.log(`      Option: ${option.optionText}`);
-				}
-			}
-		}
-
 		const questionsIds = await this.baseQuizFacade.createBaseQuestionsAndOptions({
 			data: generatedQuestions,
 			baseQuizId

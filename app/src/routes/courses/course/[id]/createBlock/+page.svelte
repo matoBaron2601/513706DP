@@ -5,6 +5,7 @@
 	import CreateBlockForm from './_components/CreateBlockForm.svelte';
 	import ConceptEditor from './_components/ConcepstEditor.svelte';
 	import PlacementQuiz from './_components/PlacementQuiz.svelte';
+	import { page } from '$app/state';
 
 	let { data }: { data: PageData } = $props();
 
@@ -32,7 +33,11 @@
 	};
 </script>
 
-<PageWrapper>
+<PageWrapper breadcrumbItems={[
+		{ text: 'Courses', href: '/courses' },
+		{ text: `Course: ${page.params.id}`, href: `/courses/course/${page.params.id}` },
+		{ text: 'Create Block', isCurrent: true }
+	]}>
 	{#if step === 'identifyConceptsForm'}
 		<IdentifyConceptsForm
 			{data}

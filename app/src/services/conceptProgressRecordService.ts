@@ -66,4 +66,17 @@ export class ConceptProgressRecordService {
 			tx
 		);
 	}
+
+
+	async getLatestByProgressIdAndAdaptiveQuizId(
+		conceptProgressId: string,
+		adaptiveQuizId: string,
+		tx?: Transaction
+	): Promise<ConceptProgressRecordDto | null> {
+		return await this.repo.getLatestByProgressIdAndAdaptiveQuizId(
+			conceptProgressId,
+			adaptiveQuizId,
+			tx
+		);
+	}
 }

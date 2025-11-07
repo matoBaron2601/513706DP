@@ -46,7 +46,7 @@
 	};
 </script>
 
-<form method="POST" use:enhance class="p-4 md:w-[50%]" onsubmit={handleFormSubmit}>
+<form method="POST" use:enhance class="p-4" onsubmit={handleFormSubmit}>
 	<Card.Title>4. Create Placement Quiz</Card.Title>
 	<Card.Description class="mt-1">
 		Define the number of questions per concept in the placement quiz.

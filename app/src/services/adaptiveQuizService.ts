@@ -63,9 +63,26 @@ export class AdaptiveQuizService {
 		return item;
 	}
 
-	async getLastVersionsByUserBlockId(userBlockId: string, count: number, tx?: Transaction): Promise<AdaptiveQuizDto[]> {
+	async getLastAdaptiveQuizByUserBlockId(userBlockId: string): Promise<AdaptiveQuizDto> {
+		const item = await this.repo.getLastAdaptiveQuizByUserBlockId(userBlockId);
+		if (!item) throw new NotFoundError(`AdaptiveQuiz with id ${userBlockId} not found`);
+		return item;
+	}
+
+	async getLastVersionsByUserBlockId(
+		userBlockId: string,
+		count: number,
+		tx?: Transaction
+	): Promise<AdaptiveQuizDto[]> {
 		return await this.repo.getLastVersionsByUserBlockId(userBlockId, count, tx);
 	}
 
-	
+	async getLastIncompletedByUserBlockId(
+		userBlockId: string,
+		tx?: Transaction
+	): Promise<AdaptiveQuizDto> {
+		const item = await this.repo.getLastIncompletedByUserBlockId(userBlockId, tx);
+		if (!item) throw new NotFoundError(`AdaptiveQuiz with userBlockId ${userBlockId} not found`);
+		return item;
+	}
 }

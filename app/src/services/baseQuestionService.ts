@@ -36,7 +36,7 @@ export class BaseQuestionService {
 		return item;
 	}
 
-	async getByIds(ids: string[], tx?: Transaction): Promise<BaseQuestionDto[]> {
+	async getManyByIds(ids: string[], tx?: Transaction): Promise<BaseQuestionDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
 

@@ -6,7 +6,8 @@ const baseConceptProgressRecordSchema = t.Object({
 	conceptProgressId: t.String(),
 	adaptiveQuizId: t.String(),
 	correctCount: t.Number(),
-	count: t.Number()
+	count: t.Number(),
+	streak: t.Number()
 });
 
 export const conceptProgressRecordSchema = t.Intersect([

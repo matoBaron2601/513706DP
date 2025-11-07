@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, desc } from 'drizzle-orm';
 import {
 	adaptiveQuizAnswer,
 	type CreateAdaptiveQuizAnswerDto,
@@ -83,6 +83,7 @@ export class AdaptiveQuizAnswerRepository {
 		return await getDbClient(tx)
 			.select()
 			.from(adaptiveQuizAnswer)
-			.where(eq(adaptiveQuizAnswer.adaptiveQuizId, adaptiveQuizId));
+			.where(eq(adaptiveQuizAnswer.adaptiveQuizId, adaptiveQuizId))
+			.orderBy(desc(adaptiveQuizAnswer.createdAt));
 	}
 }

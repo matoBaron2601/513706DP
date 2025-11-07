@@ -29,7 +29,7 @@
 	let deleteModalOpen = $state(false);
 </script>
 
-<Card.Root class="min-w-50 relative max-w-80">
+<Card.Root class="w-70 relative">
 	<Card.Content class="flex flex-col gap-2">
 		<Popover.Root bind:open={deleteModalOpen}>
 			<Popover.Trigger>

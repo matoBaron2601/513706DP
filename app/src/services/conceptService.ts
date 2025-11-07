@@ -32,7 +32,7 @@ export class ConceptService {
 		return item;
 	}
 
-	async getByIds(ids: string[], tx?: Transaction): Promise<ConceptDto[]> {
+	async getManyByIds(ids: string[], tx?: Transaction): Promise<ConceptDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
 

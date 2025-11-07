@@ -60,7 +60,7 @@ export class AdaptiveQuizAnswerService {
 		return await this.repo.getByBaseQuestionId(baseQuestionId, tx);
 	}
 
-	async getByAdaptiveQuizId(
+	async getManyByAdaptiveQuizId(
 		adaptiveQuizId: string,
 		tx?: Transaction
 	): Promise<AdaptiveQuizAnswerDto[]> {

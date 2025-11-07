@@ -5,20 +5,22 @@
 	import getAdaptiveQuizzesByUserBlockId from '../_clientServices/getAdaptiveQuizzesByUserBlockId';
 	import queryClient from '../../../../../../queryClient';
 	import { onDestroy } from 'svelte';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import getLastAdaptiveQuizByUserBlockId from '../_clientServices/getLastAdaptiveQuizByUserBlockId';
 
 	let { userBlockId }: { userBlockId: string } = $props();
 
 	const queryKey = ['adaptiveQuizzes', userBlockId];
 
-	const adaptiveQuizzesQuery = createQuery({
-		queryKey,
-		queryFn: async () => await getAdaptiveQuizzesByUserBlockId(userBlockId)
+	const adaptiveQuizQuery = createQuery({
+		queryKey: queryKey,
+		queryFn: async () => await getLastAdaptiveQuizByUserBlockId(userBlockId)
 	});
 
 	let interval = $state<NodeJS.Timeout>();
 
 	$effect(() => {
-		if ($adaptiveQuizzesQuery?.data?.some((q) => q.readyForAnswering === false)) {
+		if (!$adaptiveQuizQuery?.data?.readyForAnswering) {
 			if (!interval) {
 				interval = setInterval(() => {
 					queryClient.invalidateQueries({ queryKey });
@@ -35,12 +37,13 @@
 	});
 </script>
 
-{#if $adaptiveQuizzesQuery.isLoading}
+{#if $adaptiveQuizQuery.isLoading}
 	<Spinner />
 {:else}
-	<div class="flex flex-wrap w-full gap-4 lg:max-w-[80%]">
-		{#each $adaptiveQuizzesQuery.data?.sort((a, b) => a.version - b.version) as adaptiveQuiz}
-			<AdaptiveQuizCard {adaptiveQuiz} />
-		{/each}
+	<div class="mt-8 flex w-full flex-col flex-wrap gap-4">
+		<Card.Title class="text-2xl">Next quiz:</Card.Title>
+		{#if $adaptiveQuizQuery.data}
+			<AdaptiveQuizCard adaptiveQuiz={$adaptiveQuizQuery.data} />
+		{/if}
 	</div>
 {/if}

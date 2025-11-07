@@ -5,6 +5,13 @@ import { baseSchema } from './baseSchema';
 const baseConceptProgressSchema = t.Object({
 	userBlockId: t.String(),
 	conceptId: t.String(),
+	correct: t.Number(),
+	asked: t.Number(),
+	alfa: t.Number(),
+	beta: t.Number(),
+	score: t.Number(),
+	variance: t.Number(),
+	streak: t.Number(),
 	completed: t.Boolean()
 });
 

@@ -9,11 +9,12 @@
 
 	const { adaptiveQuiz }: { adaptiveQuiz: AdaptiveQuiz } = $props();
 
-	const quizLabel =
-		adaptiveQuiz.version === 0 ? 'Placement Quiz' : `Adaptive Quiz v${adaptiveQuiz.version}`;
+	const quizLabel = $derived.by(() =>
+		adaptiveQuiz.version === 0 ? 'Placement Quiz' : `Adaptive Quiz v${adaptiveQuiz.version}`
+	);
 </script>
 
-<Card.Root class="min-w-50 relative max-w-80">
+<Card.Root class="min-w-50 relative mx-auto w-full p-10 xl:w-[70%]">
 	{#if !adaptiveQuiz.readyForAnswering}
 		<Spinner />
 	{:else}
