@@ -8,7 +8,6 @@ import type {
 } from '../schemas/conceptSchema';
 import type { UserBlock } from '../schemas/userBlockSchema';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
-import { ConceptProgressRecordService } from '../services/conceptProgressRecordService';
 import { ConceptProgressService } from '../services/conceptProgressService';
 import { ConceptService } from '../services/conceptService';
 import { UserBlockService } from '../services/userBlockService';
@@ -19,7 +18,6 @@ import { BaseQuestionService } from '../services/baseQuestionService';
 export class ConceptFacade {
 	private conceptService: ConceptService;
 	private conceptProgressService: ConceptProgressService;
-	private conceptProgressRecordService: ConceptProgressRecordService;
 	private adaptiveQuizService: AdaptiveQuizService;
 	private userBlockService: UserBlockService;
 	private adaptiveQuizAnswerService: AdaptiveQuizAnswerService;
@@ -28,7 +26,6 @@ export class ConceptFacade {
 	constructor() {
 		this.conceptService = new ConceptService();
 		this.conceptProgressService = new ConceptProgressService();
-		this.conceptProgressRecordService = new ConceptProgressRecordService();
 		this.adaptiveQuizService = new AdaptiveQuizService();
 		this.userBlockService = new UserBlockService();
 		this.adaptiveQuizAnswerService = new AdaptiveQuizAnswerService();
@@ -44,11 +41,7 @@ export class ConceptFacade {
 			await this.conceptProgressService.getManyByUserBlockId(data.userBlockId);
 		const lastAdaptiveQuizzes: AdaptiveQuiz[] =
 			await this.adaptiveQuizService.getLastVersionsByUserBlockId(data.userBlockId, 3);
-		const conceptProgressRecords =
-			await this.conceptProgressRecordService.getManyByProgressIdsByAdaptiveQuizIds(
-				conceptsProgresses.map((cp) => cp.id),
-				lastAdaptiveQuizzes.map((aq) => aq.id)
-			);
+
 		const complexConcepts = concepts.map((concept) => {
 			const conceptProgress = conceptsProgresses.find((cp) => cp.conceptId === concept.id);
 
@@ -56,14 +49,9 @@ export class ConceptFacade {
 				throw new Error(`Concept progress not found for concept ID: ${concept.id}`);
 			}
 
-			const conceptProgressRecordsData = conceptProgressRecords.filter(
-				(cpr) => cpr.conceptProgressId === conceptProgress.id
-			);
-
 			return {
 				concept: concept,
-				conceptProgress: conceptProgress,
-				conceptProgressRecords: conceptProgressRecordsData
+				conceptProgress: conceptProgress
 			};
 		});
 		return complexConcepts;
@@ -145,16 +133,15 @@ export class ConceptFacade {
 		const idsToComplete: string[] = [];
 
 		for (const cp of conceptsProgresses) {
-			const criterium1 = cp.score >= 0.8;
-			const criterium2 = cp.streak >= 3;
-			const criterium4 = cp.asked >= 5;
+			const criterium1 = cp.score >= 0.8; //0.8
+			const criterium2 = cp.streak >= 0; //3
+			const criterium4 = cp.asked >= 5; //5
 
 			const a = cp.alfa,
 				b = cp.beta;
 			const variance = (a * b) / ((a + b) ** 2 * (a + b + 1));
 			const width = 2 * 1.96 * Math.sqrt(variance);
-
-			const criterium3 = width <= 0.15;
+			const criterium3 = width <= 0.15; //0.15
 
 			if (criterium1 && criterium2 && criterium3 && criterium4) {
 				idsToComplete.push(cp.id);

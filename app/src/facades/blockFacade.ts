@@ -14,6 +14,7 @@ import { ConceptService } from '../services/conceptService';
 import { TypesenseService } from '../typesense/typesenseService';
 import { PlacementQuizFacade } from './placementQuizFacade';
 import { BucketService } from '../services/bucketService';
+import { DocumentService } from '../services/documentService';
 
 export class BlockFacade {
 	private blockService: BlockService;
@@ -23,6 +24,7 @@ export class BlockFacade {
 	private chunkerService: ChunkerService;
 	private placementQuizFacade: PlacementQuizFacade;
 	private bucketService: BucketService;
+	private documentService: DocumentService;
 
 	constructor() {
 		this.blockService = new BlockService();
@@ -32,6 +34,7 @@ export class BlockFacade {
 		this.chunkerService = new ChunkerService();
 		this.placementQuizFacade = new PlacementQuizFacade();
 		this.bucketService = new BucketService();
+		this.documentService = new DocumentService();
 	}
 
 	async getManyByCourseId(courseId: string): Promise<GetManyByCourseIdResponse> {
@@ -44,7 +47,7 @@ export class BlockFacade {
 	}
 
 	async identifyConcepts(documentPath: string): Promise<IdentifyConceptsResponse> {
-		const fileText = await this.bucketService.getFileString(documentPath);
+		const fileText = await this.bucketService.getBlockDataFileString(documentPath);
 		if (!fileText) {
 			throw new Error('Failed to load file text for concept identification');
 		}
@@ -66,6 +69,15 @@ export class BlockFacade {
 				tx
 			);
 
+			await this.documentService.create(
+				{
+					blockId: block.id,
+					filePath: data.documentPath,
+					isMain: true
+				},
+				tx
+			);
+
 			await this.conceptService.createMany(
 				data.concepts.map((concept) => ({
 					name: concept.name,
@@ -81,7 +93,7 @@ export class BlockFacade {
 			if (blockDataExists) {
 				throw new Error(`Typesense document for block with id ${block.id} does already exist`);
 			}
-			const fileText = await this.bucketService.getFileString(data.documentPath);
+			const fileText = await this.bucketService.getBlockDataFileString(data.documentPath);
 			if (!fileText) {
 				throw new Error('Failed to load file text for block creation');
 			}

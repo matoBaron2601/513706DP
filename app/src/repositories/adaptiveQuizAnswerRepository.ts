@@ -1,9 +1,10 @@
-import { eq, inArray, desc } from 'drizzle-orm';
+import { eq, inArray, desc, and } from 'drizzle-orm';
 import {
 	adaptiveQuizAnswer,
 	type CreateAdaptiveQuizAnswerDto,
 	type UpdateAdaptiveQuizAnswerDto,
-	type AdaptiveQuizAnswerDto
+	type AdaptiveQuizAnswerDto,
+	baseQuestion
 } from '../db/schema';
 import type { Transaction } from '../types';
 import getDbClient from './utils/getDbClient';
@@ -85,5 +86,22 @@ export class AdaptiveQuizAnswerRepository {
 			.from(adaptiveQuizAnswer)
 			.where(eq(adaptiveQuizAnswer.adaptiveQuizId, adaptiveQuizId))
 			.orderBy(desc(adaptiveQuizAnswer.createdAt));
+	}
+
+	async getQuestionHistory(adaptiveQuizIds: string[], conceptId: string, tx?: Transaction) {
+		return await getDbClient(tx)
+			.select({
+				questionText: baseQuestion.questionText,
+				correctAnswerText: baseQuestion.correctAnswerText,
+				isCorrect: adaptiveQuizAnswer.isCorrect
+			})
+			.from(adaptiveQuizAnswer)
+			.innerJoin(baseQuestion, eq(adaptiveQuizAnswer.baseQuestionId, baseQuestion.id))
+			.where(
+				and(
+					eq(baseQuestion.conceptId, conceptId),
+					inArray(adaptiveQuizAnswer.adaptiveQuizId, adaptiveQuizIds)
+				)
+			);
 	}
 }

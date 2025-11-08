@@ -11,8 +11,8 @@
 	import queryClient from '../../../../../../../queryClient';
 	import Summary from './_components/Summary.svelte';
 	import finishAdaptiveQuiz from './_clientServices/finishAdaptiveQuiz';
-	import getCourseById from '../../../../_clientServices.ts/getCourseById';
-	import getBlockByBlockId from '../../_clientServices/getBlockByBlockId';
+	import getCourseById from '../../../../../../../_clientServices/getCourseById';
+	import getBlockById from '../../../../../../../_clientServices/getBlockById';
 
 	let { data }: { data: PageData } = $props();
 	const courseId = page.params.id ?? '';
@@ -31,7 +31,7 @@
 	const blockQuery = createQuery({
 		queryKey: ['block', blockId],
 		queryFn: async () => {
-			return await getBlockByBlockId(blockId);
+			return await getBlockById(blockId);
 		}
 	});
 
@@ -52,12 +52,13 @@
 	});
 
 	const handleSubmitQuestion = async (optionText: string, baseQuestionId: string) => {
-		await $submitAdaptiveQuizAnswerMutation.mutateAsync({
+		await $submitAdaptiveQuizAnswerMutation.mutate({
 			answerText: optionText,
 			baseQuestionId: baseQuestionId
 		});
 		await queryClient.invalidateQueries({ queryKey: ['adaptiveQuiz', adaptiveQuizId] });
 		questionIndex += 1;
+
 		if (questionIndex >= ($adaptiveQuizQuery.data?.questions.length ?? 0)) {
 			showSummary = true;
 			await $finishAdaptiveQuizMutation.mutateAsync();
@@ -89,7 +90,10 @@
 	breadcrumbItems={[
 		{ text: 'Courses', href: '/courses' },
 		{ text: `Course: ${$courseQuery.data?.name}`, href: `/courses/course/${page.params.id}` },
-		{ text: `Block: ${$blockQuery.data?.name}`, href: `/courses/course/${page.params.id}/block/${page.params.blockId}` },
+		{
+			text: `Block: ${$blockQuery.data?.name}`,
+			href: `/courses/course/${page.params.id}/block/${page.params.blockId}`
+		},
 		{
 			text: `Adaptive Quiz v${$adaptiveQuizQuery.data?.version}`,
 			isCurrent: true

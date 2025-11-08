@@ -1,4 +1,11 @@
-import { pgTable, varchar, timestamp, integer, boolean, doublePrecision } from 'drizzle-orm/pg-core';
+import {
+	pgTable,
+	varchar,
+	timestamp,
+	integer,
+	boolean,
+	doublePrecision
+} from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import { command } from '$app/server';
@@ -61,6 +68,7 @@ export const baseOption = pgTable('baseOption', {
 		.notNull()
 		.references(() => baseQuestion.id),
 	optionText: varchar('optionText'),
+	isCorrect: boolean('isCorrect').notNull(),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
@@ -169,28 +177,6 @@ export type ConceptProgressDto = InferSelectModel<typeof conceptProgress>;
 export type CreateConceptProgressDto = InferInsertModel<typeof conceptProgress>;
 export type UpdateConceptProgressDto = Partial<CreateConceptProgressDto>;
 
-export const conceptProgressRecord = pgTable('conceptProgressRecord', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	conceptProgressId: varchar('conceptProgressId')
-		.notNull()
-		.references(() => conceptProgress.id),
-	adaptiveQuizId: varchar('adaptiveQuizId')
-		.notNull()
-		.references(() => adaptiveQuiz.id),
-	correctCount: integer('correctCount').notNull(),
-	count: integer('count').notNull(),
-	streak: integer('streak').notNull().default(0),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-
-export type ConceptProgressRecordDto = InferSelectModel<typeof conceptProgressRecord>;
-export type CreateConceptProgressRecordDto = InferInsertModel<typeof conceptProgressRecord>;
-export type UpdateConceptProgressRecordDto = Partial<CreateConceptProgressRecordDto>;
-
 export const placementQuiz = pgTable('placementQuiz', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
@@ -253,63 +239,23 @@ export type AdaptiveQuizAnswerDto = InferSelectModel<typeof adaptiveQuizAnswer>;
 export type CreateAdaptiveQuizAnswerDto = InferInsertModel<typeof adaptiveQuizAnswer>;
 export type UpdateAdaptiveQuizAnswerDto = Partial<CreateAdaptiveQuizAnswerDto>;
 
-export const oneTimeQuiz = pgTable('oneTimeQuiz', {
+export const document = pgTable('document', {
 	id: varchar('id')
 		.$defaultFn(() => createId())
 		.primaryKey(),
-	creatorId: varchar('creatorId')
+	blockId: varchar('blockId')
 		.notNull()
-		.references(() => user.id),
-	baseQuizId: varchar('baseQuizId')
-		.notNull()
-		.references(() => baseQuiz.id),
-	name: varchar('name').notNull(),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type OneTimeQuizDto = InferSelectModel<typeof oneTimeQuiz>;
-export type CreateOneTimeQuizDto = InferInsertModel<typeof oneTimeQuiz>;
-export type UpdateOneTimeQuizDto = Partial<CreateOneTimeQuizDto>;
-
-export const oneTimeQuizConcept = pgTable('oneTimeQuizConcept', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	oneTimeQuizId: varchar('oneTimeQuizId')
-		.notNull()
-		.references(() => oneTimeQuiz.id),
-	conceptId: varchar('conceptId')
-		.notNull()
-		.references(() => concept.id),
+		.references(() => block.id),
+	filePath: varchar('filePath').notNull(),
+	isMain: boolean('isMain').notNull().default(false),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')
 });
 
-export type OneTimeQuizConceptDto = InferSelectModel<typeof oneTimeQuizConcept>;
-export type CreateOneTimeQuizConceptDto = InferInsertModel<typeof oneTimeQuizConcept>;
-export type UpdateOneTimeQuizConceptDto = Partial<CreateOneTimeQuizConceptDto>;
-
-export const oneTimeQuizAnswer = pgTable('oneTimeQuizAnswer', {
-	id: varchar('id')
-		.$defaultFn(() => createId())
-		.primaryKey(),
-	oneTimeQuizId: varchar('oneTimeQuizId')
-		.notNull()
-		.references(() => oneTimeQuiz.id),
-	baseQuestionId: varchar('baseQuestionId')
-		.notNull()
-		.references(() => baseQuestion.id),
-	answerText: varchar('answerText').notNull(),
-	isCorrect: boolean('isCorrect').notNull(),
-	createdAt: timestamp('createdAt').notNull().defaultNow(),
-	updatedAt: timestamp('updatedAt'),
-	deletedAt: timestamp('deletedAt')
-});
-export type OneTimeQuizAnswerDto = InferSelectModel<typeof oneTimeQuizAnswer>;
-export type CreateOneTimeQuizAnswerDto = InferInsertModel<typeof oneTimeQuizAnswer>;
-export type UpdateOneTimeQuizAnswerDto = Partial<CreateOneTimeQuizAnswerDto>;
+export type DocumentDto = InferSelectModel<typeof document>;
+export type CreateDocumentDto = InferInsertModel<typeof document>;
+export type UpdateDocumentDto = Partial<CreateDocumentDto>;
 
 export const table = {
 	user,
@@ -319,13 +265,10 @@ export const table = {
 	placementQuiz,
 	userBlock,
 	conceptProgress,
-	conceptProgressRecord,
-	oneTimeQuizConcept,
 	adaptiveQuiz,
 	adaptiveQuizAnswer,
-	oneTimeQuiz,
-	oneTimeQuizAnswer,
 	baseQuiz,
 	baseQuestion,
-	baseOption
+	baseOption,
+	document
 } as const;

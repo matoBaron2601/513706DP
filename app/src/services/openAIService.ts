@@ -106,10 +106,15 @@ export class OpenAiService {
 		concept: string,
 		concepts: string[],
 		chunks: string[],
-		numberOfQuestions: number
+		numberOfQuestions: number,
+		questionHistory: {
+			questionText: string;
+			correctAnswerText: string;
+			isCorrect: boolean;
+		}[]
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
 		const response = await this.callOpenAI(
-			adaptiveQuizPrompt(concept, concepts, chunks, numberOfQuestions)
+			adaptiveQuizPrompt(concept, concepts, chunks, numberOfQuestions, questionHistory)
 		);
 		const responseContent =
 			response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
@@ -185,7 +190,10 @@ export class OpenAiService {
 			Correct Answer: ${correctAnswer}
 			User's Answer: ${answer}
 
+			If users answer is blank, respond with "No".
 			Is the user's answer correct? Respond with only "Yes" or "No".
+
+			
 		`);
 		const content = response.choices[0].message.content?.trim().toLowerCase() || '';
 		return content === 'yes';
@@ -204,7 +212,7 @@ You are an expert quiz creator in a RAG system.
 Create a placement quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks>.
 
 You must NOT create questions about other related concepts:
-${concepts.filter((c)=>c!==concept).join(', ')}
+${concepts.filter((c) => c !== concept).join(', ')}
 
 --- HARD RULES (MUST PASS) ---
 1) questionText is plain sentences only. **No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
@@ -231,7 +239,7 @@ B) Practical — real-world/coding application of ${concept}, start with “Give
       "orderIndex": string,
       "codeSnippet": string,         // "" for A1/A2; non-empty for B1/B2
       "questionType": "B1" | "B2" | "A1" | "A2",
-      "options": [ { "optionText": string } ] // empty [] for A2/B2
+      "options": [ { "optionText": string, "isCorrect": boolean } ] // empty [] for A2/B2
     }
   ]
 }
@@ -260,29 +268,38 @@ const adaptiveQuizPrompt = (
 	concept: string,
 	concepts: string[],
 	chunks: string[],
-	numberOfQuestions: number
+	numberOfQuestions: number,
+	questionHistory: {
+		questionText: string;
+		correctAnswerText: string;
+		isCorrect: boolean;
+	}[]
 ) => {
 	return `
 You are an expert quiz creator in a RAG system.
 
-Create a adaptive quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks>.
+Create an adaptive quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based on the provided <chunks>.
 
 You must NOT create questions about other related concepts:
-${concepts.filter((c)=>c!==concept).join(', ')}
+${concepts.filter((c) => c !== concept).join(', ')}
 
 --- HARD RULES (MUST PASS) ---
-1) questionText is plain sentences only. **No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
-2) Any code MUST appear **only** in codeSnippet (never in questionText).
+1) questionText is plain sentences only. No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
+2) Any code MUST appear only in codeSnippet (never in questionText).
 3) For A1/A2 (theory): codeSnippet MUST be an empty string "".
 4) For B1/B2 (practical): codeSnippet MUST be non-empty (max 10 lines). Do not include answers in code.
-5) At least 40% questions are practical (B1/B2).
-6) Do not include explanations; output **only** the JSON object.
+5) At least 40% of questions are practical (B1/B2).
+6) Do not include explanations; output only the JSON object.
+7) Avoid reusing questions from history:
+   - Do NOT repeat any questionText that appears in questionHistory.
+   - Do NOT create questions whose correctAnswerText is effectively identical in meaning to those in questionHistory for the same concept.
+   - If a question would overlap strongly with history, rephrase or choose a different angle while staying within this prompt's rules.
 
 --- Question Types ---
 A) Theoretical — about ${concept}
    A1: Multiple Choice (4 options, 1 correct)
    A2: Fill-in-the-Blank (no options)
-B) Practical — real-world/coding application of ${concept}, start with “Given the following code snippet” or similar
+B) Practical — real-world/coding application of ${concept}, start with "Given the following code snippet" or similar
    B1: Multiple Choice (4 options, 1 correct) + short codeSnippet
    B2: Fill-in-the-Blank + short codeSnippet
 
@@ -295,7 +312,7 @@ B) Practical — real-world/coding application of ${concept}, start with “Give
       "orderIndex": string,
       "codeSnippet": string,         // "" for A1/A2; non-empty for B1/B2
       "questionType": "B1" | "B2" | "A1" | "A2",
-      "options": [ { "optionText": string } ] // empty [] for A2/B2
+      "options": [ { "optionText": string, "isCorrect": boolean } ] // empty [] for A2/B2
     }
   ]
 }
@@ -304,7 +321,14 @@ B) Practical — real-world/coding application of ${concept}, start with “Give
 - All questions directly about ${concept}. Ignore other listed concepts.
 - Each question answerable with general knowledge of ${concept}, even without the chunks.
 - Practical questions must include a short, relevant codeSnippet (≤10 lines).
-- Do **not** put any code or backticks in questionText.
+- Do not put any code or backticks in questionText.
+- Prefer variety in wording and focus areas to maximize coverage beyond questionHistory.
+
+--- Question History (for avoidance) ---
+Consists of question text, correctAnswerText, and isCorrect (meaning if user answered correctly).
+START OF HISTORY DATA
+${JSON.stringify(questionHistory)}
+END OF HISTORY DATA
 
 --- Chunks ---
 START OF CHUNKS DATA
@@ -313,9 +337,7 @@ END OF CHUNKS DATA
 
 --- Final Instructions ---
 - Produce exactly ${numberOfQuestions} total questions with a mix of A and B.
-- Validate the HARD RULES yourself. If any rule is violated, **regenerate internally** until all rules pass.
-- Return **only** the JSON object. No extra text.
-
-
-	`;
+- Validate all HARD RULES yourself, including history-based avoidance. If any rule is violated, regenerate internally until all rules pass.
+- Return only the JSON object. No extra text.
+`;
 };

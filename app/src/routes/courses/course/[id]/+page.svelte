@@ -7,7 +7,7 @@
 	import { Upload } from '@lucide/svelte';
 	import CourseBlockCard from './_components/BlockCard.svelte';
 	import getBlocks from './_clientServices.ts/getBlocks';
-	import getCourseById from './_clientServices.ts/getCourseById';
+	import getCourseById from '../../../_clientServices/getCourseById';
 	const courseId = page.params.id ?? '';
 
 	const courseQuery = createQuery({

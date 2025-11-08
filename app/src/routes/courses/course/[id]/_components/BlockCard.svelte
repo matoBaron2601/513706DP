@@ -8,7 +8,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import getUserBlocks from '../_clientServices.ts/getUserBlocks';
 	import { getUserByEmail } from '$lib/utils';
-	
+
 	let { block }: { block: BlockWithConcepts } = $props();
 
 	const userEmail = page.data.session?.user?.email ?? '';
@@ -20,29 +20,43 @@
 			return await getUserBlocks(userId, block.id);
 		}
 	});
+
+	const completed = $derived.by(() => $userBlockQuery.data?.completed ?? false);
 </script>
 
-<Card.Root class="min-w-50 relative">
+<Card.Root class="relative min-w-60">
 	<Card.Content class="flex flex-col gap-2">
 		<Card.Title class="m-auto text-xl">{block.name}</Card.Title>
 		<div class="flex items-center gap-2">
-			<Tally5Icon size={16} />
 			<p class="truncate">{`Concepts: ${block.concepts.length}`}</p>
 		</div>
 		<div class="flex items-center gap-2">
-			<Tally5Icon size={16} />
-			<p class="truncate">{`Status: ${$userBlockQuery.data?.completed ? 'Completed' : 'Not completed'}`}</p>
+			<p class="truncate">
+				{`Status: ${completed ? 'Completed' : 'Not completed'}`}
+			</p>
 		</div>
 		<div class="flex flex-col gap-2">
-			<Button
-				onclick={async () => {
-					await goto(page.url.pathname + `/block/${block.id}`);
-				}}
-				variant="outline"
-				class="flex-1 cursor-pointer"
-			>
-				Open
-			</Button>
+			{#if completed}
+				<Button
+					onclick={async () => {
+						await goto(page.url.pathname + `/block/${block.id}/history`);
+					}}
+					variant="outline"
+					class="flex-1 cursor-pointer"
+				>
+					Go to history
+				</Button>
+			{:else}
+				<Button
+					onclick={async () => {
+						await goto(page.url.pathname + `/block/${block.id}`);
+					}}
+					variant="outline"
+					class="flex-1 cursor-pointer"
+				>
+					Open
+				</Button>
+			{/if}
 		</div>
 	</Card.Content>
 </Card.Root>

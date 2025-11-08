@@ -31,7 +31,6 @@ export class BaseQuizFacade {
 		baseQuizId: string;
 	}): Promise<string[]> {
 		return db.transaction(async (tx) => {
-			console.log('Creating base questions and options...');
 			const questionIds: string[] = [];
 			for (const [conceptId, questions] of data) {
 				for (const question of questions.questions) {
@@ -55,7 +54,8 @@ export class BaseQuizFacade {
 						question.options.map(
 							(option): CreateBaseOptionDto => ({
 								optionText: option.optionText,
-								baseQuestionId: baseQuestionId
+								baseQuestionId: baseQuestionId,
+								isCorrect: option.isCorrect
 							})
 						),
 						tx
@@ -90,7 +90,7 @@ export class BaseQuizFacade {
 		const question = await this.baseQuestionService.getById(questionId, tx);
 		const options = await this.baseOptionsService.getByBaseQuestionId(questionId, tx);
 		if (options.length > 0) {
-			return answer === question.correctAnswerText;
+			return answer === options.find((opt) => opt.isCorrect)?.optionText;
 		}
 		return this.openAiService.isAnswerCorrect(
 			question.questionText,

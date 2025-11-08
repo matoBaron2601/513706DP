@@ -7,9 +7,9 @@
 	import AdaptiveQuizzesList from './_components/AdaptiveQuizzesList.svelte';
 	import BlockConceptsList from './_components/BlockConceptsList.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import queryClient from '../../../../../queryClient';
-	import getCourseById from '../../_clientServices.ts/getCourseById';
-	import getBlockByBlockId from './_clientServices/getBlockByBlockId';
+	import { goto } from '$app/navigation';
+	import getCourseById from '../../../../../_clientServices/getCourseById';
+	import getBlockById from '../../../../../_clientServices/getBlockById';
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
@@ -31,12 +31,9 @@
 	const blockQuery = createQuery({
 		queryKey: ['block', blockId],
 		queryFn: async () => {
-			return await getBlockByBlockId(blockId);
+			return await getBlockById(blockId);
 		}
 	});
-
-
-
 </script>
 
 <PageWrapper
@@ -47,9 +44,15 @@
 	]}
 >
 	{#if $userBlockQuery.data}
+
+
 		<div class="mt-4 flex flex-col">
 			<BlockConceptsList userBlockId={$userBlockQuery.data.id} />
-			<AdaptiveQuizzesList userBlockId={$userBlockQuery.data.id} />
+			{#if $userBlockQuery.data.completed}
+				<p>COMPLETED</p>
+			{:else}
+				<AdaptiveQuizzesList userBlockId={$userBlockQuery.data.id} />
+			{/if}
 		</div>
 	{/if}
 </PageWrapper>

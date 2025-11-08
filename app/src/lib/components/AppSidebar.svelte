@@ -22,36 +22,7 @@
 			url: '/courses/create',
 			icon: PlusIcon
 		}
-		// {
-		// 	title: 'Home',
-		// 	url: '/',
-		// 	icon: House
-		// },
-		// {
-		// 	title: 'Default Datasets',
-		// 	url: '/dataset/default',
-		// 	icon: FolderCog
-		// },
-		// {
-		// 	title: 'Custom Datasets',
-		// 	url: '/dataset/custom',
-		// 	icon: Columns3CogIcon
-		// },
-		// {
-		// 	title: 'My quizzes',
-		// 	url: '/quiz/created',
-		// 	icon: PersonStandingIcon
-		// },
-		// {
-		// 	title: 'Quiz history',
-		// 	url: '/quiz/history',
-		// 	icon: LucideHistory
-		// },
-		// {
-		// 	title: 'Create quiz',
-		// 	url: '/quiz/create',
-		// 	icon: PlusIcon
-		// }
+
 	];
 </script>
 

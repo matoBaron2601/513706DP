@@ -66,4 +66,8 @@ export class AdaptiveQuizAnswerService {
 	): Promise<AdaptiveQuizAnswerDto[]> {
 		return await this.repo.getByAdaptiveQuizId(adaptiveQuizId, tx);
 	}
+
+	async getQuestionHistory(adaptiveQuizIds: string[], conceptId: string) {
+		return await this.repo.getQuestionHistory(adaptiveQuizIds, conceptId);
+	}
 }

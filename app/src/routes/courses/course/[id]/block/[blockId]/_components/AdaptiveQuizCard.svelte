@@ -14,7 +14,7 @@
 	);
 </script>
 
-<Card.Root class="min-w-50 relative mx-auto w-full p-10 xl:w-[70%]">
+<Card.Root class="min-w-50 relative mx-auto w-full p-10">
 	{#if !adaptiveQuiz.readyForAnswering}
 		<Spinner />
 	{:else}
@@ -30,7 +30,10 @@
 			<div class="flex gap-2">
 				{#if adaptiveQuiz.isCompleted}
 					<Button
-						onclick={() => goto(page.url.pathname + `/adaptiveQuiz/${adaptiveQuiz.id}`)}
+						onclick={() =>
+							goto(
+								`/courses/course/${page.params.id}/block/${page.params.blockId}/adaptiveQuiz/${adaptiveQuiz.id}`
+							)}
 						variant="outline"
 						class="flex-1 cursor-pointer">Review quiz</Button
 					>

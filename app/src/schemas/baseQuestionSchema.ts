@@ -33,7 +33,8 @@ export const baseQuestionWithOptionsBlankSchema = t.Intersect([
 	t.Object({
 		options: t.Array(
 			t.Object({
-				optionText: t.Nullable(t.String())
+				optionText: t.Nullable(t.String()),
+				isCorrect: t.Boolean()
 			})
 		)
 	})
@@ -49,5 +50,3 @@ export const baseQuestionWithOptionsSchema = t.Intersect([
 ]);
 
 export type BaseQuestionWithOptions = Static<typeof baseQuestionWithOptionsSchema>;
-
-

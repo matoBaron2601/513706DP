@@ -6,10 +6,12 @@ import {
 } from '../../../schemas/blockSchema';
 import { BucketService } from '../../../services/bucketService';
 import { BlockService } from '../../../services/blockService';
+import { DocumentService } from '../../../services/documentService';
 
 const blockFacade = new BlockFacade();
 const blockService = new BlockService();
 const bucketService = new BucketService();
+const documentService = new DocumentService();
 
 export const blockApi = new Elysia({ prefix: 'block' })
 	.get('/:id', async (req) => {
@@ -21,7 +23,7 @@ export const blockApi = new Elysia({ prefix: 'block' })
 	.post(
 		'/identifyConcepts',
 		async (req) => {
-			const documentName = await bucketService.uploadFile(req.body.document);
+			const documentName = await bucketService.uploadBlockDataFile(req.body.document);
 			return await blockFacade.identifyConcepts(documentName);
 		},
 		{

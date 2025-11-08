@@ -4,7 +4,8 @@ import { baseSchema } from './baseSchema';
 
 export const baseBaseOptionSchema = t.Object({
 	baseQuestionId: t.String(),
-	optionText: t.Nullable(t.String())
+	optionText: t.Nullable(t.String()),
+	isCorrect: t.Boolean()
 });
 
 export const baseOptionSchema = t.Intersect([baseSchema, baseBaseOptionSchema]);

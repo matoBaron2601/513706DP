@@ -3,10 +3,13 @@ import {
 	adaptiveQuiz,
 	type CreateAdaptiveQuizDto,
 	type UpdateAdaptiveQuizDto,
-	type AdaptiveQuizDto
+	type AdaptiveQuizDto,
+	baseQuestion,
+	adaptiveQuizAnswer
 } from '../db/schema';
 import type { Transaction } from '../types';
 import getDbClient from './utils/getDbClient';
+import { db } from '../db/client';
 
 export class AdaptiveQuizRepository {
 	async getById(adaptiveQuizId: string, tx?: Transaction): Promise<AdaptiveQuizDto | undefined> {
@@ -123,4 +126,6 @@ export class AdaptiveQuizRepository {
 			.limit(1);
 		return result[0];
 	}
+
+
 }

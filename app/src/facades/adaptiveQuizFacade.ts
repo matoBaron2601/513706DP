@@ -1,4 +1,3 @@
-import { get } from 'http';
 import { db } from '../db/client';
 import type { AdaptiveQuizAnswer } from '../schemas/adaptiveQuizAnswerSchema';
 import type { AdaptiveQuiz, ComplexAdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
@@ -6,15 +5,11 @@ import type {
 	BaseQuizWithQuestionsAndOptions,
 	BaseQuizWithQuestionsAndOptionsBlank
 } from '../schemas/baseQuizSchema';
-import type {
-	ConceptProgressRecord,
-	CreateConceptProgressRecord
-} from '../schemas/conceptProgressRecordSchema';
+
 import type { Concept } from '../schemas/conceptSchema';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
 import { BaseQuizService } from '../services/baseQuizService';
-import { ConceptProgressRecordService } from '../services/conceptProgressRecordService';
 import { ConceptProgressService } from '../services/conceptProgressService';
 import { ConceptService } from '../services/conceptService';
 import { OpenAiService } from '../services/openAIService';
@@ -30,7 +25,6 @@ export class AdaptiveQuizFacade {
 	private baseQuizFacade: BaseQuizFacade;
 	private adaptiveQuizAnswerService: AdaptiveQuizAnswerService;
 	private conceptProgressService: ConceptProgressService;
-	private conceptProgressRecordService: ConceptProgressRecordService;
 	private baseQuizService: BaseQuizService;
 	private openAiService: OpenAiService;
 	private conceptService: ConceptService;
@@ -42,7 +36,6 @@ export class AdaptiveQuizFacade {
 		this.baseQuizFacade = new BaseQuizFacade();
 		this.adaptiveQuizAnswerService = new AdaptiveQuizAnswerService();
 		this.conceptProgressService = new ConceptProgressService();
-		this.conceptProgressRecordService = new ConceptProgressRecordService();
 		this.baseQuizService = new BaseQuizService();
 		this.openAiService = new OpenAiService();
 		this.conceptService = new ConceptService();
@@ -118,13 +111,16 @@ export class AdaptiveQuizFacade {
 		const prioritizedConcepts = await this.calculateConceptPriority(userBlockId);
 		for (const concept of prioritizedConcepts) {
 			const deficit = Math.max(0, 0.8 - concept.score);
-			const numberOfQuestions = Math.ceil(Math.min(Math.max(8 * deficit, 2), 6));
+			const lowNumberOfConceptsIndex = (3 - prioritizedConcepts.length) * 2;
+			const numberOfQuestions =
+				Math.ceil(Math.min(Math.max(8 * deficit, 2), 6)) + lowNumberOfConceptsIndex;
 			const currentConcept = concepts.find((c) => c.id === concept.conceptId);
 			const questions = await this.generateAdaptiveQuizQuestions(
 				blockId,
-				currentConcept?.name ?? '',
+				currentConcept?.id ?? '',
 				concepts.map((c) => c.name).filter((name) => name !== currentConcept?.name),
-				numberOfQuestions
+				numberOfQuestions,
+				userBlockId
 			);
 			await this.baseQuizFacade.createBaseQuestionsAndOptions({
 				data: new Map([[concept.conceptId, questions]]),
@@ -137,16 +133,21 @@ export class AdaptiveQuizFacade {
 
 	private async generateAdaptiveQuizQuestions(
 		blockId: string,
-		conceptName: string,
+		conceptId: string,
 		conceptNames: string[],
-		numberOfQuestions: number
+		numberOfQuestions: number,
+		userBlockId: string
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
+		const { name: conceptName } = await this.conceptService.getById(conceptId);
+		const questionHistory = await this.getQuestionHistory(userBlockId, conceptId);
+		console.log('Question history:', questionHistory);
 		const chunks = await this.typesenseService.getChunksByConcept(conceptName, blockId);
 		const questions = await this.openAiService.createAdaptiveQuizQuestions(
 			conceptName,
 			conceptNames,
 			chunks,
-			numberOfQuestions
+			numberOfQuestions,
+			questionHistory
 		);
 		return questions;
 	}
@@ -166,5 +167,14 @@ export class AdaptiveQuizFacade {
 			.slice(0, 3);
 
 		return topConceptProgresses;
+	}
+
+	private async getQuestionHistory(userBlockId: string, conceptId: string) {
+		const adaptiveQuizzes = await this.adaptiveQuizService.getByUserBlockId(userBlockId);
+		const questionHistory = await this.adaptiveQuizAnswerService.getQuestionHistory(
+			adaptiveQuizzes.map((quiz) => quiz.id),
+			conceptId
+		);
+		return questionHistory;
 	}
 }

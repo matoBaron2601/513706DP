@@ -5,7 +5,7 @@
 	let { complexAdaptiveQuiz }: { complexAdaptiveQuiz: ComplexAdaptiveQuiz } = $props();
 </script>
 
-<div class="flex max-w-[55%] flex-col gap-10">
+<div class="flex flex-col gap-10">
 	{#each complexAdaptiveQuiz.questions as question, index}
 		<div>
 			<h1 class="text-2xl font-bold">{`${index + 1}. ${question.questionText}`}</h1>
@@ -21,14 +21,16 @@
 					{#each question.options as option}
 						<Option
 							optionIndex={question.options.indexOf(option)}
-							reviewCorrect={option.optionText === question.correctAnswerText}
+							reviewCorrect={option.isCorrect}
 							reviewSelected={option.optionText === question.userAnswerText}
 							optionText={option.optionText ?? ''}
 						/>
 					{/each}
 				{:else}
 					<p class="text-gray-700">User Answer: {question.userAnswerText}</p>
-					<p class="text-gray-700">Correct Answer: {question.correctAnswerText}</p>
+					<p class={`text-gray-700 ${question.isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
+						Correct Answer: {question.correctAnswerText}
+					</p>
 				{/if}
 			</div>
 

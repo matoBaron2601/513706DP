@@ -1,0 +1,1 @@
+ALTER TABLE "baseOption" ADD COLUMN "isCorrect" boolean NOT NULL;

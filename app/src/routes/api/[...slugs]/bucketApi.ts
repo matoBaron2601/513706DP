@@ -1,7 +1,5 @@
 import Elysia, { t } from 'elysia';
 import * as Minio from 'minio';
-import { readFile } from 'node:fs/promises';
-import { BucketService } from '../../../services/bucketService';
 
 export const MinioClient = new Minio.Client({
 	endPoint: 'localhost',
@@ -11,3 +9,9 @@ export const MinioClient = new Minio.Client({
 	secretKey: 'minio123'
 });
 
+export const bucketApi = new Elysia({ prefix: 'bucketApi' }).get(
+	'/progress/:userBlockId',
+	async (req) => {}
+);
+
+export default bucketApi;

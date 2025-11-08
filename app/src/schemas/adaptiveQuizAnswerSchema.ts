@@ -18,8 +18,26 @@ export type CreateAdaptiveQuizAnswer = Static<typeof createAdaptiveQuizAnswerSch
 export const updateAdaptiveQuizAnswerSchema = t.Partial(createAdaptiveQuizAnswerSchema);
 export type UpdateAdaptiveQuizAnswer = Static<typeof updateAdaptiveQuizAnswerSchema>;
 
-
 // EXTENDED
 
-export const submitAdaptiveQuizAnswerSchema = t.Omit(createAdaptiveQuizAnswerSchema, ['adaptiveQuizId', 'isCorrect']);
+export const submitAdaptiveQuizAnswerSchema = t.Omit(createAdaptiveQuizAnswerSchema, [
+	'adaptiveQuizId',
+	'isCorrect'
+]);
 export type SubmitAdaptiveQuizAnswer = Static<typeof submitAdaptiveQuizAnswerSchema>;
+
+export const GetQuestionHistoryRequestSchema = t.Object({
+	adaptiveQuizId: t.String(),
+	conceptId: t.String()
+});
+export type GetQuestionHistoryRequest = Static<typeof GetQuestionHistoryRequestSchema>;
+
+export const GetQuestionHistoryResponseSchema = t.Array(
+	t.Object({
+		questionText: t.String(),
+		correctAnswerText: t.String(),
+		isCorrect: t.Boolean()
+	})
+);
+
+export type GetQuestionHistoryResponse = Static<typeof GetQuestionHistoryResponseSchema>;
