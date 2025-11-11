@@ -14,5 +14,6 @@ export type DocumentSearchParams = {
 export type QuizDocument = {
 	block_id: string;
 	content: string;
+	documentPath: string;
 };
 

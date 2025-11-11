@@ -57,9 +57,13 @@ export class TypesenseService {
 			filter_by: `block_id:=${blockId}`,
 			per_page: 50,
 			sort_by: '_text_match:desc',
-			prefix:false,
+			prefix: false
 		});
 		return chunks.hits?.map((hit) => (hit.document as { content: string }).content) ?? [];
+	}
+
+	async deleteByDocumentPath(blockId: string, documentPath: string) {
+		return await this.repo.deleteDocuments(COLLECTION_NAME, blockId, documentPath);
 	}
 
 	private async getDocuments({

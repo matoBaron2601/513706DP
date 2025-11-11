@@ -2,8 +2,13 @@ import { Elysia } from 'elysia';
 
 import { BucketService } from '../../../services/bucketService';
 import { DocumentService } from '../../../services/documentService';
-import { createDocumentRequestSchema } from '../../../schemas/documentSchema';
+import {
+	createDocumentRequestSchema,
+	deleteDocumentRequestSchema
+} from '../../../schemas/documentSchema';
+import { DocumentFacade } from '../../../facades/documentFacade';
 
+const documentFacade = new DocumentFacade();
 const documentService = new DocumentService();
 const bucketService = new BucketService();
 
@@ -14,17 +19,24 @@ export const documentApi = new Elysia({ prefix: 'document' })
 	.post(
 		'/',
 		async (req) => {
-			const documentName = await bucketService.uploadBlockDataFile(req.body.document);
-			return await documentService.create({
+			const filePath = await bucketService.uploadBlockDataFile(req.body.document);
+			return await documentFacade.uploadDocument({
 				blockId: req.body.blockId,
-				filePath: documentName,
-				isMain: req.body.isMain
+				filePath: filePath,
+				isMain: false
 			});
 		},
 		{ body: createDocumentRequestSchema }
 	)
-    .get('blockId/:blockId', async (req) => {
-        return await documentService.getByBlockId(req.params.blockId);
-    });
+	.get('blockId/:blockId', async (req) => {
+		return await documentService.getByBlockId(req.params.blockId);
+	})
+	.delete(
+		'/',
+		async (req) => {
+			return await documentFacade.deleteDocument(req.body.documentPath);
+		},
+		{ body: deleteDocumentRequestSchema }
+	);
 
 export default documentApi;

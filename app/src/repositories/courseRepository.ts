@@ -1,7 +1,16 @@
-import { eq, inArray, isNull } from 'drizzle-orm';
-import { course, type CreateCourseDto, type UpdateCourseDto, type CourseDto } from '../db/schema';
+import { eq, inArray, isNull, SQL, ilike, sql, and, asc, desc } from 'drizzle-orm';
+import {
+	course,
+	type CreateCourseDto,
+	type UpdateCourseDto,
+	type CourseDto,
+	block
+} from '../db/schema';
 import type { Transaction } from '../types';
 import getDbClient from './utils/getDbClient';
+import type { GetCoursesRequest, GetCoursesResponse } from '../schemas/courseSchema';
+
+export type CourseWithBlocksCount = CourseDto & { blocksCount: number };
 
 export class CourseRepository {
 	async getById(courseId: string, tx?: Transaction): Promise<CourseDto | undefined> {
@@ -39,8 +48,62 @@ export class CourseRepository {
 	async getManyByCreatorId(creatorId: string, tx?: Transaction): Promise<CourseDto[]> {
 		return await getDbClient(tx).select().from(course).where(eq(course.creatorId, creatorId));
 	}
+	async getAll(
+		{
+			name,
+			creatorId,
+			minBlocks,
+			maxBlocks,
+			sortBy = 'createdAt',
+			sortDir = 'desc'
+		}: GetCoursesRequest = {},
+		tx?: Transaction
+	): Promise<GetCoursesResponse[]> {
+		const db = getDbClient(tx);
+		const where = and(
+			isNull(course.deletedAt),
+			creatorId ? eq(course.creatorId, creatorId) : undefined,
+			name ? ilike(course.name, `%${name}%`) : undefined
+		);
 
-	async getAll(tx?: Transaction): Promise<CourseDto[]> {
-		return await getDbClient(tx).select().from(course).where(isNull(course.deletedAt));
+		const having = and(
+			minBlocks ? sql`count(${block.id}) >= ${minBlocks}` : undefined,
+			maxBlocks ? sql`count(${block.id}) <= ${maxBlocks}` : undefined
+		);
+
+		const base = db
+			.select({
+				id: course.id,
+				name: course.name,
+				creatorId: course.creatorId,
+				createdAt: course.createdAt,
+				updatedAt: course.updatedAt,
+				deletedAt: course.deletedAt,
+				published: course.published,
+				blocksCount: sql<number>`count(${block.id})`
+			})
+			.from(course)
+			.leftJoin(block, eq(block.courseId, course.id))
+			.where(where)
+			.groupBy(course.id);
+
+		const withHaving = having ? base.having(having) : base;
+
+		const orderExpr =
+			sortBy === 'name'
+				? sortDir === 'asc'
+					? asc(course.name)
+					: desc(course.name)
+				: sortBy === 'blocksCount'
+					? sortDir === 'asc'
+						? sql`count(${block.id}) asc`
+						: sql`count(${block.id}) desc`
+					: sortDir === 'asc'
+						? asc(course.createdAt)
+						: desc(course.createdAt);
+
+		const rows = await withHaving.orderBy(orderExpr);
+
+		return rows;
 	}
 }

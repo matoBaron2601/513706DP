@@ -47,7 +47,6 @@ export class PlacementQuizFacade {
 		});
 
 		const generatedQuestions = await this.generatePlacementQuizQuestions(
-			data.questionsPerConcept,
 			data.blockId
 		);
 
@@ -61,7 +60,6 @@ export class PlacementQuizFacade {
 	}
 
 	async generatePlacementQuizQuestions(
-		questionsPerConcept: number,
 		blockId: string
 	): Promise<Map<string, BaseQuizWithQuestionsAndOptionsBlank>> {
 		const conceptsData = await this.conceptService.getManyByBlockId(blockId);
@@ -82,8 +80,7 @@ export class PlacementQuizFacade {
 					const placementQuestions = await this.openAiService.createPlacementQuestions(
 						concept.name,
 						concepts.map((c) => c.name),
-						chunks,
-						questionsPerConcept
+						chunks
 					);
 
 					return [concept.id, placementQuestions] as const;

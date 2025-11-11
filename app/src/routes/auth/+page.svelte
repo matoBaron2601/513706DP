@@ -13,10 +13,8 @@
 	});
 </script>
 
-<div class="mt-60 flex h-full justify-center gap-8">
-	<div class="text-center">
-		<CircleQuestionMark size={50} class="mx-auto mb-4" />
-		<h1 class="mb-8 text-3xl font-bold">Log in to OnlyDevs Quizzes</h1>
+<div class="flex h-full justify-center items-center gap-8 -translate-y-20">
+	<div class="text-center min-w-[300px]">
 		<Button
 			onclick={() => signIn('google')}
 			class="flex w-full cursor-pointer items-center justify-center"

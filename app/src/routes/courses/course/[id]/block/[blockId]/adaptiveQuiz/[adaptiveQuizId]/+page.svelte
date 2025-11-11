@@ -52,13 +52,12 @@
 	});
 
 	const handleSubmitQuestion = async (optionText: string, baseQuestionId: string) => {
-		await $submitAdaptiveQuizAnswerMutation.mutate({
+		questionIndex += 1;
+		await $submitAdaptiveQuizAnswerMutation.mutateAsync({
 			answerText: optionText,
 			baseQuestionId: baseQuestionId
 		});
 		await queryClient.invalidateQueries({ queryKey: ['adaptiveQuiz', adaptiveQuizId] });
-		questionIndex += 1;
-
 		if (questionIndex >= ($adaptiveQuizQuery.data?.questions.length ?? 0)) {
 			showSummary = true;
 			await $finishAdaptiveQuizMutation.mutateAsync();
@@ -104,12 +103,14 @@
 		<Spinner />
 	{:else if $adaptiveQuizQuery.data && showSummary}
 		<Summary complexAdaptiveQuiz={$adaptiveQuizQuery.data} />
-	{:else if $adaptiveQuizQuery.data && $adaptiveQuizQuery.data.questions}
+	{:else if $adaptiveQuizQuery.data && $adaptiveQuizQuery.data.questions && questionIndex < $adaptiveQuizQuery.data.questions.length}
 		<Question
 			index={questionIndex}
 			question={$adaptiveQuizQuery.data.questions[questionIndex]}
 			{handleSubmitQuestion}
 			{data}
 		/>
+	{:else}
+		<Spinner />
 	{/if}
 </PageWrapper>

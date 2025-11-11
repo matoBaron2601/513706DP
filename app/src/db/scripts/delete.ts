@@ -3,6 +3,7 @@ import { table } from '../schema';
 
 const run = async () => {
 	try {
+		await db.delete(table.document);
 		await db.delete(table.adaptiveQuizAnswer);
 		await db.delete(table.conceptProgress);
 		await db.delete(table.adaptiveQuiz);

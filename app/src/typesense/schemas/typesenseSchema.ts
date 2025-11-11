@@ -7,6 +7,7 @@ const typesenseSchema = {
 	fields: [
 		{ name: 'block_id', type: 'string' },
 		{ name: 'content', type: 'string' },
+		{ name: 'documentPath', type: 'string' },
 		{
 			name: 'vector',
 			type: 'float[]',

@@ -32,6 +32,7 @@
 	};
 
 	const removeAt = (i: number) => {
+		if(items.length < 2) return;
 		const copy = [...items];
 		copy.splice(i, 1);
 		emit(copy);

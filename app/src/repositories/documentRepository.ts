@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, isNull, and } from 'drizzle-orm';
 import {
 	document,
 	type CreateDocumentDto,
@@ -10,7 +10,18 @@ import getDbClient from './utils/getDbClient';
 
 export class DocumentRepository {
 	async getById(documentId: string, tx?: Transaction): Promise<DocumentDto | undefined> {
-		const result = await getDbClient(tx).select().from(document).where(eq(document.id, documentId));
+		const result = await getDbClient(tx)
+			.select()
+			.from(document)
+			.where(and(eq(document.id, documentId), isNull(document.deletedAt)));
+		return result[0];
+	}
+
+	async getByFilePath(filePath: string, tx?: Transaction): Promise<DocumentDto | undefined> {
+		const result = await getDbClient(tx)
+			.select()
+			.from(document)
+			.where(and(eq(document.filePath, filePath), isNull(document.deletedAt)));
 		return result[0];
 	}
 
@@ -34,13 +45,33 @@ export class DocumentRepository {
 
 	async delete(documentId: string, tx?: Transaction): Promise<DocumentDto | undefined> {
 		const result = await getDbClient(tx)
-			.delete(document)
+			.update(document)
+			.set({ deletedAt: new Date() })
 			.where(eq(document.id, documentId))
 			.returning();
 		return result[0];
 	}
 
+	async getManyByBlockId(blockId: string, tx?: Transaction): Promise<DocumentDto[]> {
+		return await getDbClient(tx)
+			.select()
+			.from(document)
+			.where(and(eq(document.blockId, blockId), isNull(document.deletedAt)));
+	}
+
 	async getByBlockId(blockId: string, tx?: Transaction): Promise<DocumentDto[]> {
-		return await getDbClient(tx).select().from(document).where(eq(document.blockId, blockId));
+		return await getDbClient(tx)
+			.select()
+			.from(document)
+			.where(and(eq(document.blockId, blockId), isNull(document.deletedAt)));
+	}
+
+	async deleteByName(filePath: string, tx?: Transaction): Promise<DocumentDto | undefined> {
+		const result = await getDbClient(tx)
+			.update(document)
+			.set({ deletedAt: new Date() })
+			.where(eq(document.filePath, filePath))
+			.returning();
+		return result[0];
 	}
 }

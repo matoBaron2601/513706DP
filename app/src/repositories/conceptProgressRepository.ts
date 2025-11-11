@@ -110,7 +110,7 @@ export class ConceptProgressRepository {
 			.select()
 			.from(conceptProgress)
 			.where(
-				and(eq(conceptProgress.userBlockId, userBlockId), eq(conceptProgress.completed, false))
+				and(eq(conceptProgress.userBlockId, userBlockId), eq(conceptProgress.mastered, false))
 			);
 		return result;
 	}

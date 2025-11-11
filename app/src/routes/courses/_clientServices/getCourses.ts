@@ -1,7 +1,15 @@
-import type { Course } from '../../../schemas/courseSchema';
+import type { GetCoursesRequest, GetCoursesResponse } from '../../../schemas/courseSchema';
 
-const getCourses = async (): Promise<Course[]> => {
-	const response = await fetch(`/api/course`);
+const getCourses = async (getCoursesRequest: GetCoursesRequest): Promise<GetCoursesResponse[]> => {
+	const response = await fetch(`/api/course/filtered`, {
+		body: JSON.stringify(getCoursesRequest),
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+	console.log('Response status:', response.status);
+
 	if (!response.ok) {
 		throw new Error('Failed to get courses');
 	}

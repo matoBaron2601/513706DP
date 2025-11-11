@@ -36,16 +36,28 @@
 	});
 </script>
 
+{#snippet ExtraButton()}
+	<Button
+		class="cursor-pointer"
+		onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/history`)}
+		>History</Button
+	>
+	<Button
+		class="cursor-pointer"
+		onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/documents`)}
+		>Documents</Button
+	>
+{/snippet}
+
 <PageWrapper
 	breadcrumbItems={[
 		{ text: 'Courses', href: '/courses' },
 		{ text: `Course: ${$courseQuery.data?.name}`, href: `/courses/course/${page.params.id}` },
 		{ text: `Block: ${$blockQuery.data?.name}`, isCurrent: true }
 	]}
+	extraButton={ExtraButton}
 >
 	{#if $userBlockQuery.data}
-
-
 		<div class="mt-4 flex flex-col">
 			<BlockConceptsList userBlockId={$userBlockQuery.data.id} />
 			{#if $userBlockQuery.data.completed}

@@ -52,7 +52,7 @@
 			/>
 		{/each}
 	{:else if question.options.length === 0}
-		<form method="POST" use:enhance class="mx-auto p-4 md:w-[50%]" onsubmit={handleSubmitAnswer}>
+		<form method="POST" use:enhance onsubmit={handleSubmitAnswer}>
 			<Form.Field {form} name="text">
 				<Form.Control>
 					{#snippet children({ props })}

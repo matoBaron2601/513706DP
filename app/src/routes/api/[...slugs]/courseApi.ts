@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { createCourseSchema } from '../../../schemas/courseSchema';
+import { getCoursesRequestSchema, createCourseSchema } from '../../../schemas/courseSchema';
 import { CourseService } from '../../../services/courseService';
 
 const courseService = new CourseService();
@@ -8,9 +8,15 @@ export const courseApi = new Elysia({ prefix: 'course' })
 	.get('/:id', async (req) => {
 		return await courseService.getById(req.params.id);
 	})
-	.get('/', async () => {
-		return await courseService.getAll();
-	})
+	.post(
+		'/filtered',
+		async (req) => {
+			return await courseService.getAll(req.body);
+		},
+		{
+			body: getCoursesRequestSchema
+		}
+	)
 	.post(
 		'/',
 		async (req) => {

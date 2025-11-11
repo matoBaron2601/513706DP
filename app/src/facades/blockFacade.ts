@@ -116,7 +116,8 @@ export class BlockFacade {
 				chunksReadyForIndexing.map((chunk, i) => ({
 					block_id: block.id,
 					chunk_index: i,
-					content: chunk
+					content: chunk,
+					documentPath: data.documentPath
 				}))
 			);
 

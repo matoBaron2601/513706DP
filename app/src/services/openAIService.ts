@@ -65,12 +65,9 @@ export class OpenAiService {
 	async createPlacementQuestions(
 		concept: string,
 		concepts: string[],
-		chunks: string[],
-		questionsPerConcept: number
+		chunks: string[]
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
-		const response = await this.callOpenAI(
-			placementQuizPrompt(concept, concepts, chunks, questionsPerConcept)
-		);
+		const response = await this.callOpenAI(placementQuizPrompt(concept, concepts, chunks));
 		const responseContent =
 			response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
 		let parsedQuiz: any;
@@ -106,7 +103,10 @@ export class OpenAiService {
 		concept: string,
 		concepts: string[],
 		chunks: string[],
-		numberOfQuestions: number,
+		numberOfQuestionsA1: number,
+		numberOfQuestionsA2: number,
+		numberOfQuestionsB1: number,
+		numberOfQuestionsB2: number,
 		questionHistory: {
 			questionText: string;
 			correctAnswerText: string;
@@ -114,7 +114,16 @@ export class OpenAiService {
 		}[]
 	): Promise<BaseQuizWithQuestionsAndOptionsBlank> {
 		const response = await this.callOpenAI(
-			adaptiveQuizPrompt(concept, concepts, chunks, numberOfQuestions, questionHistory)
+			adaptiveQuizPrompt(
+				concept,
+				concepts,
+				chunks,
+				numberOfQuestionsA1,
+				numberOfQuestionsA2,
+				numberOfQuestionsB1,
+				numberOfQuestionsB2,
+				questionHistory
+			)
 		);
 		const responseContent =
 			response.choices[0].message.content?.replace(/```json|```/g, '').trim() || '';
@@ -200,85 +209,11 @@ export class OpenAiService {
 	}
 }
 
-const placementQuizPrompt = (
-	concept: string,
-	concepts: string[],
-	chunks: string[],
-	numberOfQuestions: number
-) => {
+const placementQuizPrompt = (concept: string, concepts: string[], chunks: string[]) => {
 	return `
 You are an expert quiz creator in a RAG system.
 
-Create a placement quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks>.
-
-You must NOT create questions about other related concepts:
-${concepts.filter((c) => c !== concept).join(', ')}
-
---- HARD RULES (MUST PASS) ---
-1) questionText is plain sentences only. **No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
-2) Any code MUST appear **only** in codeSnippet (never in questionText).
-3) For A1/A2 (theory): codeSnippet MUST be an empty string "".
-4) For B1/B2 (practical): codeSnippet MUST be non-empty (max 10 lines). Do not include answers in code.
-5) At least 40% questions are practical (B1/B2).
-6) Do not include explanations; output **only** the JSON object.
-
---- Question Types ---
-A) Theoretical — about ${concept}
-   A1: Multiple Choice (4 options, 1 correct)
-   A2: Fill-in-the-Blank (no options)
-B) Practical — real-world/coding application of ${concept}, start with “Given the following code snippet” or similar
-   B1: Multiple Choice (4 options, 1 correct) + short codeSnippet
-   B2: Fill-in-the-Blank + short codeSnippet
-
---- Output Schema (exact) ---
-{
-  "questions": [
-    {
-      "questionText": string,        // no code / no backticks
-      "correctAnswerText": string,
-      "orderIndex": string,
-      "codeSnippet": string,         // "" for A1/A2; non-empty for B1/B2
-      "questionType": "B1" | "B2" | "A1" | "A2",
-      "options": [ { "optionText": string, "isCorrect": boolean } ] // empty [] for A2/B2
-    }
-  ]
-}
-
---- Content Requirements ---
-- All questions directly about ${concept}. Ignore other listed concepts.
-- Each question answerable with general knowledge of ${concept}, even without the chunks.
-- Practical questions must include a short, relevant codeSnippet (≤10 lines).
-- Do **not** put any code or backticks in questionText.
-
---- Chunks ---
-START OF CHUNKS DATA
-${JSON.stringify(chunks)}
-END OF CHUNKS DATA
-
---- Final Instructions ---
-- Produce exactly ${numberOfQuestions} total questions with a mix of A and B.
-- Validate the HARD RULES yourself. If any rule is violated, **regenerate internally** until all rules pass.
-- Return **only** the JSON object. No extra text.
-
-
-	`;
-};
-
-const adaptiveQuizPrompt = (
-	concept: string,
-	concepts: string[],
-	chunks: string[],
-	numberOfQuestions: number,
-	questionHistory: {
-		questionText: string;
-		correctAnswerText: string;
-		isCorrect: boolean;
-	}[]
-) => {
-	return `
-You are an expert quiz creator in a RAG system.
-
-Create an adaptive quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based on the provided <chunks>.
+Create a placement quiz about the concept = ${concept}, with exactly 4 questions, based **solely** on the provided <chunks>.
 
 You must NOT create questions about other related concepts:
 ${concepts.filter((c) => c !== concept).join(', ')}
@@ -288,20 +223,21 @@ ${concepts.filter((c) => c !== concept).join(', ')}
 2) Any code MUST appear only in codeSnippet (never in questionText).
 3) For A1/A2 (theory): codeSnippet MUST be an empty string "".
 4) For B1/B2 (practical): codeSnippet MUST be non-empty (max 10 lines). Do not include answers in code.
-5) At least 40% of questions are practical (B1/B2).
-6) Do not include explanations; output only the JSON object.
-7) Avoid reusing questions from history:
-   - Do NOT repeat any questionText that appears in questionHistory.
-   - Do NOT create questions whose correctAnswerText is effectively identical in meaning to those in questionHistory for the same concept.
-   - If a question would overlap strongly with history, rephrase or choose a different angle while staying within this prompt's rules.
+5) Do not include explanations; output only the JSON object.
+6) You MUST generate exactly 4 questions in total:
+   - Exactly one A1 question (theoretical multiple choice, no codeSnippet).
+   - Exactly one A2 question (theoretical fill-in-the-blank, no options, no codeSnippet).
+   - Exactly one B1 question (practical multiple choice with a non-empty codeSnippet).
+   - Exactly one B2 question (practical fill-in-the-blank with a non-empty codeSnippet, no options).
+   No extra, missing, or duplicate types.
 
 --- Question Types ---
 A) Theoretical — about ${concept}
    A1: Multiple Choice (4 options, 1 correct)
    A2: Fill-in-the-Blank (no options)
-B) Practical — real-world/coding application of ${concept}, start with "Given the following code snippet" or similar
-   B1: Multiple Choice (4 options, 1 correct) + short codeSnippet
-   B2: Fill-in-the-Blank + short codeSnippet
+B) Practical — real-world/coding application of ${concept}
+   B1: Multiple Choice (4 options, 1 correct), start with “Given the following code snippet” or similar, codeSnippet included
+   B2: Short coding task, user need to write max 3 lines of code according to questionsText requirements. Code snipper in question can be included (user can be ask to correct code or add something to it)
 
 --- Output Schema (exact) ---
 {
@@ -322,22 +258,104 @@ B) Practical — real-world/coding application of ${concept}, start with "Given 
 - Each question answerable with general knowledge of ${concept}, even without the chunks.
 - Practical questions must include a short, relevant codeSnippet (≤10 lines).
 - Do not put any code or backticks in questionText.
-- Prefer variety in wording and focus areas to maximize coverage beyond questionHistory.
 
---- Question History (for avoidance) ---
-Consists of question text, correctAnswerText, and isCorrect (meaning if user answered correctly).
-START OF HISTORY DATA
-${JSON.stringify(questionHistory)}
-END OF HISTORY DATA
-
+In generation, take inspiration from the following chunks. Do not fully copy any content, but ensure the questions are relevant to the material provided.
 --- Chunks ---
 START OF CHUNKS DATA
 ${JSON.stringify(chunks)}
 END OF CHUNKS DATA
 
 --- Final Instructions ---
-- Produce exactly ${numberOfQuestions} total questions with a mix of A and B.
-- Validate all HARD RULES yourself, including history-based avoidance. If any rule is violated, regenerate internally until all rules pass.
+- Produce exactly 4 total questions: 1x A1, 1x A2, 1x B1, 1x B2.
+- Validate the HARD RULES yourself. If any rule is violated, regenerate internally until all rules pass.
+- Return only the JSON object. No extra text.
+`;
+};
+
+const adaptiveQuizPrompt = (
+	concept: string,
+	concepts: string[],
+	chunks: string[],
+	numberOfA1Questions: number,
+	numberOfA2Questions: number,
+	numberOfB1Questions: number,
+	numberOfB2Questions: number,
+	questionHistory: {
+		questionText: string;
+		correctAnswerText: string;
+		isCorrect: boolean;
+	}[]
+) => {
+	const numberOfQuestions =
+		numberOfA1Questions + numberOfA2Questions + numberOfB1Questions + numberOfB2Questions;
+	return `
+You are an expert quiz creator in a RAG system.
+
+Create a placement quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks>.
+You must NOT create questions about other related concepts:
+${concepts.filter((c) => c !== concept).join(', ')}
+
+--- HARD RULES (MUST PASS) ---
+1) questionText is plain sentences only. No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with common code keywords (e.g., function, const, let, class, if, for, while, return, import).
+2) Any code MUST appear only in codeSnippet (never in questionText).
+3) For A1/A2 (theory): codeSnippet MUST be an empty string "".
+4) For B1/B2 (practical): codeSnippet MUST be non-empty (max 10 lines). Do not include answers in code.
+5) Do not include explanations; output only the JSON object.
+6) You MUST generate exactly ${numberOfQuestions} questions in total:
+   - Exactly ${numberOfA1Questions} A1 questions (theoretical multiple choice, no codeSnippet).
+   - Exactly ${numberOfA2Questions} A2 questions (theoretical fill-in-the-blank, no options, no codeSnippet).
+   - Exactly ${numberOfB1Questions} B1 questions (practical multiple choice with a non-empty codeSnippet).
+   - Exactly ${numberOfB2Questions} B2 questions (practical fill-in-the-blank with a non-empty codeSnippet, no options).
+   No extra, missing, or duplicate types.
+7) Avoid reusing questions from history:
+   - Do NOT repeat any questionText that appears in questionHistory.
+   - Do NOT create questions whose correctAnswerText is effectively identical in meaning to those in questionHistory for the same concept.
+   - If a question would overlap strongly with history, rephrase or choose a different angle while staying within this prompt's rules.
+
+--- Question Types ---
+A) Theoretical — about ${concept}
+   A1: Multiple Choice (4 options, 1 correct)
+   A2: Fill-in-the-Blank (no options)
+B) Practical — real-world/coding application of ${concept}
+   B1: Multiple Choice (4 options, 1 correct), start with “Given the following code snippet” or similar, codeSnippet included
+   B2: Short coding task, user need to write max 3 lines of code according to questionsText requirements. Code snipper in question can be included (user can be ask to correct code or add something to it)
+
+--- Output Schema (exact) ---
+{
+  "questions": [
+    {
+      "questionText": string,        // no code / no backticks
+      "correctAnswerText": string,
+      "orderIndex": string,
+      "codeSnippet": string,         // "" for A1/A2; non-empty for B1/B2
+      "questionType": "B1" | "B2" | "A1" | "A2",
+      "options": [ { "optionText": string, "isCorrect": boolean } ] // empty [] for A2/B2
+    }
+  ]
+}
+
+--- Content Requirements ---
+- All questions directly about ${concept}. Ignore other listed concepts.
+- Each question answerable with general knowledge of ${concept}, even without the chunks.
+- Practical questions must include a short, relevant codeSnippet (≤10 lines).
+- Do not put any code or backticks in questionText.
+
+In generation, take inspiration from the following chunks. Do not fully copy any content, but ensure the questions are relevant to the material provided.
+--- Chunks ---
+START OF CHUNKS DATA
+${JSON.stringify(chunks)}
+END OF CHUNKS DATA
+
+
+---Question History ---
+These are previous questions asked about the concept ${concept}. Avoid repeating or closely paraphrasing these questions or their answers.
+START OF QUESTION HISTORY
+${JSON.stringify(questionHistory)}
+END OF QUESTION HISTORY
+
+--- Final Instructions ---
+- Produce exactly 4 total questions: ${numberOfA1Questions}x A1, ${numberOfA2Questions}x A2, ${numberOfB1Questions}x B1, ${numberOfB2Questions}x B2.
+- Validate the HARD RULES yourself. If any rule is violated, regenerate internally until all rules pass.
 - Return only the JSON object. No extra text.
 `;
 };

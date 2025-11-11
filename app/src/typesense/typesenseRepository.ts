@@ -36,4 +36,12 @@ export class TypesenseRepository {
 	): Promise<SearchResponse<object>> {
 		return await typesenseClient.collections(collectionName).documents().search(searchParams);
 	}
+
+	async deleteDocuments(collectionName: string, blockId: string, documentPath: string) {
+		const filterBy = `block_id:=${blockId} && documentPath:="${documentPath}"`;
+		return await typesenseClient
+			.collections(collectionName)
+			.documents()
+			.delete({ filter_by: filterBy });
+	}
 }

@@ -22,7 +22,6 @@ export type CreatePlacementQuizWithBlockId = Static<typeof createPlacementQuizWi
 
 export const createPlacementQuizRequestSchema = t.Object({
 	blockId: t.String(),
-	questionsPerConcept: t.Number()
 });
 export type CreatePlacementQuizRequest = Static<typeof createPlacementQuizRequestSchema>;
 

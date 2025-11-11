@@ -2,6 +2,7 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 import { baseBaseOptionSchema, baseOptionSchema } from './baseOptionSchema';
+import { questionTypeEnum } from './conceptProgressSchema';
 
 const baseBaseQuestionSchema = t.Object({
 	baseQuizId: t.String(),
@@ -28,7 +29,7 @@ export const baseQuestionWithOptionsBlankSchema = t.Intersect([
 		correctAnswerText: t.String(),
 		orderIndex: t.Number(),
 		codeSnippet: t.String(),
-		questionType: t.String()
+		questionType: questionTypeEnum
 	}),
 	t.Object({
 		options: t.Array(

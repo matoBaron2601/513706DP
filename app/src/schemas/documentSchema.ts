@@ -19,8 +19,13 @@ export type UpdateDocument = Static<typeof updateDocumentSchema>;
 
 export const createDocumentRequestSchema = t.Object({
 	document: t.File(),
-	blockId: t.String(),
-	isMain: t.Boolean()
+	blockId: t.String()
 });
 
 export type CreateDocumentRequest = Static<typeof createDocumentRequestSchema>;
+
+export const deleteDocumentRequestSchema = t.Object({
+	documentPath: t.String()
+});
+
+export type DeleteDocumentRequest = Static<typeof deleteDocumentRequestSchema>;

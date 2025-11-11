@@ -9,6 +9,8 @@
 
 	import bubble from './bubble.png';
 	import hed from './hed.png';
+	import hed2 from './hed2.png';
+	import todbubble from './todbubble.png';
 
 	let { children } = $props();
 
@@ -72,26 +74,26 @@
 		<main class="w-full bg-gray-100">
 			{@render children?.()}
 			<div
-				class="right-25 invisible absolute top-[40%] order-first flex flex-col justify-center md:order-none md:justify-end xl:visible"
+				class="right-25 invisible absolute top-[40%] order-first flex flex-col justify-center md:order-none md:justify-end xl:visible gap-40"
 			>
 				<div class="relative w-[240px]">
 					<img
-						src={bubble}
+						src={todbubble}
 						alt="Speech bubble"
-						class="w-[240px] select-none drop-shadow-md"
+						class="w-[240px] select-none drop-shadow-md -translate-y-16"
 						draggable="false"
 					/>
 					<p
-						class="-translate-y-4.5 text-md absolute inset-0 flex items-center justify-center px-8 text-center"
+						class="-translate-y-21.5 text-md absolute inset-0 flex items-center justify-center px-8 text-center"
 					>
 						{learningQuotes[Math.floor(Math.random() * learningQuotes.length)]}
 					</p>
 				</div>
 
 				<img
-					src={hed}
+					src={hed2}
 					alt="Owl mascot"
-					class="top-50 absolute w-[240px] select-none drop-shadow-md"
+					class="top-40 absolute w-[240px] select-none drop-shadow-md"
 					draggable="false"
 				/>
 			</div>

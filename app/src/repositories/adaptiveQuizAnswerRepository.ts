@@ -102,6 +102,7 @@ export class AdaptiveQuizAnswerRepository {
 					eq(baseQuestion.conceptId, conceptId),
 					inArray(adaptiveQuizAnswer.adaptiveQuizId, adaptiveQuizIds)
 				)
-			);
+			)
+			.limit(20);
 	}
 }

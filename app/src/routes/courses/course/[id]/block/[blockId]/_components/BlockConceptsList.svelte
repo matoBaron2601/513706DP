@@ -28,15 +28,5 @@
 				<BlockConceptCard {concept} />
 			</div>
 		{/each}
-		<Button
-			class="cursor-pointer"
-			onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/history`)}
-			>Go to history</Button
-		>
-		<Button
-			class="cursor-pointer"
-			onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/documents`)}
-			>Go to documents</Button
-		>
 	</div>
 {/if}

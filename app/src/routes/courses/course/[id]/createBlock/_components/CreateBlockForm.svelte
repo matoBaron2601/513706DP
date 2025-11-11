@@ -14,8 +14,12 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Step } from '../+page.svelte';
+	import createPlacementQuiz from '../_clientServices.ts/createPlacementQuiz';
+	import { goto } from '$app/navigation';
+	import { TriangleAlert } from '@lucide/svelte';
 
 	const courseId = page.params.id ?? '';
+	const blockId = page.params.blockId ?? '';
 
 	let {
 		data,
@@ -36,6 +40,16 @@
 	});
 	const { form: formData, enhance, validateForm } = form;
 
+	const createPlacementQuizMutation = createMutation({
+		mutationKey: ['createPlacementQuiz'],
+		mutationFn: async (blockId: string) => {
+			await createPlacementQuiz({
+				blockId: blockId
+			});
+			goto(`/courses/course/${page.params.id}`);
+		}
+	});
+
 	const createBlockMutation = createMutation({
 		mutationKey: ['createBlock'],
 		mutationFn: async () => {
@@ -47,10 +61,10 @@
 				chunkingStrategy: $formData.chunkingStrategy,
 				useLLMTransformation: $formData.useLLMTransformation
 			});
-			handleSetBlockId(blockId);
+			return blockId;
 		},
-		onSuccess: async () => {
-			handleSetStep('placementQuiz');
+		onSuccess: async (blockId: string) => {
+			await $createPlacementQuizMutation.mutateAsync(blockId);
 		}
 	});
 
@@ -63,7 +77,7 @@
 	};
 </script>
 
-<form method="POST" class="p-4 md:w-[50%]" use:enhance onsubmit={handleFormSubmit}>
+<form class="p-4" onsubmit={handleFormSubmit}>
 	<Card.Title>3. Create block</Card.Title>
 	<Card.Description class="mt-1">Configure the block settings before creating it.</Card.Description>
 	<Card.Card class="mx-auto mt-4">
@@ -80,7 +94,7 @@
 			<Form.Field {form} name="chunkingStrategy">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Tabs.Root value={$formData.chunkingStrategy} {...props} class="w-[400px]">
+						<Tabs.Root value={$formData.chunkingStrategy} {...props} class="w-full">
 							<Form.Label>Chunking strategy</Form.Label>
 							<Tabs.List>
 								<Tabs.Trigger
@@ -94,6 +108,16 @@
 									value="semantic">Semantic</Tabs.Trigger
 								>
 							</Tabs.List>
+							<Form.Description class="w-full">
+								{#if $formData.chunkingStrategy === 'rtc'}
+									Splits text by structure (paragraphs, sentences, punctuation) to keep natural flow
+									within size limits. Use Recursive when you want fast, reliable splits that keep
+									natural text boundaries.
+								{:else if $formData.chunkingStrategy === 'semantic'}
+									Splits text by meaning using embeddings to group similar ideas together. Use
+									Semantic when you need the chunks to reflect meaning or topic changes accurately.
+								{/if}
+							</Form.Description>
 						</Tabs.Root>
 					{/snippet}
 				</Form.Control>
@@ -105,23 +129,40 @@
 						<Form.Label>Use LLM Transformation</Form.Label>
 						<Switch class="cursor-pointer" bind:checked={$formData.useLLMTransformation} />
 						<Form.Description>
-							This may dramatically increase the processing time, but can lead to better results.
+							Enable this to have the system use a Language Model to preprocess and transform the
+							content before chunking.
 						</Form.Description>
+						{#if $formData.useLLMTransformation}
+							<div class="flex items-center gap-2 text-yellow-500">
+								<TriangleAlert class="text-yellow-500" />
+								<Form.Description class="text-yellow-500 font-bold">
+									This may dramatically increase the processing time, but can lead to better
+									results.
+								</Form.Description>
+							</div>
+						{/if}
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
-			<Button
-				type="submit"
-				class="mx-auto w-full cursor-pointer lg:w-[50%]"
-				disabled={$createBlockMutation.isPending}
-			>
-				{#if $createBlockMutation.isPending}
-					<Spinner />
-				{:else}
-					Submit
-				{/if}
-			</Button>
+
+			<div class="flex justify-between pt-2">
+				<Button
+					class="cursor-pointer rounded border px-3 py-1"
+					onclick={() => handleSetStep('editConcepts')}>Go back</Button
+				>
+				<Button
+					type="submit"
+					class="cursor-pointer"
+					disabled={$createBlockMutation.isPending || $createPlacementQuizMutation.isPending}
+				>
+					{#if $createBlockMutation.isPending || $createPlacementQuizMutation.isPending}
+						<Spinner />
+					{:else}
+						Submit
+					{/if}
+				</Button>
+			</div>
 		</Card.Content>
 	</Card.Card>
 </form>

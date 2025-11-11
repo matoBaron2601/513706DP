@@ -1,5 +1,6 @@
 import type { CreateCourseDto, UpdateCourseDto, CourseDto } from '../db/schema';
 import { CourseRepository } from '../repositories/courseRepository';
+import type { GetCoursesRequest, GetCoursesResponse } from '../schemas/courseSchema';
 import type { Transaction } from '../types';
 import { NotFoundError } from './utils/notFoundError';
 
@@ -40,8 +41,11 @@ export class CourseService {
 		return await this.repo.getManyByCreatorId(creatorId, tx);
 	}
 
-	async getAll(tx?: Transaction): Promise<CourseDto[]> {
-		return await this.repo.getAll(tx);
+	async getAll(
+		filter?: GetCoursesRequest,
+		tx?: Transaction
+	): Promise<GetCoursesResponse[]> {
+		return await this.repo.getAll(filter, tx);
 	}
-
 }
+``;

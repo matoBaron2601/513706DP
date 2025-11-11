@@ -47,7 +47,7 @@ export class BaseQuizFacade {
 						tx
 					);
 					questionIds.push(baseQuestionId);
-					if (question.options.length === 0 || question.options === undefined) {
+					if (question.options === undefined || question.options.length === 0) {
 						continue;
 					}
 					await this.baseOptionsService.createMany(

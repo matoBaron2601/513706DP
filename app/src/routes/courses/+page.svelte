@@ -6,12 +6,14 @@
 
 	const getCoursesQuery = createQuery({
 		queryKey: ['courses'],
-		queryFn: async () => await getCourses()
+		queryFn: async () => {
+			return await getCourses({ sortBy: 'name', sortDir: 'asc' });
+		}
 	});
 </script>
 
 <PageWrapper breadcrumbItems={[{ text: 'Courses', href: '/courses', isCurrent: true }]}>
-	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
 		{#each $getCoursesQuery.data as course}
 			<CourseCard {course} />
 		{/each}

@@ -24,7 +24,7 @@
 	const completed = $derived.by(() => $userBlockQuery.data?.completed ?? false);
 </script>
 
-<Card.Root class="relative min-w-60">
+<Card.Root class="relative">
 	<Card.Content class="flex flex-col gap-2">
 		<Card.Title class="m-auto text-xl">{block.name}</Card.Title>
 		<div class="flex items-center gap-2">

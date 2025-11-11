@@ -1,17 +1,14 @@
-import { stat } from 'fs';
 import type { AdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
-import type { ConceptProgress } from '../schemas/conceptProgressSchema';
+import type { ConceptProgress, QuestionType } from '../schemas/conceptProgressSchema';
 import type {
 	Concept,
 	GetConceptProgressByUserBlockIdRequest,
 	GetConceptProgressByUserBlockIdResponse
 } from '../schemas/conceptSchema';
-import type { UserBlock } from '../schemas/userBlockSchema';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
 import { ConceptProgressService } from '../services/conceptProgressService';
 import { ConceptService } from '../services/conceptService';
 import { UserBlockService } from '../services/userBlockService';
-import { userBlock } from '../db/schema';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { BaseQuestionService } from '../services/baseQuestionService';
 
@@ -70,7 +67,12 @@ export class ConceptFacade {
 
 		const conceptProgressAnswersMap = adaptiveQuizAnswers
 			.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-			.reduce<Record<string, typeof adaptiveQuizAnswers>>((acc, answer) => {
+			.reduce<
+				Record<
+					string,
+					{ answer: (typeof adaptiveQuizAnswers)[number]; questionType: QuestionType }[]
+				>
+			>((acc, answer) => {
 				const baseQuestion = baseQuestions.find((bq) => bq.id === answer.baseQuestionId);
 				if (!baseQuestion) return acc;
 
@@ -78,16 +80,44 @@ export class ConceptFacade {
 				if (!conceptProgressId) return acc;
 
 				if (!acc[conceptProgressId]) acc[conceptProgressId] = [];
-				acc[conceptProgressId].push(answer);
+
+				acc[conceptProgressId].push({
+					answer,
+					questionType: baseQuestion.questionType as QuestionType
+				});
 
 				return acc;
 			}, {});
 
 		for (const [conceptProgressId, answers] of Object.entries(conceptProgressAnswersMap)) {
 			const conceptProgress = conceptsProgresses.find((cp) => cp.id === conceptProgressId);
-			if (!conceptProgress) continue; //ERROR?
-			const correct = conceptProgress.correct + answers.filter((a) => a.isCorrect).length;
-			const asked = conceptProgress.asked + answers.length;
+			if (!conceptProgress) continue;
+
+			const questionTypeStats = answers.reduce<
+				Partial<Record<QuestionType, { correct: number; asked: number }>>
+			>((acc, { questionType, answer }) => {
+				if (!acc[questionType]) {
+					acc[questionType] = { correct: 0, asked: 0 };
+				}
+
+				acc[questionType]!.asked += 1;
+				if (answer.isCorrect) acc[questionType]!.correct += 1;
+
+				return acc;
+			}, {});
+
+			const correctA1 = questionTypeStats['A1']?.correct ?? 0;
+			const askedA1 = questionTypeStats['A1']?.asked ?? 0;
+			const correctA2 = questionTypeStats['A2']?.correct ?? 0;
+			const askedA2 = questionTypeStats['A2']?.asked ?? 0;
+			const correctB1 = questionTypeStats['B1']?.correct ?? 0;
+			const askedB1 = questionTypeStats['B1']?.asked ?? 0;
+			const correctB2 = questionTypeStats['B2']?.correct ?? 0;
+			const askedB2 = questionTypeStats['B2']?.asked ?? 0;
+
+			const correct = correctA1 + correctA2 + correctB1 + correctB2;
+			const asked = askedA1 + askedA2 + askedB1 + askedB2;
+
 			const alfa = +((conceptProgress?.alfa ?? 1) + correct).toFixed(2);
 			const beta = +((conceptProgress?.beta ?? 1) + asked - correct).toFixed(2);
 			const score = +(alfa / (alfa + beta)).toFixed(2);
@@ -95,7 +125,7 @@ export class ConceptFacade {
 
 			let streak = conceptProgress.streak;
 			for (let i = answers.length - 1; i >= 0; i--) {
-				if (answers[i].isCorrect) {
+				if (answers[i].answer.isCorrect) {
 					streak++;
 				} else {
 					streak = 0;
@@ -103,8 +133,14 @@ export class ConceptFacade {
 				}
 			}
 			await this.conceptProgressService.update(conceptProgress.id, {
-				correct,
-				asked,
+				correctA1,
+				askedA1,
+				correctA2,
+				askedA2,
+				correctB1,
+				askedB1,
+				correctB2,
+				askedB2,
 				alfa,
 				beta,
 				score,
@@ -119,7 +155,7 @@ export class ConceptFacade {
 	async checkAllConceptsCompleted(userBlockId: string): Promise<boolean> {
 		const conceptsProgressesAfterUpdate: ConceptProgress[] =
 			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
-		const allCompleted = conceptsProgressesAfterUpdate.every((cp) => cp.completed);
+		const allCompleted = conceptsProgressesAfterUpdate.every((cp) => cp.mastered);
 		if (allCompleted) {
 			await this.userBlockService.update(userBlockId, { completed: true });
 		}
@@ -129,13 +165,17 @@ export class ConceptFacade {
 	async updateCompleteness(userBlockId: string) {
 		const conceptsProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
+		const asked = conceptsProgresses.reduce(
+			(sum, cp) => sum + cp.askedA1 + cp.askedA2 + cp.askedB1 + cp.askedB2,
+			0
+		);
 
 		const idsToComplete: string[] = [];
 
 		for (const cp of conceptsProgresses) {
-			const criterium1 = cp.score >= 0.8; //0.8
-			const criterium2 = cp.streak >= 0; //3
-			const criterium4 = cp.asked >= 5; //5
+			const criterium1 = cp.score >= 0.8;
+			const criterium2 = cp.streak >= 0;
+			const criterium4 = asked >= 5;
 
 			const a = cp.alfa,
 				b = cp.beta;
@@ -149,7 +189,7 @@ export class ConceptFacade {
 		}
 
 		if (idsToComplete.length > 0) {
-			await this.conceptProgressService.updateMany(idsToComplete, { completed: true });
+			await this.conceptProgressService.updateMany(idsToComplete, { mastered: true });
 		}
 
 		return true;

@@ -4,12 +4,11 @@
 	import IdentifyConceptsForm from './_components/IdentifyConceptsForm.svelte';
 	import CreateBlockForm from './_components/CreateBlockForm.svelte';
 	import ConceptEditor from './_components/ConcepstEditor.svelte';
-	import PlacementQuiz from './_components/PlacementQuiz.svelte';
 	import { page } from '$app/state';
 
 	let { data }: { data: PageData } = $props();
 
-	export type Step = 'identifyConceptsForm' | 'editConcepts' | 'createBlock' | 'placementQuiz';
+	export type Step = 'identifyConceptsForm' | 'editConcepts' | 'createBlock'
 	let step = $state<Step>('identifyConceptsForm');
 
 	let blockId = $state('');
@@ -61,7 +60,6 @@
 			handleSetStep={setStep}
 			handleSetBlockId={setBlockId}
 		/>
-	{:else if step === 'placementQuiz'}
-		<PlacementQuiz {data} {blockId} />
+
 	{/if}
 </PageWrapper>

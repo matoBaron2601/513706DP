@@ -7,7 +7,22 @@
 
 	const { concept }: { concept: ComplexConcept } = $props();
 
-	const completed = $derived.by(() => concept.conceptProgress.completed);
+	const completed = $derived.by(() => concept.conceptProgress.mastered);
+	const asked = $derived.by(
+		() =>
+			concept.conceptProgress.askedA1 +
+			concept.conceptProgress.askedA2 +
+			concept.conceptProgress.askedB1 +
+			concept.conceptProgress.askedB2
+	);
+
+	const correct = $derived.by(
+		() =>
+			concept.conceptProgress.correctA1 +
+			concept.conceptProgress.correctA2 +
+			concept.conceptProgress.correctB1 +
+			concept.conceptProgress.correctB2
+	);
 </script>
 
 <Card.Root class="relative cursor-pointer p-0 hover:bg-[#f7e7d0] hover:shadow-2xl">
@@ -23,11 +38,11 @@
 		<Popover.Content class="flex flex-col gap-2 bg-[#f7e7d0] p-4 text-sm shadow-2xl">
 			<p class="flex justify-between font-bold">
 				<span>Asked:</span>
-				<span class="text-right font-mono">{concept.conceptProgress.asked}</span>
+				<span class="text-right font-mono">{asked}</span>
 			</p>
 			<p class="flex justify-between font-bold">
 				<span>Correct:</span>
-				<span class="text-right font-mono">{concept.conceptProgress.correct}</span>
+				<span class="text-right font-mono">{correct}</span>
 			</p>
 			<p class="flex justify-between font-bold">
 				<span>Score:</span>
@@ -51,7 +66,7 @@
 			</p>
 			<p class="flex justify-between font-bold">
 				<span>Completed:</span>
-				<span class="text-right font-mono">{concept.conceptProgress.completed}</span>
+				<span class="text-right font-mono">{concept.conceptProgress.mastered}</span>
 			</p>
 		</Popover.Content>
 	</Popover.Root>

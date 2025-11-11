@@ -99,6 +99,13 @@
       "when": 1762599264021,
       "tag": "0013_tiny_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1762778785910,
+      "tag": "0014_mixed_warbound",
+      "breakpoints": true
     }
   ]
 }
