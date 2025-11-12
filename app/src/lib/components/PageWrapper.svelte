@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import Button from './ui/button/button.svelte';
@@ -8,18 +9,19 @@
 		text: string;
 		href?: string;
 		isCurrent?: boolean;
-		goBackUrl?: string;
 	};
 
 	let {
 		breadcrumbItems,
 		className,
 		children,
+		goBackUrl,
 		extraButton
 	}: {
 		breadcrumbItems: BreadcrumbItem[];
 		className?: string;
 		children?: any;
+		goBackUrl?: string;
 		extraButton?: any;
 	} = $props();
 </script>
@@ -31,7 +33,9 @@
 	</div>
 
 	<div class="ml-4 flex items-center gap-4">
-		<Button class="cursor-pointer"><ArrowBigLeft /></Button>
+		{#if goBackUrl}
+			<Button class="cursor-pointer" onclick={() => goto(goBackUrl)}><ArrowBigLeft /></Button>
+		{/if}
 		{#if extraButton}
 			{@render extraButton()}
 		{/if}

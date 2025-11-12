@@ -98,6 +98,7 @@
 			isCurrent: true
 		}
 	]}
+	goBackUrl={`/courses/course/${courseId}/block/${blockId}`}
 >
 	{#if $adaptiveQuizQuery.isLoading}
 		<Spinner />

@@ -36,7 +36,8 @@
 		{ text: 'Courses', href: '/courses' },
 		{ text: `Course: ${page.params.id}`, href: `/courses/course/${page.params.id}` },
 		{ text: 'Create Block', isCurrent: true }
-	]}>
+	]}
+	goBackUrl={`/courses/course/${page.params.id}`}>
 	{#if step === 'identifyConceptsForm'}
 		<IdentifyConceptsForm
 			{data}

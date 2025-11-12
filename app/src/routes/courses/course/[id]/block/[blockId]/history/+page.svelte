@@ -42,6 +42,7 @@
 		{ text: `Block: ${blockName}`, href: `/courses/course/${courseId}/block/${blockId}` },
 		{ text: `History`, isCurrent: true }
 	]}
+	goBackUrl={`/courses/course/${courseId}/block/${blockId}`}
 >
 	{#if $userBlockQuery.data?.id}
 		<HistoryList userBlockId={$userBlockQuery.data?.id} />

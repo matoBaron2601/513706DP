@@ -17,6 +17,7 @@
 	import createPlacementQuiz from '../_clientServices.ts/createPlacementQuiz';
 	import { goto } from '$app/navigation';
 	import { TriangleAlert } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
@@ -46,7 +47,11 @@
 			await createPlacementQuiz({
 				blockId: blockId
 			});
+		},
+
+		onSuccess: () => {
 			goto(`/courses/course/${page.params.id}`);
+			toast.success('Block and placement quiz created successfully');
 		}
 	});
 
@@ -135,7 +140,7 @@
 						{#if $formData.useLLMTransformation}
 							<div class="flex items-center gap-2 text-yellow-500">
 								<TriangleAlert class="text-yellow-500" />
-								<Form.Description class="text-yellow-500 font-bold">
+								<Form.Description class="font-bold text-yellow-500">
 									This may dramatically increase the processing time, but can lead to better
 									results.
 								</Form.Description>

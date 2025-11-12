@@ -10,6 +10,7 @@
 	import { goto } from '$app/navigation';
 	import getCourseById from '../../../../../_clientServices/getCourseById';
 	import getBlockById from '../../../../../_clientServices/getBlockById';
+	import { History, File } from '@lucide/svelte';
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
@@ -40,12 +41,12 @@
 	<Button
 		class="cursor-pointer"
 		onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/history`)}
-		>History</Button
+	>
+		<History />History</Button
 	>
 	<Button
 		class="cursor-pointer"
-		onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/documents`)}
-		>Documents</Button
+		onclick={() => goto(`/courses/course/${courseId}/block/${blockId}/documents`)}><File />Documents</Button
 	>
 {/snippet}
 
@@ -55,6 +56,7 @@
 		{ text: `Course: ${$courseQuery.data?.name}`, href: `/courses/course/${page.params.id}` },
 		{ text: `Block: ${$blockQuery.data?.name}`, isCurrent: true }
 	]}
+	goBackUrl={`/courses/course/${courseId}`}
 	extraButton={ExtraButton}
 >
 	{#if $userBlockQuery.data}

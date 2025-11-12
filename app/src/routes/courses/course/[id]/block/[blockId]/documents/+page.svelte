@@ -19,6 +19,7 @@
 	import queryClient from '../../../../../../queryClient';
 	import { Trash } from '@lucide/svelte';
 	import deleteDocument from './_clientServices/deleteDocument';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
 
@@ -64,6 +65,7 @@
 			});
 		},
 		onSuccess: async () => {
+			toast.success('Document uploaded successfully');
 			await queryClient.invalidateQueries({ queryKey: ['documents', blockId] });
 			form.reset();
 		}
@@ -76,6 +78,10 @@
 		},
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({ queryKey: ['documents', blockId] });
+		},
+
+		onError: () => {
+			toast.error('Failed to delete document. Please try again.');
 		}
 	});
 
@@ -112,12 +118,16 @@
 		{ text: `Block: ${blockName}`, href: `/courses/course/${courseId}/block/${blockId}` },
 		{ text: `Documents`, isCurrent: true }
 	]}
+	goBackUrl={`/courses/course/${courseId}/block/${blockId}`}
 >
 	<h1 class="mb-4 text-2xl font-bold">Block Documents</h1>
 	{#each $documentsQuery.data as document}
-		<div class="my-2 rounded border p-4 flex justify-between items-center">
+		<div class="my-2 flex items-center justify-between rounded border p-4">
 			<h2 class="text-xl font-semibold">{document.filePath}</h2>
-			<Trash class="text-red-500 cursor-pointer" onclick={async() => await $deleteDocumentMutation.mutateAsync(document.filePath)} />
+			<Trash
+				class="cursor-pointer text-red-500"
+				onclick={async () => await $deleteDocumentMutation.mutateAsync(document.filePath)}
+			/>
 		</div>
 	{/each}
 

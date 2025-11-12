@@ -11,6 +11,7 @@
 	import hed from './hed.png';
 	import hed2 from './hed2.png';
 	import todbubble from './todbubble.png';
+	import { Toaster } from '$lib/components/ui/sonner';
 
 	let { children } = $props();
 
@@ -67,6 +68,8 @@
 </svelte:head>
 
 <QueryClientProvider client={queryClient}>
+	<Toaster />
+
 	<Sidebar.Provider>
 		{#if page.data.session}
 			<AppSidebar />
@@ -74,17 +77,17 @@
 		<main class="w-full bg-gray-100">
 			{@render children?.()}
 			<div
-				class="right-25 invisible absolute top-[40%] order-first flex flex-col justify-center md:order-none md:justify-end xl:visible gap-40"
+				class="right-25 invisible absolute top-[40%] order-first flex flex-col justify-center gap-40 md:order-none md:justify-end xl:visible"
 			>
 				<div class="relative w-[240px]">
 					<img
 						src={todbubble}
 						alt="Speech bubble"
-						class="w-[240px] select-none drop-shadow-md -translate-y-16"
+						class="w-[240px] -translate-y-16 select-none drop-shadow-md"
 						draggable="false"
 					/>
 					<p
-						class="-translate-y-21.5 text-md absolute inset-0 flex items-center justify-center px-8 text-center"
+						class="-translate-y-22.5 text-md absolute inset-0 flex items-center justify-center px-8 text-center"
 					>
 						{learningQuotes[Math.floor(Math.random() * learningQuotes.length)]}
 					</p>
@@ -93,7 +96,7 @@
 				<img
 					src={hed2}
 					alt="Owl mascot"
-					class="top-40 absolute w-[240px] select-none drop-shadow-md"
+					class="absolute top-40 w-[240px] select-none drop-shadow-md"
 					draggable="false"
 				/>
 			</div>

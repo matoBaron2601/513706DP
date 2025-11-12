@@ -11,6 +11,7 @@ import { ConceptService } from '../services/conceptService';
 import { UserBlockService } from '../services/userBlockService';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { BaseQuestionService } from '../services/baseQuestionService';
+import { concept } from '../db/schema';
 
 export class ConceptFacade {
 	private conceptService: ConceptService;
@@ -115,15 +116,16 @@ export class ConceptFacade {
 			const correctB2 = questionTypeStats['B2']?.correct ?? 0;
 			const askedB2 = questionTypeStats['B2']?.asked ?? 0;
 
-			const correct = correctA1 + correctA2 + correctB1 + correctB2;
-			const asked = askedA1 + askedA2 + askedB1 + askedB2;
+			const correctNow = correctA1 + correctA2 + correctB1 + correctB2;
+			const askedNow = askedA1 + askedA2 + askedB1 + askedB2;
 
-			const alfa = +((conceptProgress?.alfa ?? 1) + correct).toFixed(2);
-			const beta = +((conceptProgress?.beta ?? 1) + asked - correct).toFixed(2);
+			const alfa = +((conceptProgress?.alfa ?? 1) + correctNow).toFixed(2);
+			const beta = +(+(conceptProgress?.beta ?? 1) + askedNow - correctNow).toFixed(2);
 			const score = +(alfa / (alfa + beta)).toFixed(2);
 			const variance = +((alfa * beta) / ((alfa + beta) ** 2 * (alfa + beta + 1))).toFixed(2);
 
 			let streak = conceptProgress.streak;
+
 			for (let i = answers.length - 1; i >= 0; i--) {
 				if (answers[i].answer.isCorrect) {
 					streak++;
@@ -133,14 +135,14 @@ export class ConceptFacade {
 				}
 			}
 			await this.conceptProgressService.update(conceptProgress.id, {
-				correctA1,
-				askedA1,
-				correctA2,
-				askedA2,
-				correctB1,
-				askedB1,
-				correctB2,
-				askedB2,
+				correctA1 : conceptProgress.correctA1 + correctA1,
+				askedA1 : conceptProgress.askedA1 + askedA1,
+				correctA2 : conceptProgress.correctA2 + correctA2,
+				askedA2 : conceptProgress.askedA2 + askedA2,
+				correctB1 : conceptProgress.correctB1 + correctB1,
+				askedB1 : conceptProgress.askedB1 + askedB1,
+				correctB2 : conceptProgress.correctB2 + correctB2,
+				askedB2 : conceptProgress.askedB2 + askedB2,
 				alfa,
 				beta,
 				score,

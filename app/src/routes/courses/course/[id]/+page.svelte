@@ -38,6 +38,7 @@
 		{ text: 'Courses', href: '/courses' },
 		{ text: `Course: ${$courseQuery.data?.name}`, isCurrent: true }
 	]}
+	goBackUrl="/courses"
 	extraButton={ExtraButton}
 >
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">

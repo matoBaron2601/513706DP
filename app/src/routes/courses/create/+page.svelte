@@ -15,6 +15,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
 
@@ -31,6 +32,10 @@
 				published: true
 			});
 			goto('/courses');
+		},
+
+		onSuccess: () => {
+			toast.success('Course created successfully');
 		}
 	});
 
@@ -47,7 +52,13 @@
 	};
 </script>
 
-<PageWrapper breadcrumbItems={[{ text: 'Courses', href: '/courses' }, { text: 'Create', isCurrent: true }]}>
+<PageWrapper
+	breadcrumbItems={[
+		{ text: 'Courses', href: '/courses' },
+		{ text: 'Create', isCurrent: true }
+	]}
+	goBackUrl="/courses"
+>
 	<form method="POST" use:enhance class="p-4" onsubmit={handleFormSubmit}>
 		<Card.Title class="text-xl">Create New Course</Card.Title>
 		<Card.Card class="mx-auto mt-4">
@@ -66,11 +77,7 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Publish</Form.Label>
-							<Checkbox
-								{...props}
-								class="cursor-pointer"
-								bind:checked={$formData.published}
-							/>
+							<Checkbox {...props} class="cursor-pointer" bind:checked={$formData.published} />
 						{/snippet}
 					</Form.Control>
 					<Form.Description>Specify course publication status</Form.Description>
