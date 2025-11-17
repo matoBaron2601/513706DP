@@ -14,7 +14,6 @@
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
@@ -29,7 +28,7 @@
 			await createCourse({
 				name: $formData.name,
 				creatorId: userId.id,
-				published: true
+				published: false
 			});
 			goto('/courses');
 		},
@@ -71,17 +70,6 @@
 						{/snippet}
 					</Form.Control>
 					<Form.Description>Specify course name</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
-				<Form.Field {form} name="published">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Publish</Form.Label>
-							<Checkbox {...props} class="cursor-pointer" bind:checked={$formData.published} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Specify course publication status</Form.Description>
-
 					<Form.FieldErrors />
 				</Form.Field>
 				<div class="flex justify-end">

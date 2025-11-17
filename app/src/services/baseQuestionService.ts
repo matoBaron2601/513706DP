@@ -4,11 +4,7 @@ import type { Transaction } from '../types';
 import { NotFoundError } from './utils/notFoundError';
 
 export class BaseQuestionService {
-	private repo: BaseQuestionRepository;
-
-	constructor() {
-		this.repo = new BaseQuestionRepository();
-	}
+	constructor(private repo: BaseQuestionRepository = new BaseQuestionRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<BaseQuestionDto> {
 		const item = await this.repo.getById(id, tx);

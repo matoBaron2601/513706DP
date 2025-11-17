@@ -5,17 +5,21 @@ import {
 	type CreateBaseQuizDto,
 	type UpdateBaseQuizDto
 } from '../db/schema';
-import getDbClient from './utils/getDbClient';
+import _getDbClient from './utils/getDbClient';
 import type { Transaction } from '../types';
 
+type GetDbClient = (tx?: Transaction) => any;
+
 export class BaseQuizRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(id: string, tx?: Transaction): Promise<BaseQuizDto | undefined> {
-		const result = await getDbClient(tx).select().from(baseQuiz).where(eq(baseQuiz.id, id));
+		const result = await this.getDbClient(tx).select().from(baseQuiz).where(eq(baseQuiz.id, id));
 		return result[0];
 	}
 
 	async create(data: CreateBaseQuizDto, tx?: Transaction): Promise<BaseQuizDto> {
-		const result = await getDbClient(tx).insert(baseQuiz).values(data).returning();
+		const result = await this.getDbClient(tx).insert(baseQuiz).values(data).returning();
 		return result[0];
 	}
 
@@ -24,7 +28,7 @@ export class BaseQuizRepository {
 		data: UpdateBaseQuizDto,
 		tx?: Transaction
 	): Promise<BaseQuizDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(baseQuiz)
 			.set(data)
 			.where(eq(baseQuiz.id, id))
@@ -33,11 +37,14 @@ export class BaseQuizRepository {
 	}
 
 	async deleteById(id: string, tx?: Transaction): Promise<BaseQuizDto | undefined> {
-		const result = await getDbClient(tx).delete(baseQuiz).where(eq(baseQuiz.id, id)).returning();
+		const result = await this.getDbClient(tx)
+			.delete(baseQuiz)
+			.where(eq(baseQuiz.id, id))
+			.returning();
 		return result[0];
 	}
 
 	async getByIds(ids: string[], tx?: Transaction): Promise<BaseQuizDto[]> {
-		return await getDbClient(tx).select().from(baseQuiz).where(inArray(baseQuiz.id, ids));
+		return await this.getDbClient(tx).select().from(baseQuiz).where(inArray(baseQuiz.id, ids));
 	}
 }

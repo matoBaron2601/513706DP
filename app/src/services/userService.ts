@@ -1,60 +1,46 @@
+// src/services/userService.ts
 import type { CreateUserDto, UpdateUserDto, UserDto } from '../db/schema';
 import { UserRepository } from '../repositories/userRepository';
 import type { Transaction } from '../types';
 import { NotFoundError } from './utils/notFoundError';
 
 export class UserService {
-	private repo: UserRepository;
+  constructor(private repo: UserRepository = new UserRepository()) {}
 
-	constructor() {
-		this.repo = new UserRepository();
-	}
-
-	async getById(userId: string, tx?: Transaction): Promise<UserDto> {
-		const user = await this.repo.getById(userId, tx);
-		if (!user) throw new NotFoundError(`User with id ${userId} not found`);
-		return user;
-	}
-
-	async getByEmail(email: string, tx?: Transaction): Promise<UserDto> {
-		const user = await this.repo.getByEmail(email, tx);
-		if (!user) throw new NotFoundError(`User with email ${email} not found`);
-		return user;
-	}
-
-	async create(newUser: CreateUserDto, tx?: Transaction): Promise<UserDto> {
-		return await this.repo.create(newUser, tx);
-	}
-
-	async update(userId: string, updateUser: UpdateUserDto, tx?: Transaction): Promise<UserDto> {
-		const user = await this.repo.update(userId, updateUser, tx);
-		if (!user) throw new NotFoundError(`User with id ${userId} not found`);
-		return user;
-	}
-
-	async delete(userId: string, tx?: Transaction): Promise<UserDto> {
-		const user = await this.repo.delete(userId, tx);
-		if (!user) throw new NotFoundError(`User with id ${userId} not found`);
-		return user;
-	}
-
-	async getByIds(userIds: string[], tx?: Transaction): Promise<UserDto[]> {
-		return await this.repo.getByIds(userIds, tx);
-	}
-
-	async getOrCreateUser(userData: CreateUserDto): Promise<UserDto> {
-		try {
-			const existingUser = await this.repo.getByEmail(userData.email);
-			if (!existingUser) {
-				return await this.repo.create(userData);
-			}
-			return existingUser;
-		} catch (e) {
-			if (e instanceof NotFoundError) {
-				return await this.repo.create(userData);
-			}
-		}
-
-		return await this.repo.create(userData);
-	}
+  async getById(userId: string, tx?: Transaction): Promise<UserDto> {
+    const u = await this.repo.getById(userId, tx);
+    if (!u) throw new NotFoundError(`User with id ${userId} not found`);
+    return u;
+  }
+  async getByEmail(email: string, tx?: Transaction): Promise<UserDto> {
+    const u = await this.repo.getByEmail(email, tx);
+    if (!u) throw new NotFoundError(`User with email ${email} not found`);
+    return u;
+  }
+  async create(newUser: CreateUserDto, tx?: Transaction): Promise<UserDto> {
+    return this.repo.create(newUser, tx);
+  }
+  async update(id: string, patch: UpdateUserDto, tx?: Transaction): Promise<UserDto> {
+    const u = await this.repo.update(id, patch, tx);
+    if (!u) throw new NotFoundError(`User with id ${id} not found`);
+    return u;
+  }
+  async delete(id: string, tx?: Transaction): Promise<UserDto> {
+    const u = await this.repo.delete(id, tx);
+    if (!u) throw new NotFoundError(`User with id ${id} not found`);
+    return u;
+  }
+  async getByIds(ids: string[], tx?: Transaction): Promise<UserDto[]> {
+    return this.repo.getByIds(ids, tx);
+  }
+  async getOrCreateUser(data: CreateUserDto): Promise<UserDto> {
+    try {
+      const existing = await this.repo.getByEmail(data.email);
+      if (!existing) return this.repo.create(data);
+      return existing;
+    } catch (e) {
+      if (e instanceof NotFoundError) return this.repo.create(data);
+      return this.repo.create(data);
+    }
+  }
 }

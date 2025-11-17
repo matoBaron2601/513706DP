@@ -10,9 +10,29 @@ import adaptiveQuizApi from './adaptiveQuizApi';
 import { placementQuizApi } from './placementQuizApi';
 import { bucketApi } from './bucketApi';
 import documentApi from './documentApi';
+import { AppError } from '../../../errors/AppError';
 const app = new Elysia({
 	prefix: '/api'
 })
+	.onError(({ error, set }) => {
+		if (error instanceof AppError) {
+			set.status = error.status;
+
+			return {
+				code: error.code,
+				message: error.message,
+				details: error.details ?? null
+			};
+		}
+
+		console.error('UNHANDLED_ERROR', error);
+		set.status = 500;
+		return {
+			code: 'INTERNAL_ERROR',
+			message: 'Internal server error',
+			details: null
+		};
+	})
 	.use(openapi())
 	.use(authApi)
 	.use(courseApi)
@@ -23,7 +43,7 @@ const app = new Elysia({
 	.use(adaptiveQuizAnswerApi)
 	.use(placementQuizApi)
 	.use(bucketApi)
-	.use(documentApi)
+	.use(documentApi);
 
 type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
 

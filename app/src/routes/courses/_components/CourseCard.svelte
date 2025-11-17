@@ -11,9 +11,20 @@
 	import deleteCourse from '../_clientServices/deleteCourse';
 	import queryClient from '../../queryClient';
 	import { getUserFromPage } from '$lib/utils';
+	import updateCourse from '../_clientServices/publishCourse';
+	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { toast } from 'svelte-sonner';
+	import unpublishCourse from '../_clientServices/unpublishCourse';
+	import { AppError } from '../../../errors/AppError';
 
 	let { course }: { course: GetCoursesResponse } = $props();
 	const user = getUserFromPage();
+
+	let published = $state(course.published);
+
+	$effect(() => {
+		published = course.published;
+	});
 
 	const creatorQuery = createQuery({
 		queryKey: ['creator', course.creatorId],
@@ -22,9 +33,31 @@
 
 	const deleteCourseMutation = createMutation({
 		mutationKey: ['deleteCourse', course.id],
-		mutationFn: async () => await deleteCourse(course.id),
+		mutationFn: async () => {
+			return await deleteCourse(course.id);
+		},
 		onSuccess: async () => {
+			toast.success('Course deleted successfully');
 			await queryClient.invalidateQueries({ queryKey: ['courses'] });
+		}
+	});
+
+	const updateCourseMutation = createMutation({
+		mutationKey: ['updateCourse', course.id],
+		mutationFn: async (nextPublished: boolean) => {
+			if (nextPublished) {
+				return await updateCourse(course.id);
+			}
+			return await unpublishCourse(course.id);
+		},
+		onSuccess: async () => {
+			toast.success('Course updated successfully');
+			await queryClient.invalidateQueries({ queryKey: ['courses'] });
+		},
+		onError: (error) => {
+			published = !published;
+			toast.error(error.message);
+
 		}
 	});
 
@@ -37,12 +70,23 @@
 	});
 
 	let deleteModalOpen = $state(false);
+
+	async function handleSwitchChange(checked: boolean) {
+		published = checked;
+		await $updateCourseMutation.mutateAsync(checked);
+	}
 </script>
 
 {#if isCreator || course.blocksCount != 0}
 	<Card.Root class="relative">
 		<Card.Content class="flex flex-col gap-2">
 			{#if isCreator}
+				<Switch
+					checked={published}
+					onCheckedChange={handleSwitchChange}
+					class="absolute right-4 top-4 cursor-pointer bg-zinc-600 data-[state=checked]:bg-green-200 data-[state=unchecked]:bg-red-200"
+				/>
+
 				<Popover.Root bind:open={deleteModalOpen}>
 					<Popover.Trigger>
 						<Trash size={16} class="absolute left-4 top-4 cursor-pointer self-start text-red-500" />

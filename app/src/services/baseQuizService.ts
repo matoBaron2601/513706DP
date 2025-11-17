@@ -4,11 +4,7 @@ import type { Transaction } from '../types';
 import { NotFoundError } from './utils/notFoundError';
 
 export class BaseQuizService {
-	private repo: BaseQuizRepository;
-
-	constructor() {
-		this.repo = new BaseQuizRepository();
-	}
+	constructor(private repo: BaseQuizRepository = new BaseQuizRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<BaseQuizDto> {
 		const item = await this.repo.getById(id, tx);
@@ -35,7 +31,4 @@ export class BaseQuizService {
 	async getByIds(ids: string[], tx?: Transaction): Promise<BaseQuizDto[]> {
 		return await this.repo.getByIds(ids, tx);
 	}
-
-
-	
 }

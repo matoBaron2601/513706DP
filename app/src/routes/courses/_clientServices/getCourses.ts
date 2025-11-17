@@ -8,8 +8,6 @@ const getCourses = async (getCoursesRequest: GetCoursesRequest): Promise<GetCour
 			'Content-Type': 'application/json'
 		}
 	});
-	console.log('Response status:', response.status);
-
 	if (!response.ok) {
 		throw new Error('Failed to get courses');
 	}

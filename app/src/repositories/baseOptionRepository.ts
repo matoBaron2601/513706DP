@@ -6,16 +6,18 @@ import {
 	type UpdateBaseOptionDto
 } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 export class BaseOptionRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(id: string, tx?: Transaction): Promise<BaseOptionDto | undefined> {
-		const result = await getDbClient(tx).select().from(baseOption).where(eq(baseOption.id, id));
+		const result = await this.getDbClient(tx).select().from(baseOption).where(eq(baseOption.id, id));
 		return result[0];
 	}
 
 	async create(data: CreateBaseOptionDto, tx?: Transaction): Promise<BaseOptionDto> {
-		const result = await getDbClient(tx).insert(baseOption).values(data).returning();
+		const result = await this.getDbClient(tx).insert(baseOption).values(data).returning();
 		return result[0];
 	}
 
@@ -24,7 +26,7 @@ export class BaseOptionRepository {
 		data: UpdateBaseOptionDto,
 		tx?: Transaction
 	): Promise<BaseOptionDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(baseOption)
 			.set(data)
 			.where(eq(baseOption.id, id))
@@ -33,7 +35,7 @@ export class BaseOptionRepository {
 	}
 
 	async deleteById(id: string, tx?: Transaction): Promise<BaseOptionDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.delete(baseOption)
 			.where(eq(baseOption.id, id))
 			.returning();
@@ -41,15 +43,15 @@ export class BaseOptionRepository {
 	}
 
 	async getByIds(ids: string[], tx?: Transaction): Promise<BaseOptionDto[]> {
-		return await getDbClient(tx).select().from(baseOption).where(inArray(baseOption.id, ids));
+		return await this.getDbClient(tx).select().from(baseOption).where(inArray(baseOption.id, ids));
 	}
 
 	async createMany(data: CreateBaseOptionDto[], tx?: Transaction): Promise<BaseOptionDto[]> {
-		return await getDbClient(tx).insert(baseOption).values(data).returning();
+		return await this.getDbClient(tx).insert(baseOption).values(data).returning();
 	}
 
 	async getByBaseQuestionId(baseQuestionId: string, tx?: Transaction): Promise<BaseOptionDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(baseOption)
 			.where(eq(baseOption.baseQuestionId, baseQuestionId));
@@ -59,7 +61,7 @@ export class BaseOptionRepository {
 		baseQuestionIds: string[],
 		tx?: Transaction
 	): Promise<BaseOptionDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(baseOption)
 			.where(inArray(baseOption.baseQuestionId, baseQuestionIds));

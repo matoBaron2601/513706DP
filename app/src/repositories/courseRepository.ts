@@ -1,4 +1,4 @@
-import { eq, inArray, isNull, SQL, ilike, sql, and, asc, desc } from 'drizzle-orm';
+import { eq, inArray, isNull, SQL, ilike, sql, and, asc, desc, or } from 'drizzle-orm';
 import {
 	course,
 	type CreateCourseDto,
@@ -62,6 +62,7 @@ export class CourseRepository {
 		const db = getDbClient(tx);
 		const where = and(
 			isNull(course.deletedAt),
+			or(eq(course.published, true), creatorId ? eq(course.creatorId, creatorId) : undefined),
 			creatorId ? eq(course.creatorId, creatorId) : undefined,
 			name ? ilike(course.name, `%${name}%`) : undefined
 		);

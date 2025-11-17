@@ -15,7 +15,12 @@ export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
 export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & { ref?: U | null };
 
 export const getUserFromPage = () => {
-	return page.data.session?.user;
+	return {
+		id: page.data.session?.user?.id ?? '',
+		email: page.data.session?.user?.email ?? '',
+		image: page.data.session?.user?.image ?? '',
+		name: page.data.session?.user?.name ?? ''
+	};
 };
 
 export const getUserByEmail = async (email: string): Promise<User> => {

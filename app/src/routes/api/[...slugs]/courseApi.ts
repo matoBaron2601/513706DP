@@ -1,5 +1,9 @@
 import { Elysia, t } from 'elysia';
-import { getCoursesRequestSchema, createCourseSchema } from '../../../schemas/courseSchema';
+import {
+	getCoursesRequestSchema,
+	createCourseSchema,
+	updateCourseSchema
+} from '../../../schemas/courseSchema';
 import { CourseService } from '../../../services/courseService';
 
 const courseService = new CourseService();
@@ -28,6 +32,11 @@ export const courseApi = new Elysia({ prefix: 'course' })
 	)
 	.delete('/:id', async (req) => {
 		return await courseService.delete(req.params.id);
+	})
+	.put('/:id/publish', async (req) => {
+		return await courseService.publishCourse(req.params.id);
+	})
+	.put('/:id/unpublish', async (req) => {
+		return await courseService.unpublishCourse(req.params.id);
 	});
-
 export default courseApi;
