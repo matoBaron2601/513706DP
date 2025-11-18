@@ -1,7 +1,7 @@
 import type { CreateBaseOptionDto, UpdateBaseOptionDto, BaseOptionDto } from '../db/schema';
 import { BaseOptionRepository } from '../repositories/baseOptionRepository';
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 
 export class BaseOptionService {
 		constructor(private repo: BaseOptionRepository = new BaseOptionRepository()) {}

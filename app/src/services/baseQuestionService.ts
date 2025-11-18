@@ -1,7 +1,7 @@
 import type { CreateBaseQuestionDto, UpdateBaseQuestionDto, BaseQuestionDto } from '../db/schema';
 import { BaseQuestionRepository } from '../repositories/baseQuestionRepository';
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 
 export class BaseQuestionService {
 	constructor(private repo: BaseQuestionRepository = new BaseQuestionRepository()) {}

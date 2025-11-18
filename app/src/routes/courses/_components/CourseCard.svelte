@@ -15,8 +15,6 @@
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { toast } from 'svelte-sonner';
 	import unpublishCourse from '../_clientServices/unpublishCourse';
-	import { AppError } from '../../../errors/AppError';
-
 	let { course }: { course: GetCoursesResponse } = $props();
 	const user = getUserFromPage();
 
@@ -57,7 +55,6 @@
 		onError: (error) => {
 			published = !published;
 			toast.error(error.message);
-
 		}
 	});
 

@@ -1,5 +1,5 @@
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 import fs from 'fs/promises';
 import path from 'path';
 import { BlockRepository } from '../repositories/blockRepository';

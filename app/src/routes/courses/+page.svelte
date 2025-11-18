@@ -4,8 +4,8 @@
 	import CourseCard from './_components/CourseCard.svelte';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { getUserByEmail, getUserFromPage } from '$lib/utils';
-	const user = getUserFromPage();
 
+	const user = getUserFromPage();
 	const getCoursesQuery = createQuery({
 		queryKey: ['courses'],
 		queryFn: async () => {

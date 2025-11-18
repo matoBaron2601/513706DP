@@ -1,4 +1,5 @@
-import { Elysia, t } from 'elysia';
+import type { RequestHandler } from './$types';
+import { Elysia } from 'elysia';
 import { openapi } from '@elysiajs/openapi';
 import authApi from './authApi';
 import courseApi from './courseApi';
@@ -11,13 +12,11 @@ import { placementQuizApi } from './placementQuizApi';
 import { bucketApi } from './bucketApi';
 import documentApi from './documentApi';
 import { AppError } from '../../../errors/AppError';
-const app = new Elysia({
-	prefix: '/api'
-})
+
+const app = new Elysia({ prefix: '/api' })
 	.onError(({ error, set }) => {
 		if (error instanceof AppError) {
 			set.status = error.status;
-
 			return {
 				code: error.code,
 				message: error.message,
@@ -45,10 +44,38 @@ const app = new Elysia({
 	.use(bucketApi)
 	.use(documentApi);
 
-type RequestHandler = (v: { request: Request }) => Response | Promise<Response>;
+const handler: RequestHandler = async (event) => {
+	const { request, url, locals } = event;
 
-export const GET: RequestHandler = ({ request }) => app.handle(request);
-export const POST: RequestHandler = ({ request }) => app.handle(request);
-export const DELETE: RequestHandler = ({ request }) => app.handle(request);
-export const PUT: RequestHandler = ({ request }) => app.handle(request);
-export const PATCH: RequestHandler = ({ request }) => app.handle(request);
+	if (!url.pathname.startsWith('/api/auth')) {
+		const session = await locals.auth?.();
+
+		if (!session?.user) {
+			return new Response(
+				JSON.stringify({
+					code: 'UNAUTHORIZED',
+					message: 'Unauthorized',
+					details: null
+				}),
+				{
+					status: 401,
+					headers: { 'content-type': 'application/json' }
+				}
+			);
+		}
+
+		const headers = new Headers(request.headers);
+		headers.set('x-user-email', session.user.email ?? '');
+		const reqForElysia = new Request(request, { headers });
+
+		return app.handle(reqForElysia);
+	}
+
+	return app.handle(request);
+};
+
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;

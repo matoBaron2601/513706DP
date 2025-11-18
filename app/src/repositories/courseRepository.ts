@@ -63,7 +63,6 @@ export class CourseRepository {
 		const where = and(
 			isNull(course.deletedAt),
 			or(eq(course.published, true), creatorId ? eq(course.creatorId, creatorId) : undefined),
-			creatorId ? eq(course.creatorId, creatorId) : undefined,
 			name ? ilike(course.name, `%${name}%`) : undefined
 		);
 

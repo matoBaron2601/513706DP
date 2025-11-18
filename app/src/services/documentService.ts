@@ -1,7 +1,7 @@
 import type { CreateDocumentDto, DocumentDto, UpdateDocumentDto } from '../db/schema';
 import { DocumentRepository } from '../repositories/documentRepository';
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 
 export class DocumentService {
 	private repo: DocumentRepository;

@@ -6,7 +6,6 @@ const placementQuizFacade = new PlacementQuizFacade();
 export const placementQuizApi = new Elysia({ prefix: 'placementQuiz' }).post(
 	'/',
 	async (req) => {
-		
 		return placementQuizFacade.createPlacementQuiz(req.body);
 	},
 	{

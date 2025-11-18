@@ -2,7 +2,7 @@ import type { PlacementQuizDto, CreatePlacementQuizDto, UpdatePlacementQuizDto }
 
 import { PlacementQuizRepository } from '../repositories/placementQuizRepository';
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 
 export class PlacementQuizService {
 	private repo: PlacementQuizRepository;

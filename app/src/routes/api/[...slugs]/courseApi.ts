@@ -31,12 +31,15 @@ export const courseApi = new Elysia({ prefix: 'course' })
 		}
 	)
 	.delete('/:id', async (req) => {
-		return await courseService.delete(req.params.id);
+		const email = req.headers['x-user-email'] as string;
+		return await courseService.delete(req.params.id, email);
 	})
 	.put('/:id/publish', async (req) => {
-		return await courseService.publishCourse(req.params.id);
+		const email = req.headers['x-user-email'] as string;
+		return await courseService.publishCourse(req.params.id, email);
 	})
 	.put('/:id/unpublish', async (req) => {
-		return await courseService.unpublishCourse(req.params.id);
+		const email = req.headers['x-user-email'] as string;
+		return await courseService.unpublishCourse(req.params.id, email);
 	});
 export default courseApi;

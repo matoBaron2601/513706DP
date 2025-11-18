@@ -1,6 +1,6 @@
 import type { CreateConceptDto, UpdateConceptDto, ConceptDto } from '../db/schema';
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 import { ConceptRepository } from '../repositories/conceptRepository';
 
 export class ConceptService {

@@ -11,7 +11,7 @@ import type {
 } from '../db/schema';
 import { AdaptiveQuizAnswerRepository } from '../repositories/adaptiveQuizAnswerRepository';
 import type { Transaction } from '../types';
-import { NotFoundError } from './utils/notFoundError';
+import { NotFoundError } from '../errors/AppError';
 
 export class AdaptiveQuizAnswerService {
 	private repo: AdaptiveQuizAnswerRepository;

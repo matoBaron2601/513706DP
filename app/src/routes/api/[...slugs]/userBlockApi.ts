@@ -18,6 +18,8 @@ export const userBlockApi = new Elysia({ prefix: 'userBlock' })
 	)
 	.get('/user/:userId/block/:blockId', async (req) => {
 		const { userId, blockId } = req.params;
+		const email = req.headers['x-user-email'] as string;
+
 		return await userBlockService.getByBothIdsOrUndefined({ userId, blockId });
 	});
 

@@ -1,13 +1,18 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
-// for information about these interfaces
+// src/app.d.ts
+import type { DefaultSession } from '@auth/sveltekit';
+
 declare global {
 	namespace App {
-		// interface Error {}
-		// interface Locals {}
-		// interface PageData {}
-		// interface PageState {}
-		// interface Platform {}
+		interface Locals {
+			auth: import('@auth/sveltekit').SvelteKitAuthLocals;
+		}
 	}
 }
 
-export {};
+// rozšírenie Session z @auth/sveltekit
+declare module '@auth/sveltekit' {
+	interface Session extends DefaultSession {
+		accessToken?: string;
+		refreshToken?: string;
+	}
+}
