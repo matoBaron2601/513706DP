@@ -4,11 +4,7 @@ import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';
 
 export class DocumentService {
-	private repo: DocumentRepository;
-
-	constructor() {
-		this.repo = new DocumentRepository();
-	}
+	constructor(private repo: DocumentRepository = new DocumentRepository()) {}
 
 	async getById(documentId: string, tx?: Transaction): Promise<DocumentDto> {
 		const document = await this.repo.getById(documentId, tx);

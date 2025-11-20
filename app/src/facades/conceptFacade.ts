@@ -11,7 +11,6 @@ import { ConceptService } from '../services/conceptService';
 import { UserBlockService } from '../services/userBlockService';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { BaseQuestionService } from '../services/baseQuestionService';
-import { concept } from '../db/schema';
 
 export class ConceptFacade {
 	private conceptService: ConceptService;

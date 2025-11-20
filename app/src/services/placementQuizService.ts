@@ -1,15 +1,15 @@
-import type { PlacementQuizDto, CreatePlacementQuizDto, UpdatePlacementQuizDto } from '../db/schema';
+import type {
+	PlacementQuizDto,
+	CreatePlacementQuizDto,
+	UpdatePlacementQuizDto
+} from '../db/schema';
 
 import { PlacementQuizRepository } from '../repositories/placementQuizRepository';
 import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';
 
 export class PlacementQuizService {
-	private repo: PlacementQuizRepository;
-
-	constructor() {
-		this.repo = new PlacementQuizRepository();
-	}
+	constructor(private repo: PlacementQuizRepository = new PlacementQuizRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<PlacementQuizDto> {
 		const item = await this.repo.getById(id, tx);
@@ -21,7 +21,11 @@ export class PlacementQuizService {
 		return await this.repo.create(data, tx);
 	}
 
-	async update(id: string, data: UpdatePlacementQuizDto, tx?: Transaction): Promise<PlacementQuizDto> {
+	async update(
+		id: string,
+		data: UpdatePlacementQuizDto,
+		tx?: Transaction
+	): Promise<PlacementQuizDto> {
 		const item = await this.repo.update(id, data, tx);
 		if (!item) throw new NotFoundError(`PlacementQuiz with id ${id} not found`);
 		return item;

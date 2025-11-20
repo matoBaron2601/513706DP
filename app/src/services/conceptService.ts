@@ -4,11 +4,7 @@ import { NotFoundError } from '../errors/AppError';
 import { ConceptRepository } from '../repositories/conceptRepository';
 
 export class ConceptService {
-	private repo: ConceptRepository;
-
-	constructor() {
-		this.repo = new ConceptRepository();
-	}
+	constructor(private repo: ConceptRepository = new ConceptRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<ConceptDto> {
 		const item = await this.repo.getById(id, tx);
@@ -47,5 +43,4 @@ export class ConceptService {
 	async getManyByBlockIds(blockIds: string[], tx?: Transaction): Promise<ConceptDto[]> {
 		return await this.repo.getManyByBlockIds(blockIds, tx);
 	}
-
 }

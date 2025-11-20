@@ -18,7 +18,6 @@ import { TypesenseService } from '../typesense/typesenseService';
 import { BaseQuizFacade } from './baseQuizFacade';
 import { ConceptFacade } from './conceptFacade';
 import type { ConceptProgress } from '../schemas/conceptProgressSchema';
-import { adaptiveQuiz } from '../db/schema';
 
 export class AdaptiveQuizFacade {
 	private adaptiveQuizService: AdaptiveQuizService;

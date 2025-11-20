@@ -13,13 +13,11 @@ export class AdaptiveQuizAnswerFacade {
 	private adaptiveQuizAnswerService: AdaptiveQuizAnswerService;
 	private baseQuizFacade: BaseQuizFacade;
 	private baseQuestionService: BaseQuestionService;
-	private adaptiveQuizService: AdaptiveQuizService;
 
 	constructor() {
 		this.adaptiveQuizAnswerService = new AdaptiveQuizAnswerService();
 		this.baseQuizFacade = new BaseQuizFacade();
 		this.baseQuestionService = new BaseQuestionService();
-		this.adaptiveQuizService = new AdaptiveQuizService();
 	}
 
 	async submitAnswer(

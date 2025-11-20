@@ -1,284 +1,341 @@
-// import { describe, it, expect } from 'bun:test';
-// import type {
-// 	BaseQuestionDto,
-// 	CreateBaseQuestionDto,
-// 	UpdateBaseQuestionDto
-// } from '../../src/db/schema';
-// import type { Transaction } from '../../src/types';
-// import { BaseQuestionService } from '../../src/services/baseQuestionService';
-// import { BaseQuestionRepository } from '../../src/repositories/baseQuestionRepository';
-// import { NotFoundError } from 'elysia';
+import { describe, it, expect } from 'bun:test';
+import type {
+	BaseQuestionDto,
+	CreateBaseQuestionDto,
+	UpdateBaseQuestionDto
+} from '../../src/db/schema';
+import type { Transaction } from '../../src/types';
+import { BaseQuestionService } from '../../src/services/baseQuestionService';
+import { BaseQuestionRepository } from '../../src/repositories/baseQuestionRepository';
+import { NotFoundError } from '../../src/errors/AppError';
 
-// function makeBaseQuestion(overrides: Partial<BaseQuestionDto> = {}): BaseQuestionDto {
-// 	return {
-// 		id: 'q1',
-// 		baseQuizId: 'bq1',
-// 		createdAt: new Date('2024-01-01T00:00:00Z'),
-// 		updatedAt: null,
-// 		deletedAt: null,
-// 		questionText: 'What is 2+2?',
-// 		correctAnswerText: '4',
-// 		conceptId: 'concept-1',
-// 		codeSnippet: '2+2',
-// 		questionType: 'single-choice',
-// 		orderIndex: 1,
-// 		...overrides
-// 	};
-// }
+function makeBaseQuestion(overrides: Partial<BaseQuestionDto> = {}): BaseQuestionDto {
+	return {
+		id: 'q1',
+		baseQuizId: 'quiz1',
+		questionText: 'What is 2+2?',
+		correctAnswerText: '4',
+		conceptId: 'math',
+		codeSnippet: '',
+		questionType: 'MCQ',
+		orderIndex: 1,
+		createdAt: new Date('2024-01-01T00:00:00Z'),
+		updatedAt: null,
+		deletedAt: null,
+		...overrides
+	};
+}
 
-// type RepoLike = Pick<
-// 	BaseQuestionRepository,
-// 	| 'getById'
-// 	| 'create'
-// 	| 'update'
-// 	| 'deleteById'
-// 	| 'getByIds'
-// 	| 'createMany'
-// 	| 'getByBaseQuizId'
-// 	| 'getBaseQuizIdByQuestionId'
-// >;
+type RepoFixtures = {
+	getByIdResult?: BaseQuestionDto | undefined;
+	createResult?: BaseQuestionDto;
+	updateResult?: BaseQuestionDto | undefined;
+	deleteResult?: BaseQuestionDto | undefined;
+	getByIdsResult?: BaseQuestionDto[];
+	createManyResult?: BaseQuestionDto[];
+	getByBaseQuizIdResult?: BaseQuestionDto[];
+	getBaseQuizIdByQuestionIdResult?: string | undefined;
+};
 
-// function makeFakeRepo() {
-// 	let getByIdResult: BaseQuestionDto | undefined;
-// 	let createResult: BaseQuestionDto | undefined;
-// 	let updateResult: BaseQuestionDto | undefined;
-// 	let deleteResult: BaseQuestionDto | undefined;
-// 	let getByIdsResult: BaseQuestionDto[] = [];
-// 	let createManyResult: BaseQuestionDto[] = [];
-// 	let getByBaseQuizIdResult: BaseQuestionDto[] = [];
-// 	let getBaseQuizIdByQuestionIdResult: string | undefined;
+class FakeBaseQuestionRepository implements Partial<BaseQuestionRepository> {
+	public fixtures: RepoFixtures;
+	public receivedTxs: {
+		getById?: Transaction | undefined;
+		create?: Transaction | undefined;
+		update?: Transaction | undefined;
+		deleteById?: Transaction | undefined;
+		getByIds?: Transaction | undefined;
+		createMany?: Transaction | undefined;
+		getByBaseQuizId?: Transaction | undefined;
+		getBaseQuizIdByQuestionId?: Transaction | undefined;
+	} = {};
 
-// 	const calls = {
-// 		getById: [] as any[],
-// 		create: [] as any[],
-// 		update: [] as any[],
-// 		deleteById: [] as any[],
-// 		getByIds: [] as any[],
-// 		createMany: [] as any[],
-// 		getByBaseQuizId: [] as any[],
-// 		getBaseQuizIdByQuestionId: [] as any[]
-// 	};
+	constructor(fixtures: RepoFixtures) {
+		this.fixtures = fixtures;
+	}
 
-// 	const repo: RepoLike = {
-// 		async getById(id: string, tx?: Transaction) {
-// 			calls.getById.push({ id, tx });
-// 			return getByIdResult;
-// 		},
-// 		async create(dto: CreateBaseQuestionDto, tx?: Transaction) {
-// 			calls.create.push({ dto, tx });
-// 			if (!createResult) throw new Error('createResult not set');
-// 			return createResult;
-// 		},
-// 		async update(id: string, dto: UpdateBaseQuestionDto, tx?: Transaction) {
-// 			calls.update.push({ id, dto, tx });
-// 			return updateResult;
-// 		},
-// 		async deleteById(id: string, tx?: Transaction) {
-// 			calls.deleteById.push({ id, tx });
-// 			return deleteResult;
-// 		},
-// 		async getByIds(ids: string[], tx?: Transaction) {
-// 			calls.getByIds.push({ ids, tx });
-// 			return getByIdsResult;
-// 		},
-// 		async createMany(dtos: CreateBaseQuestionDto[], tx?: Transaction) {
-// 			calls.createMany.push({ dtos, tx });
-// 			return createManyResult;
-// 		},
-// 		async getByBaseQuizId(baseQuizId: string, tx?: Transaction) {
-// 			calls.getByBaseQuizId.push({ baseQuizId, tx });
-// 			return getByBaseQuizIdResult;
-// 		},
-// 		async getBaseQuizIdByQuestionId(questionId: string, tx?: Transaction) {
-// 			calls.getBaseQuizIdByQuestionId.push({ questionId, tx });
-// 			if (getBaseQuizIdByQuestionIdResult === undefined) return undefined;
-// 			// služba očakáva string, repo môže vrátiť string | undefined
-// 			return getBaseQuizIdByQuestionIdResult as any;
-// 		}
-// 	};
+	async getById(id: string, tx?: Transaction): Promise<BaseQuestionDto | undefined> {
+		this.receivedTxs.getById = tx;
+		return this.fixtures.getByIdResult;
+	}
 
-// 	return {
-// 		repo,
-// 		calls,
-// 		setGetByIdResult: (v?: BaseQuestionDto) => (getByIdResult = v),
-// 		setCreateResult: (v: BaseQuestionDto) => (createResult = v),
-// 		setUpdateResult: (v?: BaseQuestionDto) => (updateResult = v),
-// 		setDeleteResult: (v?: BaseQuestionDto) => (deleteResult = v),
-// 		setGetByIdsResult: (v: BaseQuestionDto[]) => (getByIdsResult = v),
-// 		setCreateManyResult: (v: BaseQuestionDto[]) => (createManyResult = v),
-// 		setGetByBaseQuizIdResult: (v: BaseQuestionDto[]) => (getByBaseQuizIdResult = v),
-// 		setGetBaseQuizIdByQuestionIdResult: (v?: string) =>
-// 			(getBaseQuizIdByQuestionIdResult = v)
-// 	};
-// }
+	async create(data: CreateBaseQuestionDto, tx?: Transaction): Promise<BaseQuestionDto> {
+		this.receivedTxs.create = tx;
+		if (!this.fixtures.createResult) {
+			this.fixtures.createResult = makeBaseQuestion({
+				id: 'created',
+				baseQuizId: data.baseQuizId,
+				questionText: data.questionText,
+				correctAnswerText: data.correctAnswerText,
+				conceptId: data.conceptId,
+				codeSnippet: data.codeSnippet,
+				questionType: data.questionType,
+				orderIndex: data.orderIndex
+			});
+		}
+		return this.fixtures.createResult;
+	}
 
-// describe('BaseQuestionService', () => {
-// 	it('getById: returns question when found', async () => {
-// 		const fake = makeFakeRepo();
-// 		const q = makeBaseQuestion({ id: 'q1' });
-// 		fake.setGetByIdResult(q);
+	async update(
+		id: string,
+		data: UpdateBaseQuestionDto,
+		tx?: Transaction
+	): Promise<BaseQuestionDto | undefined> {
+		this.receivedTxs.update = tx;
+		return this.fixtures.updateResult;
+	}
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	async deleteById(id: string, tx?: Transaction): Promise<BaseQuestionDto | undefined> {
+		this.receivedTxs.deleteById = tx;
+		return this.fixtures.deleteResult;
+	}
 
-// 		const res = await service.getById('q1');
-// 		expect(res).toEqual(q);
-// 		expect(fake.calls.getById[0].id).toBe('q1');
-// 	});
+	async getByIds(ids: string[], tx?: Transaction): Promise<BaseQuestionDto[]> {
+		this.receivedTxs.getByIds = tx;
+		return this.fixtures.getByIdsResult ?? [];
+	}
 
-// 	it('getById: throws NotFoundError when not found', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setGetByIdResult(undefined);
+	async createMany(data: CreateBaseQuestionDto[], tx?: Transaction): Promise<BaseQuestionDto[]> {
+		this.receivedTxs.createMany = tx;
+		return this.fixtures.createManyResult ?? [];
+	}
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	async getByBaseQuizId(
+		baseQuizId: string,
+		tx?: Transaction
+	): Promise<BaseQuestionDto[]> {
+		this.receivedTxs.getByBaseQuizId = tx;
+		return this.fixtures.getByBaseQuizIdResult ?? [];
+	}
 
-// 		await expect(service.getById('missing')).rejects.toBeInstanceOf(NotFoundError);
-// 	});
+	async getBaseQuizIdByQuestionId(
+		questionId: string,
+		tx?: Transaction
+	): Promise<string | undefined> {
+		this.receivedTxs.getBaseQuizIdByQuestionId = tx;
+		return this.fixtures.getBaseQuizIdByQuestionIdResult;
+	}
+}
 
-// 	it('create: forwards to repo and returns created question', async () => {
-// 		const fake = makeFakeRepo();
-// 		const created = makeBaseQuestion({ id: 'q-new' });
-// 		fake.setCreateResult(created);
+describe('BaseQuestionService', () => {
+	// getById
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	it('getById: returns question when found', async () => {
+		const q = makeBaseQuestion({ id: 'q1' });
+		const repo = new FakeBaseQuestionRepository({
+			getByIdResult: q
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 		const dto = {
-// 			baseQuizId: 'bq1',
-// 			questionText: 'Q',
-// 			correctAnswerText: 'A',
-// 			conceptId: 'c1',
-// 			codeSnippet: 'code',
-// 			questionType: 'type',
-// 			orderIndex: 1
-// 		} as CreateBaseQuestionDto;
+		const res = await svc.getById('q1');
+		expect(res).toEqual(q);
+	});
 
-// 		const res = await service.create(dto);
-// 		expect(res).toEqual(created);
-// 		expect(fake.calls.create[0].dto).toEqual(dto);
-// 	});
+	it('getById: throws NotFoundError when question not found', async () => {
+		const repo = new FakeBaseQuestionRepository({
+			getByIdResult: undefined
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 	it('update: returns updated question', async () => {
-// 		const fake = makeFakeRepo();
-// 		const updated = makeBaseQuestion({ id: 'q1', questionText: 'updated' });
-// 		fake.setUpdateResult(updated);
+		await expect(svc.getById('missing')).rejects.toBeInstanceOf(NotFoundError);
+	});
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	// create
 
-// 		const patch = { questionText: 'updated' } as UpdateBaseQuestionDto;
+	it('create: delegates to repository.create', async () => {
+		const created = makeBaseQuestion({ id: 'q2', questionText: 'New question' });
+		const repo = new FakeBaseQuestionRepository({
+			createResult: created
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 		const res = await service.update('q1', patch);
-// 		expect(res).toEqual(updated);
-// 		expect(fake.calls.update[0].id).toBe('q1');
-// 		expect(fake.calls.update[0].dto).toEqual(patch);
-// 	});
+		const input = {
+			baseQuizId: 'quiz1',
+			questionText: 'New question',
+			correctAnswerText: '42',
+			conceptId: 'math',
+			codeSnippet: '',
+			questionType: 'MCQ',
+			orderIndex: 2
+		} as CreateBaseQuestionDto;
 
-// 	it('update: throws NotFoundError when repo returns undefined', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setUpdateResult(undefined);
+		const res = await svc.create(input);
+		expect(res).toEqual(created);
+	});
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	// update
 
-// 		await expect(service.update('missing', {} as UpdateBaseQuestionDto)).rejects.toBeInstanceOf(
-// 			NotFoundError
-// 		);
-// 	});
+	it('update: returns updated question when repo returns value', async () => {
+		const updated = makeBaseQuestion({
+			id: 'q1',
+			questionText: 'Updated question'
+		});
+		const repo = new FakeBaseQuestionRepository({
+			updateResult: updated
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 	it('delete: returns deleted question', async () => {
-// 		const fake = makeFakeRepo();
-// 		const deleted = makeBaseQuestion({ id: 'q1' });
-// 		fake.setDeleteResult(deleted);
+		const patch = {
+			questionText: 'Updated question'
+		} as UpdateBaseQuestionDto;
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+		const res = await svc.update('q1', patch);
+		expect(res).toEqual(updated);
+	});
 
-// 		const res = await service.delete('q1');
-// 		expect(res).toEqual(deleted);
-// 		expect(fake.calls.deleteById[0].id).toBe('q1');
-// 	});
+	it('update: throws NotFoundError when repo returns undefined', async () => {
+		const repo = new FakeBaseQuestionRepository({
+			updateResult: undefined
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 	it('delete: throws NotFoundError when repo returns undefined', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setDeleteResult(undefined);
+		const patch = {
+			questionText: 'Updated question'
+		} as UpdateBaseQuestionDto;
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+		await expect(svc.update('missing', patch)).rejects.toBeInstanceOf(NotFoundError);
+	});
 
-// 		await expect(service.delete('missing')).rejects.toBeInstanceOf(NotFoundError);
-// 	});
+	// delete
 
-// 	it('getManyByIds: returns questions', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [makeBaseQuestion({ id: 'q1' }), makeBaseQuestion({ id: 'q2' })];
-// 		fake.setGetByIdsResult(rows);
+	it('delete: returns deleted question when repo returns value', async () => {
+		const deleted = makeBaseQuestion({ id: 'q1' });
+		const repo = new FakeBaseQuestionRepository({
+			deleteResult: deleted
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+		const res = await svc.delete('q1');
+		expect(res).toEqual(deleted);
+	});
 
-// 		const res = await service.getManyByIds(['q1', 'q2']);
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.getByIds[0].ids).toEqual(['q1', 'q2']);
-// 	});
+	it('delete: throws NotFoundError when repo returns undefined', async () => {
+		const repo = new FakeBaseQuestionRepository({
+			deleteResult: undefined
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 	it('createMany: forwards to repo and returns created questions', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [makeBaseQuestion({ id: 'q1' }), makeBaseQuestion({ id: 'q2' })];
-// 		fake.setCreateManyResult(rows);
+		await expect(svc.delete('missing')).rejects.toBeInstanceOf(NotFoundError);
+	});
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	// getManyByIds
 
-// 		const dtos: CreateBaseQuestionDto[] = [
-// 			{
-// 				baseQuizId: 'bq1',
-// 				questionText: 'Q1',
-// 				correctAnswerText: 'A1',
-// 				conceptId: 'c1',
-// 				codeSnippet: 'code1',
-// 				questionType: 'type',
-// 				orderIndex: 1
-// 			} as CreateBaseQuestionDto,
-// 			{
-// 				baseQuizId: 'bq1',
-// 				questionText: 'Q2',
-// 				correctAnswerText: 'A2',
-// 				conceptId: 'c2',
-// 				codeSnippet: 'code2',
-// 				questionType: 'type',
-// 				orderIndex: 2
-// 			} as CreateBaseQuestionDto
-// 		];
+	it('getManyByIds: returns array of questions', async () => {
+		const rows = [
+			makeBaseQuestion({ id: 'q1' }),
+			makeBaseQuestion({ id: 'q2' })
+		];
 
-// 		const res = await service.createMany(dtos);
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.createMany[0].dtos).toEqual(dtos);
-// 	});
+		const repo = new FakeBaseQuestionRepository({
+			getByIdsResult: rows
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 	it('getByBaseQuizId: returns questions for quiz', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [makeBaseQuestion({ id: 'q1', baseQuizId: 'bqX' })];
-// 		fake.setGetByBaseQuizIdResult(rows);
+		const res = await svc.getManyByIds(['q1', 'q2']);
+		expect(res).toEqual(rows);
+	});
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	it('getManyByIds: returns empty array when none', async () => {
+		const repo = new FakeBaseQuestionRepository({
+			getByIdsResult: []
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 		const res = await service.getByBaseQuizId('bqX');
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.getByBaseQuizId[0].baseQuizId).toBe('bqX');
-// 	});
+		const res = await svc.getManyByIds(['q1', 'q2']);
+		expect(res).toEqual([]);
+	});
 
-// 	it('getBaseQuizIdByQuestionId: returns baseQuizId', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setGetBaseQuizIdByQuestionIdResult('bq-returned');
+	// createMany
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+	it('createMany: delegates to repository.createMany', async () => {
+		const created = [
+			makeBaseQuestion({ id: 'q1' }),
+			makeBaseQuestion({ id: 'q2' })
+		];
 
-// 		const res = await service.getBaseQuizIdByQuestionId('q1');
-// 		expect(res).toBe('bq-returned');
-// 		expect(fake.calls.getBaseQuizIdByQuestionId[0].questionId).toBe('q1');
-// 	});
+		const repo = new FakeBaseQuestionRepository({
+			createManyResult: created
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
 
-// 	it('getBaseQuizIdByQuestionId: throws NotFoundError when repo returns undefined', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setGetBaseQuizIdByQuestionIdResult(undefined);
+		const input: CreateBaseQuestionDto[] = [
+			{
+				baseQuizId: 'quiz1',
+				questionText: 'Q1',
+				correctAnswerText: 'A1',
+				conceptId: 'math',
+				codeSnippet: '',
+				questionType: 'MCQ',
+				orderIndex: 1
+			} as CreateBaseQuestionDto,
+			{
+				baseQuizId: 'quiz1',
+				questionText: 'Q2',
+				correctAnswerText: 'A2',
+				conceptId: 'math',
+				codeSnippet: '',
+				questionType: 'MCQ',
+				orderIndex: 2
+			} as CreateBaseQuestionDto
+		];
 
-// 		const service = new BaseQuestionService(fake.repo as any);
+		const res = await svc.createMany(input);
+		expect(res).toEqual(created);
+	});
 
-// 		await expect(
-// 			service.getBaseQuizIdByQuestionId('missing')
-// 		).rejects.toBeInstanceOf(NotFoundError);
-// 	});
-// });
+	// getByBaseQuizId
+
+	it('getByBaseQuizId: returns questions for given baseQuizId', async () => {
+		const rows = [
+			makeBaseQuestion({ id: 'q1', baseQuizId: 'quizX' }),
+			makeBaseQuestion({ id: 'q2', baseQuizId: 'quizX' })
+		];
+
+		const repo = new FakeBaseQuestionRepository({
+			getByBaseQuizIdResult: rows
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
+
+		const res = await svc.getByBaseQuizId('quizX');
+		expect(res).toEqual(rows);
+	});
+
+	// getBaseQuizIdByQuestionId
+
+	it('getBaseQuizIdByQuestionId: returns baseQuizId when found', async () => {
+		const repo = new FakeBaseQuestionRepository({
+			getBaseQuizIdByQuestionIdResult: 'quizX'
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
+
+		const res = await svc.getBaseQuizIdByQuestionId('q1');
+		expect(res).toBe('quizX');
+	});
+
+	it('getBaseQuizIdByQuestionId: throws NotFoundError when undefined', async () => {
+		const repo = new FakeBaseQuestionRepository({
+			getBaseQuizIdByQuestionIdResult: undefined
+		}) as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
+
+		await expect(
+			svc.getBaseQuizIdByQuestionId('missing')
+		).rejects.toBeInstanceOf(NotFoundError);
+	});
+
+	// transaction wiring
+
+	it('passes transaction through to repository methods (example: getById)', async () => {
+		const q = makeBaseQuestion({ id: 'q1' });
+		const fakeRepo = new FakeBaseQuestionRepository({
+			getByIdResult: q
+		});
+		const repo = fakeRepo as unknown as BaseQuestionRepository;
+		const svc = new BaseQuestionService(repo);
+		const tx = {} as Transaction;
+
+		await svc.getById('q1', tx);
+
+		expect(fakeRepo.receivedTxs.getById).toBe(tx);
+	});
+});

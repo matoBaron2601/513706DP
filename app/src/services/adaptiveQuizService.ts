@@ -11,11 +11,7 @@ import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';
 
 export class AdaptiveQuizService {
-	private repo: AdaptiveQuizRepository;
-
-	constructor() {
-		this.repo = new AdaptiveQuizRepository();
-	}
+	constructor(private repo: AdaptiveQuizRepository = new AdaptiveQuizRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<AdaptiveQuizDto> {
 		const item = await this.repo.getById(id, tx);
@@ -85,6 +81,4 @@ export class AdaptiveQuizService {
 		if (!item) throw new NotFoundError(`AdaptiveQuiz with userBlockId ${userBlockId} not found`);
 		return item;
 	}
-
-
 }

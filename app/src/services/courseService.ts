@@ -8,15 +8,11 @@ import { NotFoundError } from '../errors/AppError';
 import { UserRepository } from '../repositories/userRepository';
 
 export class CourseService {
-	private repo: CourseRepository;
-	private blockRepo: BlockRepository;
-	private userRepo: UserRepository;
-
-	constructor() {
-		this.repo = new CourseRepository();
-		this.blockRepo = new BlockRepository();
-		this.userRepo = new UserRepository();
-	}
+	constructor(
+		private repo: CourseRepository = new CourseRepository(),
+		private blockRepo: BlockRepository = new BlockRepository(),
+		private userRepo: UserRepository = new UserRepository()
+	) {}
 
 	async getById(id: string, tx?: Transaction): Promise<CourseDto> {
 		const item = await this.repo.getById(id, tx);
@@ -85,7 +81,7 @@ export class CourseService {
 		return item;
 	}
 
-	async unpublishCourse(id: string, userEmail:string, tx?: Transaction): Promise<CourseDto> {
+	async unpublishCourse(id: string, userEmail: string, tx?: Transaction): Promise<CourseDto> {
 		await this.checkUserCreatorOfCourse(id, userEmail, tx);
 		const item = await this.repo.update(id, { published: false }, tx);
 		if (!item) throw new NotFoundError(`Course with id ${id} not found`);

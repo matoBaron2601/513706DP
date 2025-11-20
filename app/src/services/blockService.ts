@@ -5,11 +5,7 @@ import path from 'path';
 import { BlockRepository } from '../repositories/blockRepository';
 import type { BlockDto, CreateBlockDto, UpdateBlockDto } from '../db/schema';
 export class BlockService {
-	private repo: BlockRepository;
-
-	constructor() {
-		this.repo = new BlockRepository();
-	}
+	constructor(private repo: BlockRepository = new BlockRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<BlockDto> {
 		const item = await this.repo.getById(id, tx);

@@ -14,11 +14,7 @@ import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';
 
 export class AdaptiveQuizAnswerService {
-	private repo: AdaptiveQuizAnswerRepository;
-
-	constructor() {
-		this.repo = new AdaptiveQuizAnswerRepository();
-	}
+	constructor(private repo: AdaptiveQuizAnswerRepository = new AdaptiveQuizAnswerRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<AdaptiveQuizAnswerDto> {
 		const item = await this.repo.getById(id, tx);

@@ -22,7 +22,6 @@ export class BlockFacade {
 	private typesenseService: TypesenseService;
 	private openAiService: OpenAiService;
 	private chunkerService: ChunkerService;
-	private placementQuizFacade: PlacementQuizFacade;
 	private bucketService: BucketService;
 	private documentService: DocumentService;
 
@@ -32,7 +31,6 @@ export class BlockFacade {
 		this.typesenseService = new TypesenseService();
 		this.openAiService = new OpenAiService();
 		this.chunkerService = new ChunkerService();
-		this.placementQuizFacade = new PlacementQuizFacade();
 		this.bucketService = new BucketService();
 		this.documentService = new DocumentService();
 	}

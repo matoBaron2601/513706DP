@@ -1,285 +1,310 @@
-// import { describe, it, expect } from 'bun:test';
-// import type {
-// 	BaseOptionDto,
-// 	CreateBaseOptionDto,
-// 	UpdateBaseOptionDto
-// } from '../../src/db/schema';
-// import type { Transaction } from '../../src/types';
-// import { BaseOptionService } from '../../src/services/baseOptionService';
-// import { BaseOptionRepository } from '../../src/repositories/baseOptionRepository';
-// import { NotFoundError } from 'elysia';
+import { describe, it, expect } from 'bun:test';
+import type {
+	BaseOptionDto,
+	CreateBaseOptionDto,
+	UpdateBaseOptionDto
+} from '../../src/db/schema';
+import type { Transaction } from '../../src/types';
+import { BaseOptionService } from '../../src/services/baseOptionService';
+import { BaseOptionRepository } from '../../src/repositories/baseOptionRepository';
+import { NotFoundError } from '../../src/errors/AppError';
 
-// function makeBaseOption(overrides: Partial<BaseOptionDto> = {}): BaseOptionDto {
-// 	return {
-// 		id: 'o1',
-// 		baseQuestionId: 'q1',
-// 		createdAt: new Date('2024-01-01T00:00:00Z'),
-// 		updatedAt: null,
-// 		deletedAt: null,
-// 		optionText: 'Option 1',
-// 		isCorrect: false,
-// 		...overrides
-// 	};
-// }
+function makeBaseOption(overrides: Partial<BaseOptionDto> = {}): BaseOptionDto {
+	return {
+		id: 'o1',
+		baseQuestionId: 'q1',
+		optionText: 'Option 1',
+		isCorrect: false,
+		createdAt: new Date('2024-01-01T00:00:00Z'),
+		updatedAt: null,
+		deletedAt: null,
+		...overrides
+	};
+}
 
-// type RepoLike = Pick<
-// 	BaseOptionRepository,
-// 	| 'getById'
-// 	| 'create'
-// 	| 'update'
-// 	| 'deleteById'
-// 	| 'getByIds'
-// 	| 'createMany'
-// 	| 'getByBaseQuestionId'
-// 	| 'getManyByBaseQuestionIds'
-// >;
+type RepoFixtures = {
+	getByIdResult?: BaseOptionDto | undefined;
+	createResult?: BaseOptionDto;
+	updateResult?: BaseOptionDto | undefined;
+	deleteResult?: BaseOptionDto | undefined;
+	getByIdsResult?: BaseOptionDto[];
+	createManyResult?: BaseOptionDto[];
+	getByBaseQuestionIdResult?: BaseOptionDto[];
+	getManyByBaseQuestionIdsResult?: BaseOptionDto[];
+};
 
-// function makeFakeRepo() {
-// 	let getByIdResult: BaseOptionDto | undefined;
-// 	let createResult: BaseOptionDto | undefined;
-// 	let updateResult: BaseOptionDto | undefined;
-// 	let deleteResult: BaseOptionDto | undefined;
-// 	let getByIdsResult: BaseOptionDto[] = [];
-// 	let createManyResult: BaseOptionDto[] = [];
-// 	let getByBaseQuestionIdResult: BaseOptionDto[] = [];
-// 	let getManyByBaseQuestionIdsResult: BaseOptionDto[] = [];
+class FakeBaseOptionRepository implements Partial<BaseOptionRepository> {
+	public fixtures: RepoFixtures;
+	public receivedTxs: {
+		getById?: Transaction | undefined;
+		create?: Transaction | undefined;
+		update?: Transaction | undefined;
+		deleteById?: Transaction | undefined;
+		getByIds?: Transaction | undefined;
+		createMany?: Transaction | undefined;
+		getByBaseQuestionId?: Transaction | undefined;
+		getManyByBaseQuestionIds?: Transaction | undefined;
+	} = {};
 
-// 	const calls = {
-// 		getById: [] as any[],
-// 		create: [] as any[],
-// 		update: [] as any[],
-// 		deleteById: [] as any[],
-// 		getByIds: [] as any[],
-// 		createMany: [] as any[],
-// 		getByBaseQuestionId: [] as any[],
-// 		getManyByBaseQuestionIds: [] as any[]
-// 	};
+	constructor(fixtures: RepoFixtures) {
+		this.fixtures = fixtures;
+	}
 
-// 	const repo: RepoLike = {
-// 		async getById(id: string, tx?: Transaction) {
-// 			calls.getById.push({ id, tx });
-// 			return getByIdResult;
-// 		},
-// 		async create(dto: CreateBaseOptionDto, tx?: Transaction) {
-// 			calls.create.push({ dto, tx });
-// 			if (!createResult) throw new Error('createResult not set');
-// 			return createResult;
-// 		},
-// 		async update(id: string, dto: UpdateBaseOptionDto, tx?: Transaction) {
-// 			calls.update.push({ id, dto, tx });
-// 			return updateResult;
-// 		},
-// 		async deleteById(id: string, tx?: Transaction) {
-// 			calls.deleteById.push({ id, tx });
-// 			return deleteResult;
-// 		},
-// 		async getByIds(ids: string[], tx?: Transaction) {
-// 			calls.getByIds.push({ ids, tx });
-// 			return getByIdsResult;
-// 		},
-// 		async createMany(dtos: CreateBaseOptionDto[], tx?: Transaction) {
-// 			calls.createMany.push({ dtos, tx });
-// 			return createManyResult;
-// 		},
-// 		async getByBaseQuestionId(baseQuestionId: string, tx?: Transaction) {
-// 			calls.getByBaseQuestionId.push({ baseQuestionId, tx });
-// 			return getByBaseQuestionIdResult;
-// 		},
-// 		async getManyByBaseQuestionIds(baseQuestionIds: string[], tx?: Transaction) {
-// 			calls.getManyByBaseQuestionIds.push({ baseQuestionIds, tx });
-// 			return getManyByBaseQuestionIdsResult;
-// 		}
-// 	};
+	async getById(id: string, tx?: Transaction): Promise<BaseOptionDto | undefined> {
+		this.receivedTxs.getById = tx;
+		return this.fixtures.getByIdResult;
+	}
 
-// 	return {
-// 		repo,
-// 		calls,
-// 		setGetByIdResult: (v?: BaseOptionDto) => (getByIdResult = v),
-// 		setCreateResult: (v: BaseOptionDto) => (createResult = v),
-// 		setUpdateResult: (v?: BaseOptionDto) => (updateResult = v),
-// 		setDeleteResult: (v?: BaseOptionDto) => (deleteResult = v),
-// 		setGetByIdsResult: (v: BaseOptionDto[]) => (getByIdsResult = v),
-// 		setCreateManyResult: (v: BaseOptionDto[]) => (createManyResult = v),
-// 		setGetByBaseQuestionIdResult: (v: BaseOptionDto[]) => (getByBaseQuestionIdResult = v),
-// 		setGetManyByBaseQuestionIdsResult: (v: BaseOptionDto[]) =>
-// 			(getManyByBaseQuestionIdsResult = v)
-// 	};
-// }
+	async create(data: CreateBaseOptionDto, tx?: Transaction): Promise<BaseOptionDto> {
+		this.receivedTxs.create = tx;
+		if (!this.fixtures.createResult) {
+			this.fixtures.createResult = makeBaseOption({
+				id: 'created',
+				baseQuestionId: data.baseQuestionId,
+				optionText: data.optionText ?? null,
+				isCorrect: data.isCorrect
+			});
+		}
+		return this.fixtures.createResult;
+	}
 
-// describe('BaseOptionService', () => {
-// 	// getById
+	async update(
+		id: string,
+		data: UpdateBaseOptionDto,
+		tx?: Transaction
+	): Promise<BaseOptionDto | undefined> {
+		this.receivedTxs.update = tx;
+		return this.fixtures.updateResult;
+	}
 
-// 	it('getById: returns option when found', async () => {
-// 		const fake = makeFakeRepo();
-// 		const option = makeBaseOption({ id: 'o1' });
-// 		fake.setGetByIdResult(option);
+	async deleteById(id: string, tx?: Transaction): Promise<BaseOptionDto | undefined> {
+		this.receivedTxs.deleteById = tx;
+		return this.fixtures.deleteResult;
+	}
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	async getByIds(ids: string[], tx?: Transaction): Promise<BaseOptionDto[]> {
+		this.receivedTxs.getByIds = tx;
+		return this.fixtures.getByIdsResult ?? [];
+	}
 
-// 		const res = await service.getById('o1');
-// 		expect(res).toEqual(option);
-// 		expect(fake.calls.getById[0].id).toBe('o1');
-// 	});
+	async createMany(data: CreateBaseOptionDto[], tx?: Transaction): Promise<BaseOptionDto[]> {
+		this.receivedTxs.createMany = tx;
+		return this.fixtures.createManyResult ?? [];
+	}
 
-// 	it('getById: throws NotFoundError when not found', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setGetByIdResult(undefined);
+	async getByBaseQuestionId(
+		baseQuestionId: string,
+		tx?: Transaction
+	): Promise<BaseOptionDto[]> {
+		this.receivedTxs.getByBaseQuestionId = tx;
+		return this.fixtures.getByBaseQuestionIdResult ?? [];
+	}
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	async getManyByBaseQuestionIds(
+		baseQuestionIds: string[],
+		tx?: Transaction
+	): Promise<BaseOptionDto[]> {
+		this.receivedTxs.getManyByBaseQuestionIds = tx;
+		return this.fixtures.getManyByBaseQuestionIdsResult ?? [];
+	}
+}
 
-// 		await expect(service.getById('missing')).rejects.toBeInstanceOf(NotFoundError);
-// 	});
+describe('BaseOptionService', () => {
+	// getById
 
-// 	// create
+	it('getById: returns option when found', async () => {
+		const option = makeBaseOption({ id: 'o1' });
+		const repo = new FakeBaseOptionRepository({
+			getByIdResult: option
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	it('create: forwards to repo and returns created option', async () => {
-// 		const fake = makeFakeRepo();
-// 		const created = makeBaseOption({ id: 'o-new', isCorrect: true });
-// 		fake.setCreateResult(created);
+		const res = await svc.getById('o1');
+		expect(res).toEqual(option);
+	});
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	it('getById: throws NotFoundError when option not found', async () => {
+		const repo = new FakeBaseOptionRepository({
+			getByIdResult: undefined
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 		const dto = {
-// 			baseQuestionId: 'q1',
-// 			optionText: 'New option',
-// 			isCorrect: true
-// 		} as CreateBaseOptionDto;
+		await expect(svc.getById('missing')).rejects.toBeInstanceOf(NotFoundError);
+	});
 
-// 		const res = await service.create(dto);
-// 		expect(res).toEqual(created);
-// 		expect(fake.calls.create[0].dto).toEqual(dto);
-// 	});
+	// create
 
-// 	// update
+	it('create: delegates to repository.create', async () => {
+		const created = makeBaseOption({ id: 'o2', optionText: 'New option' });
+		const repo = new FakeBaseOptionRepository({
+			createResult: created
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	it('update: returns updated option', async () => {
-// 		const fake = makeFakeRepo();
-// 		const updated = makeBaseOption({ id: 'o1', optionText: 'Updated', isCorrect: true });
-// 		fake.setUpdateResult(updated);
+		const input = {
+			baseQuestionId: 'q1',
+			optionText: 'New option',
+			isCorrect: true
+		} as CreateBaseOptionDto;
 
-// 		const service = new BaseOptionService(fake.repo as any);
+		const res = await svc.create(input);
+		expect(res).toEqual(created);
+	});
 
-// 		const patch = { optionText: 'Updated', isCorrect: true } as UpdateBaseOptionDto;
+	// update
 
-// 		const res = await service.update('o1', patch);
-// 		expect(res).toEqual(updated);
-// 		expect(fake.calls.update[0].id).toBe('o1');
-// 		expect(fake.calls.update[0].dto).toEqual(patch);
-// 	});
+	it('update: returns updated option when repo returns value', async () => {
+		const updated = makeBaseOption({
+			id: 'o1',
+			optionText: 'Updated',
+			isCorrect: true
+		});
+		const repo = new FakeBaseOptionRepository({
+			updateResult: updated
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	it('update: throws NotFoundError when repo returns undefined', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setUpdateResult(undefined);
+		const patch = {
+			optionText: 'Updated',
+			isCorrect: true
+		} as UpdateBaseOptionDto;
 
-// 		const service = new BaseOptionService(fake.repo as any);
+		const res = await svc.update('o1', patch);
+		expect(res).toEqual(updated);
+	});
 
-// 		await expect(service.update('missing', {} as UpdateBaseOptionDto)).rejects.toBeInstanceOf(
-// 			NotFoundError
-// 		);
-// 	});
+	it('update: throws NotFoundError when repo returns undefined', async () => {
+		const repo = new FakeBaseOptionRepository({
+			updateResult: undefined
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	// delete
+		const patch = {
+			optionText: 'Updated'
+		} as UpdateBaseOptionDto;
 
-// 	it('delete: returns deleted option', async () => {
-// 		const fake = makeFakeRepo();
-// 		const deleted = makeBaseOption({ id: 'o1' });
-// 		fake.setDeleteResult(deleted);
+		await expect(svc.update('missing', patch)).rejects.toBeInstanceOf(NotFoundError);
+	});
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	// delete
 
-// 		const res = await service.delete('o1');
-// 		expect(res).toEqual(deleted);
-// 		expect(fake.calls.deleteById[0].id).toBe('o1');
-// 	});
+	it('delete: returns deleted option when repo returns value', async () => {
+		const deleted = makeBaseOption({ id: 'o1' });
+		const repo = new FakeBaseOptionRepository({
+			deleteResult: deleted
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	it('delete: throws NotFoundError when repo returns undefined', async () => {
-// 		const fake = makeFakeRepo();
-// 		fake.setDeleteResult(undefined);
+		const res = await svc.delete('o1');
+		expect(res).toEqual(deleted);
+	});
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	it('delete: throws NotFoundError when repo returns undefined', async () => {
+		const repo = new FakeBaseOptionRepository({
+			deleteResult: undefined
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 		await expect(service.delete('missing')).rejects.toBeInstanceOf(NotFoundError);
-// 	});
+		await expect(svc.delete('missing')).rejects.toBeInstanceOf(NotFoundError);
+	});
 
-// 	// getByIds
+	// getByIds
 
-// 	it('getByIds: returns options', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [
-// 			makeBaseOption({ id: 'o1' }),
-// 			makeBaseOption({ id: 'o2', optionText: 'second' })
-// 		];
-// 		fake.setGetByIdsResult(rows);
+	it('getByIds: returns array of options', async () => {
+		const rows = [
+			makeBaseOption({ id: 'o1' }),
+			makeBaseOption({ id: 'o2' })
+		];
 
-// 		const service = new BaseOptionService(fake.repo as any);
+		const repo = new FakeBaseOptionRepository({
+			getByIdsResult: rows
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 		const res = await service.getByIds(['o1', 'o2']);
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.getByIds[0].ids).toEqual(['o1', 'o2']);
-// 	});
+		const res = await svc.getByIds(['o1', 'o2']);
+		expect(res).toEqual(rows);
+	});
 
-// 	// createMany
+	it('getByIds: returns empty array when none', async () => {
+		const repo = new FakeBaseOptionRepository({
+			getByIdsResult: []
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	it('createMany: forwards to repo and returns created options', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [
-// 			makeBaseOption({ id: 'o1' }),
-// 			makeBaseOption({ id: 'o2', isCorrect: true })
-// 		];
-// 		fake.setCreateManyResult(rows);
+		const res = await svc.getByIds(['o1', 'o2']);
+		expect(res).toEqual([]);
+	});
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	// createMany
 
-// 		const dtos: CreateBaseOptionDto[] = [
-// 			{
-// 				baseQuestionId: 'q1',
-// 				optionText: 'O1',
-// 				isCorrect: false
-// 			} as CreateBaseOptionDto,
-// 			{
-// 				baseQuestionId: 'q1',
-// 				optionText: 'O2',
-// 				isCorrect: true
-// 			} as CreateBaseOptionDto
-// 		];
+	it('createMany: delegates to repository.createMany', async () => {
+		const created = [
+			makeBaseOption({ id: 'o1' }),
+			makeBaseOption({ id: 'o2' })
+		];
 
-// 		const res = await service.createMany(dtos);
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.createMany[0].dtos).toEqual(dtos);
-// 	});
+		const repo = new FakeBaseOptionRepository({
+			createManyResult: created
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	// getByBaseQuestionId
+		const input: CreateBaseOptionDto[] = [
+			{ baseQuestionId: 'q1', optionText: 'A', isCorrect: false } as CreateBaseOptionDto,
+			{ baseQuestionId: 'q1', optionText: 'B', isCorrect: true } as CreateBaseOptionDto
+		];
 
-// 	it('getByBaseQuestionId: returns options for question', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [
-// 			makeBaseOption({ id: 'o1', baseQuestionId: 'qX' }),
-// 			makeBaseOption({ id: 'o2', baseQuestionId: 'qX' })
-// 		];
-// 		fake.setGetByBaseQuestionIdResult(rows);
+		const res = await svc.createMany(input);
+		expect(res).toEqual(created);
+	});
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	// getByBaseQuestionId
 
-// 		const res = await service.getByBaseQuestionId('qX');
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.getByBaseQuestionId[0].baseQuestionId).toBe('qX');
-// 	});
+	it('getByBaseQuestionId: returns options for question', async () => {
+		const rows = [
+			makeBaseOption({ id: 'o1', baseQuestionId: 'qX' }),
+			makeBaseOption({ id: 'o2', baseQuestionId: 'qX' })
+		];
 
-// 	// getManyByBaseQuestionIds
+		const repo = new FakeBaseOptionRepository({
+			getByBaseQuestionIdResult: rows
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
 
-// 	it('getManyByBaseQuestionIds: returns options for multiple questions', async () => {
-// 		const fake = makeFakeRepo();
-// 		const rows = [
-// 			makeBaseOption({ id: 'o1', baseQuestionId: 'q1' }),
-// 			makeBaseOption({ id: 'o2', baseQuestionId: 'q2' }),
-// 			makeBaseOption({ id: 'o3', baseQuestionId: 'q1' })
-// 		];
-// 		fake.setGetManyByBaseQuestionIdsResult(rows);
+		const res = await svc.getByBaseQuestionId('qX');
+		expect(res).toEqual(rows);
+	});
 
-// 		const service = new BaseOptionService(fake.repo as any);
+	// getManyByBaseQuestionIds
 
-// 		const res = await service.getManyByBaseQuestionIds(['q1', 'q2']);
-// 		expect(res).toEqual(rows);
-// 		expect(fake.calls.getManyByBaseQuestionIds[0].baseQuestionIds).toEqual(['q1', 'q2']);
-// 	});
-// });
+	it('getManyByBaseQuestionIds: returns options for multiple baseQuestionIds', async () => {
+		const rows = [
+			makeBaseOption({ id: 'o1', baseQuestionId: 'q1' }),
+			makeBaseOption({ id: 'o2', baseQuestionId: 'q2' }),
+			makeBaseOption({ id: 'o3', baseQuestionId: 'q1' })
+		];
+
+		const repo = new FakeBaseOptionRepository({
+			getManyByBaseQuestionIdsResult: rows
+		}) as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
+
+		const res = await svc.getManyByBaseQuestionIds(['q1', 'q2']);
+		expect(res).toEqual(rows);
+	});
+
+	// transaction wiring
+
+	it('passes transaction through to repository methods (example: getById)', async () => {
+		const option = makeBaseOption({ id: 'o1' });
+		const fakeRepo = new FakeBaseOptionRepository({
+			getByIdResult: option
+		});
+		const repo = fakeRepo as unknown as BaseOptionRepository;
+		const svc = new BaseOptionService(repo);
+		const tx = {} as Transaction;
+
+		await svc.getById('o1', tx);
+
+		expect(fakeRepo.receivedTxs.getById).toBe(tx);
+	});
+});

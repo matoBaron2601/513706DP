@@ -15,13 +15,10 @@ import { UserRepository } from '../repositories/userRepository';
 import type { Transaction } from '../types';
 
 export class UserBlockService {
-	private repo: UserBlockRepository;
-	private userRepo: UserRepository;
-
-	constructor() {
-		this.repo = new UserBlockRepository();
-		this.userRepo = new UserRepository();
-	}
+	constructor(
+		private repo: UserBlockRepository = new UserBlockRepository(),
+		private userRepo: UserRepository = new UserRepository()
+	) {}
 
 	async getById(id: string, tx?: Transaction): Promise<UserBlockDto> {
 		const item = await this.repo.getById(id, tx);
@@ -33,11 +30,7 @@ export class UserBlockService {
 		return await this.repo.create(data, tx);
 	}
 
-	async update(
-		id: string,
-		data: UpdateUserBlockDto,
-		tx?: Transaction
-	): Promise<UserBlockDto> {
+	async update(id: string, data: UpdateUserBlockDto, tx?: Transaction): Promise<UserBlockDto> {
 		const item = await this.repo.update(id, data, tx);
 		if (!item) throw new NotFoundError(`UserBlock with id ${id} not found`);
 		return item;

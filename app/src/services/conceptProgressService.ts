@@ -14,11 +14,7 @@ import type {
 } from '../db/schema';
 import { ConceptProgressRepository } from '../repositories/conceptProgressRepository';
 export class ConceptProgressService {
-	private repo: ConceptProgressRepository;
-
-	constructor() {
-		this.repo = new ConceptProgressRepository();
-	}
+	constructor(private repo: ConceptProgressRepository = new ConceptProgressRepository()) {}
 
 	async getById(id: string, tx?: Transaction): Promise<ConceptProgressDto> {
 		const item = await this.repo.getById(id, tx);

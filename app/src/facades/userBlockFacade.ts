@@ -1,6 +1,4 @@
-import { GalleryThumbnailsIcon } from '@lucide/svelte';
 import { db } from '../db/client';
-import { UserBlockRepository } from '../repositories/userBlockRepository';
 import type { CreateUserBlock, UserBlock } from '../schemas/userBlockSchema';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
 import { ConceptProgressService } from '../services/conceptProgressService';
