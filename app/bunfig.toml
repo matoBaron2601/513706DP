@@ -1,0 +1,9 @@
+[test]
+# Only look for unit tests here:
+root = "./test/backend"
+
+# Or use "match" to limit patterns:
+match = ["**/*.test.ts"]
+
+# Ignore Playwright e2e tests:
+exclude = ["./e2e/**"]

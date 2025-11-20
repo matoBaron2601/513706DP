@@ -1,26 +1,32 @@
+// src/api/userBlock/userBlockApi.ts
 import { Elysia } from 'elysia';
 import { UserBlockService } from '../../../services/userBlockService';
 import { createUserBlockSchema } from '../../../schemas/userBlockSchema';
 import { UserBlockFacade } from '../../../facades/userBlockFacade';
 
-const userBlockFacade = new UserBlockFacade();
-const userBlockService = new UserBlockService();
+export const createUserBlockApi = (deps?: {
+	userBlockFacade?: UserBlockFacade;
+	userBlockService?: UserBlockService;
+}) => {
+	const userBlockFacade = deps?.userBlockFacade ?? new UserBlockFacade();
+	const userBlockService = deps?.userBlockService ?? new UserBlockService();
 
-export const userBlockApi = new Elysia({ prefix: 'userBlock' })
-	.post(
-		'/',
-		async (req) => {
-			return await userBlockFacade.handleUserBlockLogic(req.body);
-		},
-		{
-			body: createUserBlockSchema
-		}
-	)
-	.get('/user/:userId/block/:blockId', async (req) => {
-		const { userId, blockId } = req.params;
-		const email = req.headers['x-user-email'] as string;
+	return new Elysia({ prefix: 'userBlock' })
+		.post(
+			'/',
+			async (req) => {
+				return await userBlockFacade.handleUserBlockLogic(req.body);
+			},
+			{
+				body: createUserBlockSchema
+			}
+		)
+		.get('/user/:userId/block/:blockId', async (req) => {
+			const { userId, blockId } = req.params;
+			const email = req.headers['x-user-email'] as string | undefined;
+			return await userBlockService.getByBothIdsOrUndefined({ userId, blockId });
+		});
+};
 
-		return await userBlockService.getByBothIdsOrUndefined({ userId, blockId });
-	});
-
+export const userBlockApi = createUserBlockApi();
 export default userBlockApi;

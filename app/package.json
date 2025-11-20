@@ -12,8 +12,6 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run",
 		"start": "docker compose up -d && bun run dev",
 		"db:makemigrations": "npx drizzle-kit generate",
 		"db:migrate": "npx drizzle-kit migrate",
@@ -22,7 +20,9 @@
 		"deletecol": "bun run src/typesense/scripts/deleteCollection.ts",
 		"populatecol": "bun run src/typesense/scripts/populateCollection.ts",
 		"deletedb": "bun run src/db/scripts/delete.ts",
-		"populatedb": "bun run src/db/scripts/populate.ts"
+		"populatedb": "bun run src/db/scripts/populate.ts",
+		"test": "bun test && playwright test",
+		"testfe": " playwright test"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -34,7 +34,7 @@
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/vite": "^4.0.0",
-		"@types/node": "^22",
+		"@types/node": "^24.10.1",
 		"@vitest/browser": "^3.2.3",
 		"bits-ui": "^2.11.5",
 		"bun-types": "^1.3.2",

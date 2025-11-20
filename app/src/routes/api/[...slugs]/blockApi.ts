@@ -6,36 +6,41 @@ import {
 } from '../../../schemas/blockSchema';
 import { BucketService } from '../../../services/bucketService';
 import { BlockService } from '../../../services/blockService';
-import { DocumentService } from '../../../services/documentService';
 
-const blockFacade = new BlockFacade();
-const blockService = new BlockService();
-const bucketService = new BucketService();
-const documentService = new DocumentService();
+export const createBlockApi = (deps?: {
+	blockFacade?: BlockFacade;
+	blockService?: BlockService;
+	bucketService?: BucketService;
+}) => {
+	const blockFacade = deps?.blockFacade ?? new BlockFacade();
+	const blockService = deps?.blockService ?? new BlockService();
+	const bucketService = deps?.bucketService ?? new BucketService();
 
-export const blockApi = new Elysia({ prefix: 'block' })
-	.get('/:id', async (req) => {
-		return await blockService.getById(req.params.id);
-	})
-	.get('/courseId/:id', async (req) => {
-		return await blockFacade.getManyByCourseId(req.params.id);
-	})
-	.post(
-		'/identifyConcepts',
-		async (req) => {
-			const documentName = await bucketService.uploadBlockDataFile(req.body.document);
-			return await blockFacade.identifyConcepts(documentName);
-		},
-		{
-			body: identifyConceptsRequestSchema
-		}
-	)
-	.post(
-		'/createBlock',
-		async (req) => {
-			return await blockFacade.createBlock(req.body);
-		},
-		{ body: createBlockRequestSchema }
-	);
+	return new Elysia({ prefix: 'block' })
+		.get('/:id', async (req) => {
+			return await blockService.getById(req.params.id);
+		})
+		.get('/courseId/:id', async (req) => {
+			return await blockFacade.getManyByCourseId(req.params.id);
+		})
+		.post(
+			'/identifyConcepts',
+			async (req) => {
+				const documentName = await bucketService.uploadBlockDataFile(req.body.document);
+				return await blockFacade.identifyConcepts(documentName);
+			},
+			{
+				body: identifyConceptsRequestSchema
+			}
+		)
+		.post(
+			'/createBlock',
+			async (req) => {
+				return await blockFacade.createBlock(req.body);
+			},
+			{ body: createBlockRequestSchema }
+		);
+};
 
+export const blockApi = createBlockApi();
 export default blockApi;

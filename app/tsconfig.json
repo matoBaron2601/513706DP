@@ -10,9 +10,9 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
-		"types": ["bun-types", "vitest/globals"]
+		"types": ["bun-types", "vitest/globals", "node"]
 	},
-	"include": ["src", "test", "global.d.ts", "**/*.d.ts"],
+	"include": ["src", "test", "global.d.ts", "playwright.config.ts", "**/*.d.ts"],
 	"exclude": ["dist", "node_modules"]
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
