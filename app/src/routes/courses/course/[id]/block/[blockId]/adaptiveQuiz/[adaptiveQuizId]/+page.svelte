@@ -20,9 +20,10 @@
 
 	let questionIndex = $state(0);
 	let showSummary = $state(false);
+	let questionStartTime = $state(Date.now());
 
 	const adaptiveQuizId = page.params.adaptiveQuizId ?? '';
-
+	console.log('adaptiveQuizId', adaptiveQuizId);
 	const courseQuery = createQuery({
 		queryKey: ['course'],
 		queryFn: async () => await getCourseById(courseId)
@@ -52,15 +53,24 @@
 	});
 
 	const handleSubmitQuestion = async (optionText: string, baseQuestionId: string) => {
+		const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
+
 		questionIndex += 1;
+
 		await $submitAdaptiveQuizAnswerMutation.mutateAsync({
 			answerText: optionText,
-			baseQuestionId: baseQuestionId
+			baseQuestionId: baseQuestionId,
+			time: timeSpent,
+			adaptiveQuizId: adaptiveQuizId
 		});
+
 		await queryClient.invalidateQueries({ queryKey: ['adaptiveQuiz', adaptiveQuizId] });
+
 		if (questionIndex >= ($adaptiveQuizQuery.data?.questions.length ?? 0)) {
 			showSummary = true;
 			await $finishAdaptiveQuizMutation.mutateAsync();
+		} else {
+			questionStartTime = Date.now();
 		}
 	};
 
@@ -81,6 +91,12 @@
 			} else {
 				showSummary = true;
 			}
+		}
+	});
+
+	$effect(() => {
+		if ($adaptiveQuizQuery.data) {
+			questionStartTime = Date.now();
 		}
 	});
 </script>

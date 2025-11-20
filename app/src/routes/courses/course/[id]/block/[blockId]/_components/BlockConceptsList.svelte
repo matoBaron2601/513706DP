@@ -20,9 +20,7 @@
 
 {#if $getBlockConceptsQuery.data?.length !== 0}
 	<Card.Title class="text-2xl">Concept progress:</Card.Title>
-	<div
-		class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4"
-	>
+	<div class=" grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
 		{#each $getBlockConceptsQuery.data as concept}
 			<div class="w-full">
 				<BlockConceptCard {concept} />

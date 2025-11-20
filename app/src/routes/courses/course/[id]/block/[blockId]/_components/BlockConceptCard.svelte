@@ -115,7 +115,7 @@
 			<p class="flex justify-between font-bold">
 				<span>BetaCI (width):</span>
 				<span class={`text-right font-mono ${ciOk ? 'text-green-700' : 'text-red-700'}`}>
-					{Number.isNaN(ciWidth) ? '-' : `${ciWidth.toFixed(2)} <= 0.15`}
+					{Number.isNaN(ciWidth) ? '- <= 0.15' : `${ciWidth.toFixed(2)} <= 0.15`}
 				</span>
 			</p>
 

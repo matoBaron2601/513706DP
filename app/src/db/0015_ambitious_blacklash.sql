@@ -1,0 +1,1 @@
+ALTER TABLE "adaptiveQuizAnswer" ADD COLUMN "time" integer NOT NULL;

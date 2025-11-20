@@ -8,12 +8,14 @@ import {
 	adaptiveQuizAnswer
 } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
 import { db } from '../db/client';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 export class AdaptiveQuizRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(adaptiveQuizId: string, tx?: Transaction): Promise<AdaptiveQuizDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.id, adaptiveQuizId));
@@ -21,14 +23,14 @@ export class AdaptiveQuizRepository {
 	}
 
 	async getByIds(adaptiveQuizIds: string[], tx?: Transaction): Promise<AdaptiveQuizDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(inArray(adaptiveQuiz.id, adaptiveQuizIds));
 	}
 
 	async create(newAdaptiveQuiz: CreateAdaptiveQuizDto, tx?: Transaction): Promise<AdaptiveQuizDto> {
-		const result = await getDbClient(tx).insert(adaptiveQuiz).values(newAdaptiveQuiz).returning();
+		const result = await this.getDbClient(tx).insert(adaptiveQuiz).values(newAdaptiveQuiz).returning();
 		return result[0];
 	}
 
@@ -37,7 +39,7 @@ export class AdaptiveQuizRepository {
 		updateAdaptiveQuiz: UpdateAdaptiveQuizDto,
 		tx?: Transaction
 	): Promise<AdaptiveQuizDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(adaptiveQuiz)
 			.set(updateAdaptiveQuiz)
 			.where(eq(adaptiveQuiz.id, adaptiveQuizId))
@@ -46,7 +48,7 @@ export class AdaptiveQuizRepository {
 	}
 
 	async delete(adaptiveQuizId: string, tx?: Transaction): Promise<AdaptiveQuizDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.delete(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.id, adaptiveQuizId))
 			.returning();
@@ -54,7 +56,7 @@ export class AdaptiveQuizRepository {
 	}
 
 	async getByUserBlockId(userBlockId: string, tx?: Transaction): Promise<AdaptiveQuizDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.userBlockId, userBlockId));
@@ -64,7 +66,7 @@ export class AdaptiveQuizRepository {
 		userBlockIds: string,
 		tx?: Transaction
 	): Promise<AdaptiveQuizDto> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.userBlockId, userBlockIds))
@@ -76,7 +78,7 @@ export class AdaptiveQuizRepository {
 		baseQuizId: string,
 		tx?: Transaction
 	): Promise<AdaptiveQuizDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.baseQuizId, baseQuizId));
@@ -86,7 +88,7 @@ export class AdaptiveQuizRepository {
 	async getLastAdaptiveQuizByUserBlockId(
 		userBlockId: string
 	): Promise<AdaptiveQuizDto | undefined> {
-		const result = await getDbClient()
+		const result = await this.getDbClient()
 			.select()
 			.from(adaptiveQuiz)
 			.where(eq(adaptiveQuiz.userBlockId, userBlockId))
@@ -100,7 +102,7 @@ export class AdaptiveQuizRepository {
 		count: number,
 		tx?: Transaction
 	): Promise<AdaptiveQuizDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(
@@ -118,7 +120,7 @@ export class AdaptiveQuizRepository {
 		userBlockId: string,
 		tx?: Transaction
 	): Promise<AdaptiveQuizDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(adaptiveQuiz)
 			.where(and(eq(adaptiveQuiz.userBlockId, userBlockId), eq(adaptiveQuiz.isCompleted, false)))
@@ -126,6 +128,4 @@ export class AdaptiveQuizRepository {
 			.limit(1);
 		return result[0];
 	}
-
-
 }

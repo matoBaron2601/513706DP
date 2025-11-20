@@ -17,7 +17,6 @@
 	import { toast } from 'svelte-sonner';
 
 	let { data }: { data: PageData } = $props();
-
 	const user = getUserFromPage();
 	const createCourseMutation = createMutation({
 		mutationKey: ['createCourse'],
@@ -32,7 +31,6 @@
 			});
 			goto('/courses');
 		},
-
 		onSuccess: () => {
 			toast.success('Course created successfully');
 		}
@@ -58,26 +56,48 @@
 	]}
 	goBackUrl="/courses"
 >
-	<form method="POST" use:enhance class="p-4" onsubmit={handleFormSubmit}>
-		<Card.Title class="text-xl">Create New Course</Card.Title>
-		<Card.Card class="mx-auto mt-4">
-			<Card.Content class="flex flex-col gap-6">
+	<form method="POST" use:enhance onsubmit={handleFormSubmit}>
+		<div class="space-y-4">
+			<h1 class="text-2xl font-semibold tracking-tight text-gray-900">
+				Create new course
+			</h1>
+			<p class="text-sm text-gray-500">
+				Define the basic information for your new course.
+			</p>
+		</div>
+
+		<Card.Card class="mt-6 rounded-2xl border border-gray-200 bg-white shadow-sm">
+			<Card.Content class="flex flex-col gap-6 px-6 py-6">
 				<Form.Field {form} name="name">
 					<Form.Control>
 						{#snippet children({ props })}
-							<Form.Label>Name</Form.Label>
-							<Input class="" {...props} bind:value={$formData.name} />
+							<div class="space-y-2">
+								<Form.Label>Name</Form.Label>
+								<Input
+									{...props}
+									bind:value={$formData.name}
+									class="w-full"
+									placeholder="e.g. PB138 Web Dev and Markup Languages"
+								/>
+							</div>
 						{/snippet}
 					</Form.Control>
-					<Form.Description>Specify course name</Form.Description>
+					<p class="mt-1 text-xs text-gray-500">
+						Specify a clear and recognizable name for the course.
+					</p>
 					<Form.FieldErrors />
 				</Form.Field>
+
 				<div class="flex justify-end">
-					<Button type="submit" class="cursor-pointer " disabled={$createCourseMutation.isPending}>
+					<Button
+						type="submit"
+						class="cursor-pointer px-5"
+						disabled={$createCourseMutation.isPending}
+					>
 						{#if $createCourseMutation.isPending}
 							<Spinner />
 						{:else}
-							Create
+							Create course
 						{/if}
 					</Button>
 				</div>

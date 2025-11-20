@@ -6,11 +6,13 @@ import {
 	type UserBlockDto
 } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 export class UserBlockRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(userBlockId: string, tx?: Transaction): Promise<UserBlockDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(userBlock)
 			.where(eq(userBlock.id, userBlockId));
@@ -18,14 +20,14 @@ export class UserBlockRepository {
 	}
 
 	async getByIds(userBlockIds: string[], tx?: Transaction): Promise<UserBlockDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(userBlock)
 			.where(inArray(userBlock.id, userBlockIds));
 	}
 
 	async create(newUserBlock: CreateUserBlockDto, tx?: Transaction): Promise<UserBlockDto> {
-		const result = await getDbClient(tx).insert(userBlock).values(newUserBlock).returning();
+		const result = await this.getDbClient(tx).insert(userBlock).values(newUserBlock).returning();
 		return result[0];
 	}
 
@@ -34,7 +36,7 @@ export class UserBlockRepository {
 		updateUserBlock: UpdateUserBlockDto,
 		tx?: Transaction
 	): Promise<UserBlockDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(userBlock)
 			.set(updateUserBlock)
 			.where(eq(userBlock.id, userBlockId))
@@ -43,7 +45,7 @@ export class UserBlockRepository {
 	}
 
 	async delete(userBlockId: string, tx?: Transaction): Promise<UserBlockDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.delete(userBlock)
 			.where(eq(userBlock.id, userBlockId))
 			.returning();
@@ -54,10 +56,12 @@ export class UserBlockRepository {
 		newUserBlock: CreateUserBlockDto,
 		tx?: Transaction
 	): Promise<UserBlockDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(userBlock)
-			.where(and(eq(userBlock.userId, newUserBlock.userId), eq(userBlock.blockId, newUserBlock.blockId)));
+			.where(
+				and(eq(userBlock.userId, newUserBlock.userId), eq(userBlock.blockId, newUserBlock.blockId))
+			);
 		return result[0];
 	}
 }

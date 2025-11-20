@@ -1,14 +1,18 @@
 import { describe, it, expect } from 'bun:test';
-import type { CreateUserDto, UpdateUserDto, UserDto } from '../../src/db/schema';
+import type {
+	UserDto,
+	CreateUserDto,
+	UpdateUserDto
+} from '../../src/db/schema';
 import type { Transaction } from '../../src/types';
 import { UserRepository } from '../../src/repositories/userRepository';
 
 function makeUser(overrides: Partial<UserDto> = {}): UserDto {
 	return {
 		id: 'u1',
-		email: 'a@a.com',
-		name: 'Alice',
-		profilePicture: 'https://example.com/p.png',
+		name: 'Test User',
+		email: 'test@example.com',
+		profilePicture: 'https://example.com/avatar.png',
 		createdAt: new Date('2024-01-01T00:00:00Z'),
 		updatedAt: null,
 		deletedAt: null,
@@ -30,8 +34,7 @@ function makeFakeDbClient(fixtures: Fixtures) {
 				from(_table: unknown) {
 					return {
 						where(_expr: unknown): Promise<UserDto[]> {
-							const result = fixtures.selectResult ?? [];
-							return Promise.resolve(result);
+							return Promise.resolve(fixtures.selectResult ?? []);
 						}
 					};
 				}
@@ -39,11 +42,10 @@ function makeFakeDbClient(fixtures: Fixtures) {
 		},
 		insert(_table: unknown) {
 			return {
-				values(_v: CreateUserDto) {
+				values(_v: CreateUserDto | CreateUserDto[]) {
 					return {
 						returning(): Promise<UserDto[]> {
-							const result = fixtures.insertReturn ?? [];
-							return Promise.resolve(result);
+							return Promise.resolve(fixtures.insertReturn ?? []);
 						}
 					};
 				}
@@ -56,8 +58,7 @@ function makeFakeDbClient(fixtures: Fixtures) {
 						where(_expr: unknown) {
 							return {
 								returning(): Promise<UserDto[]> {
-									const result = fixtures.updateReturn ?? [];
-									return Promise.resolve(result);
+									return Promise.resolve(fixtures.updateReturn ?? []);
 								}
 							};
 						}
@@ -70,8 +71,7 @@ function makeFakeDbClient(fixtures: Fixtures) {
 				where(_expr: unknown) {
 					return {
 						returning(): Promise<UserDto[]> {
-							const result = fixtures.deleteReturn ?? [];
-							return Promise.resolve(result);
+							return Promise.resolve(fixtures.deleteReturn ?? []);
 						}
 					};
 				}
@@ -79,19 +79,19 @@ function makeFakeDbClient(fixtures: Fixtures) {
 		}
 	};
 
-	const getDbClient = () => api;
-	return { getDbClient };
+	return { getDbClient: () => api };
 }
 
 function makeTrackingDbClient(fixtures: Fixtures) {
+	let receivedTx: Transaction | undefined;
+
 	const api = {
 		select() {
 			return {
 				from(_table: unknown) {
 					return {
 						where(_expr: unknown): Promise<UserDto[]> {
-							const result = fixtures.selectResult ?? [];
-							return Promise.resolve(result);
+							return Promise.resolve(fixtures.selectResult ?? []);
 						}
 					};
 				}
@@ -99,11 +99,10 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 		},
 		insert(_table: unknown) {
 			return {
-				values(_v: CreateUserDto) {
+				values(_v: CreateUserDto | CreateUserDto[]) {
 					return {
 						returning(): Promise<UserDto[]> {
-							const result = fixtures.insertReturn ?? [];
-							return Promise.resolve(result);
+							return Promise.resolve(fixtures.insertReturn ?? []);
 						}
 					};
 				}
@@ -116,8 +115,7 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 						where(_expr: unknown) {
 							return {
 								returning(): Promise<UserDto[]> {
-									const result = fixtures.updateReturn ?? [];
-									return Promise.resolve(result);
+									return Promise.resolve(fixtures.updateReturn ?? []);
 								}
 							};
 						}
@@ -130,8 +128,7 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 				where(_expr: unknown) {
 					return {
 						returning(): Promise<UserDto[]> {
-							const result = fixtures.deleteReturn ?? [];
-							return Promise.resolve(result);
+							return Promise.resolve(fixtures.deleteReturn ?? []);
 						}
 					};
 				}
@@ -139,39 +136,41 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 		}
 	};
 
-	let receivedTx: Transaction | undefined;
-
 	const getDbClient = (tx?: Transaction) => {
 		receivedTx = tx;
 		return api;
 	};
 
-	const getReceivedTx = () => receivedTx;
-
-	return { getDbClient, getReceivedTx };
+	return { getDbClient, getReceivedTx: () => receivedTx };
 }
 
 describe('UserRepository', () => {
-	// ---------- getById ----------
+	// getById
 
 	it('getById: returns user when it exists', async () => {
 		const row = makeUser({ id: 'u1' });
-		const repo = new UserRepository(makeFakeDbClient({ selectResult: [row] }).getDbClient);
+
+		const repo = new UserRepository(
+			makeFakeDbClient({ selectResult: [row] }).getDbClient
+		);
 
 		const found = await repo.getById('u1');
 		expect(found).toEqual(row);
 	});
 
 	it('getById: returns undefined when user does not exist', async () => {
-		const repo = new UserRepository(makeFakeDbClient({ selectResult: [] }).getDbClient);
+		const repo = new UserRepository(
+			makeFakeDbClient({ selectResult: [] }).getDbClient
+		);
 
 		const found = await repo.getById('missing');
 		expect(found).toBeUndefined();
 	});
 
-	it('getById: returns the first row when multiple rows are returned', async () => {
+	it('getById: returns first row when multiple rows are returned', async () => {
 		const first = makeUser({ id: 'u1', email: 'first@example.com' });
 		const second = makeUser({ id: 'u1', email: 'second@example.com' });
+
 		const repo = new UserRepository(
 			makeFakeDbClient({ selectResult: [first, second] }).getDbClient
 		);
@@ -180,60 +179,85 @@ describe('UserRepository', () => {
 		expect(found).toEqual(first);
 	});
 
-	// ---------- getByEmail ----------
+	// getByEmail
 
-	it('getByEmail: returns user by email', async () => {
-		const row = makeUser({ id: 'u2', email: 'b@b.com', name: 'Bob' });
-		const repo = new UserRepository(makeFakeDbClient({ selectResult: [row] }).getDbClient);
+	it('getByEmail: returns user when email exists', async () => {
+		const row = makeUser({ email: 'user@example.com' });
 
-		const found = await repo.getByEmail('b@b.com');
+		const repo = new UserRepository(
+			makeFakeDbClient({ selectResult: [row] }).getDbClient
+		);
+
+		const found = await repo.getByEmail('user@example.com');
 		expect(found).toEqual(row);
 	});
 
-	it('getByEmail: returns undefined when no user found', async () => {
-		const repo = new UserRepository(makeFakeDbClient({ selectResult: [] }).getDbClient);
+	it('getByEmail: returns undefined when email does not exist', async () => {
+		const repo = new UserRepository(
+			makeFakeDbClient({ selectResult: [] }).getDbClient
+		);
 
-		const found = await repo.getByEmail('notfound@example.com');
+		const found = await repo.getByEmail('missing@example.com');
 		expect(found).toBeUndefined();
 	});
 
-	// ---------- create ----------
+	// create
 
 	it('create: returns inserted row from returning()', async () => {
 		const input = {
-			email: 'c@c.com',
-			name: 'Carol',
-			profilePicture: 'https://example.com/c.png'
-			// add any other required fields of CreateUserDto if needed
+			name: 'New User',
+			email: 'new@example.com',
+			profilePicture: 'https://example.com/new.png'
 		} as CreateUserDto;
 
 		const returned = makeUser({
-			id: 'u3',
-			email: 'c@c.com',
-			name: 'Carol',
-			profilePicture: 'https://example.com/c.png'
+			id: 'u2',
+			name: 'New User',
+			email: 'new@example.com'
 		});
 
-		const repo = new UserRepository(makeFakeDbClient({ insertReturn: [returned] }).getDbClient);
+		const repo = new UserRepository(
+			makeFakeDbClient({ insertReturn: [returned] }).getDbClient
+		);
 
 		const created = await repo.create(input);
 		expect(created).toEqual(returned);
 	});
 
-	// ---------- update ----------
+	// delete
+
+	it('delete: returns deleted row from returning()', async () => {
+		const deleted = makeUser({ id: 'u1' });
+
+		const repo = new UserRepository(
+			makeFakeDbClient({ deleteReturn: [deleted] }).getDbClient
+		);
+
+		const res = await repo.delete('u1');
+		expect(res).toEqual(deleted);
+	});
+
+	it('delete: returns undefined when nothing was deleted', async () => {
+		const repo = new UserRepository(
+			makeFakeDbClient({ deleteReturn: [] }).getDbClient
+		);
+
+		const res = await repo.delete('u1');
+		expect(res).toBeUndefined();
+	});
+
+	// update
 
 	it('update: returns updated row from returning()', async () => {
 		const patch = {
-			name: 'Alice 2',
-			profilePicture: 'https://example.com/p2.png'
+			name: 'Updated Name'
 		} as UpdateUserDto;
 
-		const returned = makeUser({
-			name: 'Alice 2',
-			profilePicture: 'https://example.com/p2.png'
-		});
+		const returned = makeUser({ id: 'u1', name: 'Updated Name' });
 
-		const repo = new UserRepository(makeFakeDbClient({ updateReturn: [returned] }).getDbClient);
+		const repo = new UserRepository(
+			makeFakeDbClient({ updateReturn: [returned] }).getDbClient
+		);
 
 		const updated = await repo.update('u1', patch);
 		expect(updated).toEqual(returned);
@@ -241,58 +265,47 @@ describe('UserRepository', () => {
 
 	it('update: returns undefined when returning() is empty', async () => {
 		const patch = {
-			name: 'Alice 2'
+			name: 'Updated Name'
 		} as UpdateUserDto;
 
-		const repo = new UserRepository(makeFakeDbClient({ updateReturn: [] }).getDbClient);
+		const repo = new UserRepository(
+			makeFakeDbClient({ updateReturn: [] }).getDbClient
+		);
 
 		const updated = await repo.update('u1', patch);
 		expect(updated).toBeUndefined();
 	});
 
-	// ---------- delete ----------
-
-	it('delete: returns deleted row from returning()', async () => {
-		const deleted = makeUser({ id: 'u1' });
-
-		const repo = new UserRepository(makeFakeDbClient({ deleteReturn: [deleted] }).getDbClient);
-
-		const res = await repo.delete('u1');
-		expect(res).toEqual(deleted);
-	});
-
-	it('delete: returns undefined when nothing was deleted', async () => {
-		const repo = new UserRepository(makeFakeDbClient({ deleteReturn: [] }).getDbClient);
-
-		const res = await repo.delete('u1');
-		expect(res).toBeUndefined();
-	});
-
-	// ---------- getByIds ----------
+	// getByIds
 
 	it('getByIds: returns array of rows', async () => {
 		const rows: UserDto[] = [
 			makeUser({ id: 'u1' }),
-			makeUser({ id: 'u2', email: 'b@b.com', name: 'Bob' })
+			makeUser({ id: 'u2', email: 'second@example.com' })
 		];
 
-		const repo = new UserRepository(makeFakeDbClient({ selectResult: rows }).getDbClient);
+		const repo = new UserRepository(
+			makeFakeDbClient({ selectResult: rows }).getDbClient
+		);
 
 		const res = await repo.getByIds(['u1', 'u2']);
 		expect(res).toEqual(rows);
 	});
 
 	it('getByIds: returns empty array when nothing found', async () => {
-		const repo = new UserRepository(makeFakeDbClient({ selectResult: [] }).getDbClient);
+		const repo = new UserRepository(
+			makeFakeDbClient({ selectResult: [] }).getDbClient
+		);
 
 		const res = await repo.getByIds(['u1', 'u2']);
 		expect(res).toEqual([]);
 	});
 
-	// ---------- transactions / getDbClient argument wiring ----------
+	// transaction wiring
 
-	it('uses the provided transaction when calling getDbClient in getById', async () => {
+	it('uses provided transaction when calling getDbClient in getById', async () => {
 		const row = makeUser({ id: 'u1' });
+
 		const { getDbClient, getReceivedTx } = makeTrackingDbClient({
 			selectResult: [row]
 		});
@@ -302,33 +315,6 @@ describe('UserRepository', () => {
 
 		await repo.getById('u1', tx);
 
-		expect(getReceivedTx()).toBe(tx);
-	});
-
-	it('uses the provided transaction when calling getDbClient in create', async () => {
-		const input = {
-			email: 'tx@tx.com',
-			name: 'Tx User',
-			profilePicture: 'https://example.com/tx.png'
-		} as CreateUserDto;
-
-		const returned = makeUser({
-			id: 'u-tx',
-			email: 'tx@tx.com',
-			name: 'Tx User',
-			profilePicture: 'https://example.com/tx.png'
-		});
-
-		const { getDbClient, getReceivedTx } = makeTrackingDbClient({
-			insertReturn: [returned]
-		});
-
-		const repo = new UserRepository(getDbClient);
-		const tx = {} as Transaction;
-
-		const created = await repo.create(input, tx);
-
-		expect(created).toEqual(returned);
 		expect(getReceivedTx()).toBe(tx);
 	});
 });

@@ -1,16 +1,18 @@
 import { eq, inArray } from 'drizzle-orm';
 import { block, type CreateBlockDto, type UpdateBlockDto, type BlockDto } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 export class BlockRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(blockId: string, tx?: Transaction): Promise<BlockDto | undefined> {
-		const result = await getDbClient(tx).select().from(block).where(eq(block.id, blockId));
+		const result = await this.getDbClient(tx).select().from(block).where(eq(block.id, blockId));
 		return result[0];
 	}
 
 	async create(newBlock: CreateBlockDto, tx?: Transaction): Promise<BlockDto> {
-		const result = await getDbClient(tx).insert(block).values(newBlock).returning();
+		const result = await this.getDbClient(tx).insert(block).values(newBlock).returning();
 		return result[0];
 	}
 
@@ -19,7 +21,7 @@ export class BlockRepository {
 		updateBlock: UpdateBlockDto,
 		tx?: Transaction
 	): Promise<BlockDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(block)
 			.set(updateBlock)
 			.where(eq(block.id, blockId))
@@ -28,24 +30,24 @@ export class BlockRepository {
 	}
 
 	async delete(blockId: string, tx?: Transaction): Promise<BlockDto | undefined> {
-		const result = await getDbClient(tx).delete(block).where(eq(block.id, blockId)).returning();
+		const result = await this.getDbClient(tx).delete(block).where(eq(block.id, blockId)).returning();
 		return result[0];
 	}
 
 	async getManyByIds(blockIds: string[], tx?: Transaction): Promise<BlockDto[]> {
-		return await getDbClient(tx).select().from(block).where(inArray(block.id, blockIds));
+		return await this.getDbClient(tx).select().from(block).where(inArray(block.id, blockIds));
 	}
 
 	async getAll(tx?: Transaction): Promise<BlockDto[]> {
-		return await getDbClient(tx).select().from(block);
+		return await this.getDbClient(tx).select().from(block);
 	}
 
 	async getManyByCourseId(courseId: string, tx?: Transaction): Promise<BlockDto[]> {
-		return await getDbClient(tx).select().from(block).where(eq(block.courseId, courseId));
+		return await this.getDbClient(tx).select().from(block).where(eq(block.courseId, courseId));
 	}
 
 	async deleteByCourseId(courseId: string, tx?: Transaction): Promise<BlockDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.update(block)
 			.set({ deletedAt: new Date() })
 			.where(eq(block.courseId, courseId))

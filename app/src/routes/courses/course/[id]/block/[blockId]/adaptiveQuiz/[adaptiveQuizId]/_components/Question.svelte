@@ -29,10 +29,12 @@
 	const handleOptionClick = (optionId: string) => {
 		const selectedOption = question.options.find((option) => option.id === optionId);
 		handleSubmitQuestion(selectedOption?.optionText ?? '', question.id);
+		form.reset();
 	};
 
 	const handleSubmitAnswer = () => {
 		handleSubmitQuestion($formData.text, question.id);
+		form.reset();
 	};
 </script>
 

@@ -5,6 +5,7 @@
 	let { complexAdaptiveQuiz }: { complexAdaptiveQuiz: ComplexAdaptiveQuiz } = $props();
 </script>
 
+
 <div class="flex flex-col gap-10">
 	{#each complexAdaptiveQuiz.questions as question, index}
 		<div>
@@ -16,21 +17,28 @@
 					>
   </pre>
 			{/if}
-			<div class="mt-4 flex flex-col gap-2">
+			<div class="mt-4 flex flex-col gap-3">
 				{#if question.options.length > 0}
-					{#each question.options as option}
+					{#each question.options as option, index}
 						<Option
-							optionIndex={question.options.indexOf(option)}
+							optionIndex={index}
 							reviewCorrect={option.isCorrect}
 							reviewSelected={option.optionText === question.userAnswerText}
 							optionText={option.optionText ?? ''}
 						/>
 					{/each}
 				{:else}
-					<p class="text-gray-700">User Answer: {question.userAnswerText}</p>
-					<p class={`text-gray-700 ${question.isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
-						Correct Answer: {question.correctAnswerText}
-					</p>
+					<div class={`space-y-2 rounded-xl border border-gray-200  px-4 py-3 text-sm ${question.isCorrect ? 'bg-green-200' : 'bg-red-200'}`}>
+						<p class="text-gray-700">
+							<span class="font-medium text-gray-900">Your answer: </span>
+							<span>{question.userAnswerText}</span>
+						</p>
+
+						<p class="text-gray-700">
+							<span class="font-medium text-gray-900">Correct answer: </span>
+							<span>{question.correctAnswerText}</span>
+						</p>
+					</div>
 				{/if}
 			</div>
 

@@ -83,82 +83,118 @@
 </script>
 
 <form class="p-4" onsubmit={handleFormSubmit}>
-	<Card.Title>3. Create block</Card.Title>
-	<Card.Description class="mt-1">Configure the block settings before creating it.</Card.Description>
-	<Card.Card class="mx-auto mt-4">
-		<Card.Content class="flex flex-col gap-6">
+	<Card.Title class="text-xl font-semibold text-gray-900">3. Create block</Card.Title>
+	<Card.Description class="mt-1 text-sm text-gray-500">
+		Configure the block settings before creating it.
+	</Card.Description>
+
+	<Card.Card class="mx-auto mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm">
+		<Card.Content class="flex flex-col gap-6 px-6 py-6">
+			<!-- Name -->
 			<Form.Field {form} name="name">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>Name</Form.Label>
-						<Input {...props} bind:value={$formData.name} />
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Field {form} name="chunkingStrategy">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Tabs.Root value={$formData.chunkingStrategy} {...props} class="w-full">
-							<Form.Label>Chunking strategy</Form.Label>
-							<Tabs.List>
-								<Tabs.Trigger
-									class="cursor-pointer"
-									onclick={() => ($formData.chunkingStrategy = 'rtc')}
-									value="rtc">Recursive</Tabs.Trigger
-								>
-								<Tabs.Trigger
-									class="cursor-pointer"
-									onclick={() => ($formData.chunkingStrategy = 'semantic')}
-									value="semantic">Semantic</Tabs.Trigger
-								>
-							</Tabs.List>
-							<Form.Description class="w-full">
-								{#if $formData.chunkingStrategy === 'rtc'}
-									Splits text by structure (paragraphs, sentences, punctuation) to keep natural flow
-									within size limits. Use Recursive when you want fast, reliable splits that keep
-									natural text boundaries.
-								{:else if $formData.chunkingStrategy === 'semantic'}
-									Splits text by meaning using embeddings to group similar ideas together. Use
-									Semantic when you need the chunks to reflect meaning or topic changes accurately.
-								{/if}
-							</Form.Description>
-						</Tabs.Root>
-					{/snippet}
-				</Form.Control>
-				<Form.FieldErrors />
-			</Form.Field>
-			<Form.Field {form} name="useLLMTransformation">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Use LLM Transformation</Form.Label>
-						<Switch class="cursor-pointer" bind:checked={$formData.useLLMTransformation} />
-						<Form.Description>
-							Enable this to have the system use a Language Model to preprocess and transform the
-							content before chunking.
-						</Form.Description>
-						{#if $formData.useLLMTransformation}
-							<div class="flex items-center gap-2 text-yellow-500">
-								<TriangleAlert class="text-yellow-500" />
-								<Form.Description class="font-bold text-yellow-500">
-									This may dramatically increase the processing time, but can lead to better
-									results.
-								</Form.Description>
-							</div>
-						{/if}
+						<div class="space-y-2">
+							<Form.Label>Name</Form.Label>
+							<Input {...props} bind:value={$formData.name} class="w-full" />
+						</div>
 					{/snippet}
 				</Form.Control>
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<div class="flex justify-between pt-2">
+			<!-- Chunking strategy -->
+			<Form.Field {form} name="chunkingStrategy">
+				<Form.Control>
+					{#snippet children({ props })}
+						<div class="space-y-3">
+							<Form.Label>Chunking strategy</Form.Label>
+
+							<Tabs.Root value={$formData.chunkingStrategy} {...props} class="w-full">
+								<Tabs.List class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs">
+									<Tabs.Trigger
+										class="cursor-pointer flex-1 rounded-md px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-500"
+										onclick={() => ($formData.chunkingStrategy = 'rtc')}
+										value="rtc"
+									>
+										Recursive
+									</Tabs.Trigger>
+									<Tabs.Trigger
+										class="cursor-pointer flex-1 rounded-md px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-500"
+										onclick={() => ($formData.chunkingStrategy = 'semantic')}
+										value="semantic"
+									>
+										Semantic
+									</Tabs.Trigger>
+								</Tabs.List>
+
+								<Form.Description class="mt-2 text-xs text-gray-500">
+									{#if $formData.chunkingStrategy === 'rtc'}
+										Splits text by structure (paragraphs, sentences, punctuation) to keep natural
+										flow within size limits. Use Recursive when you want fast, reliable splits that
+										preserve text boundaries.
+									{:else if $formData.chunkingStrategy === 'semantic'}
+										Splits text by meaning using embeddings to group similar ideas together. Use
+										Semantic when you need chunks that follow topics and meaning closely.
+									{/if}
+								</Form.Description>
+							</Tabs.Root>
+						</div>
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<!-- LLM transformation -->
+			<Form.Field {form} name="useLLMTransformation">
+				<Form.Control>
+					{#snippet children({ props })}
+						<div class="space-y-2">
+							<div class="flex items-center justify-between gap-3">
+								<Form.Label>Use LLM transformation</Form.Label>
+								<Switch
+									class="cursor-pointer"
+									bind:checked={$formData.useLLMTransformation}
+									{...props}
+								/>
+							</div>
+
+							<Form.Description class="text-xs text-gray-500">
+								Enable this to let the system use a Language Model to preprocess and transform the
+								content before chunking.
+							</Form.Description>
+
+							{#if $formData.useLLMTransformation}
+								<div
+									class="mt-1 flex items-start gap-2 rounded-md border border-yellow-200 bg-yellow-50 px-3 py-2"
+								>
+									<TriangleAlert class="mt-[2px] h-4 w-4 text-yellow-500" />
+									<Form.Description class="text-[11px] font-medium text-yellow-700">
+										This may significantly increase processing time, but can lead to better chunk
+										quality.
+									</Form.Description>
+								</div>
+							{/if}
+						</div>
+					{/snippet}
+				</Form.Control>
+				<Form.FieldErrors />
+			</Form.Field>
+
+			<!-- Actions -->
+			<div class="mt-2 flex justify-between pt-2">
 				<Button
-					class="cursor-pointer rounded border px-3 py-1"
-					onclick={() => handleSetStep('editConcepts')}>Go back</Button
+					type="button"
+					class="cursor-pointer text-sm"
+					variant="outline"
+					onclick={() => handleSetStep('editConcepts')}
 				>
+					Go back
+				</Button>
+
 				<Button
 					type="submit"
-					class="cursor-pointer"
+					class="cursor-pointer text-sm flex items-center"
 					disabled={$createBlockMutation.isPending || $createPlacementQuizMutation.isPending}
 				>
 					{#if $createBlockMutation.isPending || $createPlacementQuizMutation.isPending}

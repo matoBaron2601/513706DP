@@ -10,14 +10,16 @@ import {
 	type UpdateConceptProgressDto
 } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 export class ConceptProgressRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(
 		conceptProgressId: string,
 		tx?: Transaction
 	): Promise<ConceptProgressDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(conceptProgress)
 			.where(eq(conceptProgress.id, conceptProgressId));
@@ -28,7 +30,7 @@ export class ConceptProgressRepository {
 		newConceptProgress: CreateConceptProgressDto,
 		tx?: Transaction
 	): Promise<ConceptProgressDto> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.insert(conceptProgress)
 			.values(newConceptProgress)
 			.returning();
@@ -40,7 +42,7 @@ export class ConceptProgressRepository {
 		updateBlock: UpdateConceptProgressDto,
 		tx?: Transaction
 	): Promise<ConceptProgressDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(conceptProgress)
 			.set(updateBlock)
 			.where(eq(conceptProgress.id, blockId))
@@ -49,7 +51,7 @@ export class ConceptProgressRepository {
 	}
 
 	async delete(blockId: string, tx?: Transaction): Promise<ConceptProgressDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.delete(conceptProgress)
 			.where(eq(conceptProgress.id, blockId))
 			.returning();
@@ -60,7 +62,7 @@ export class ConceptProgressRepository {
 		newConceptProgresses: CreateConceptProgressDto[],
 		tx?: Transaction
 	): Promise<ConceptProgressDto[]> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.insert(conceptProgress)
 			.values(newConceptProgresses)
 			.returning();
@@ -72,7 +74,7 @@ export class ConceptProgressRepository {
 		updateData: UpdateConceptProgressDto,
 		tx?: Transaction
 	): Promise<ConceptProgressDto[]> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(conceptProgress)
 			.set(updateData)
 			.where(inArray(conceptProgress.id, ids))
@@ -81,7 +83,7 @@ export class ConceptProgressRepository {
 	}
 
 	async getManyByUserBlockId(userBlockId: string, tx?: Transaction): Promise<ConceptProgressDto[]> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(conceptProgress)
 			.where(eq(conceptProgress.userBlockId, userBlockId));
@@ -93,7 +95,7 @@ export class ConceptProgressRepository {
 		conceptId: string,
 		tx?: Transaction
 	): Promise<ConceptProgressDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(conceptProgress)
 			.where(
@@ -106,7 +108,7 @@ export class ConceptProgressRepository {
 		userBlockId: string,
 		tx?: Transaction
 	): Promise<ConceptProgressDto[]> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(conceptProgress)
 			.where(

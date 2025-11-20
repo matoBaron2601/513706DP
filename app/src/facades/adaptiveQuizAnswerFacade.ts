@@ -28,12 +28,12 @@ export class AdaptiveQuizAnswerFacade {
 		const { baseQuestionId, answerText } = createAdaptiveQuizAnswer;
 		const isAnswerCorrect = await this.baseQuizFacade.isAnswerCorrect(baseQuestionId, answerText);
 		const baseQuizId = await this.baseQuestionService.getBaseQuizIdByQuestionId(baseQuestionId);
-		const adaptiveQuiz = await this.adaptiveQuizService.getByBaseQuizId(baseQuizId);
 		const adaptiveQuizAnswer = await this.adaptiveQuizAnswerService.create({
 			answerText,
 			isCorrect: isAnswerCorrect,
 			baseQuestionId,
-			adaptiveQuizId: adaptiveQuiz.id	
+			adaptiveQuizId: createAdaptiveQuizAnswer.adaptiveQuizId,
+			time: createAdaptiveQuizAnswer.time
 		});
 		return adaptiveQuizAnswer;
 	}

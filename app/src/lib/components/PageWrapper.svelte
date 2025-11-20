@@ -4,6 +4,7 @@
 	import Breadcrumb from './Breadcrumb.svelte';
 	import Button from './ui/button/button.svelte';
 	import { ArrowBigLeft } from '@lucide/svelte';
+	import { page } from '$app/state';
 
 	export type BreadcrumbItem = {
 		text: string;
@@ -16,17 +17,19 @@
 		className,
 		children,
 		goBackUrl,
-		extraButton
+		extraButton,
+		classNameWrapper
 	}: {
 		breadcrumbItems: BreadcrumbItem[];
 		className?: string;
 		children?: any;
 		goBackUrl?: string;
 		extraButton?: any;
+		classNameWrapper?: string;
 	} = $props();
 </script>
 
-<div class="lg:max-w-[80%] xl:max-w-[70%]">
+<div class={`lg:max-w-[80%] xl:max-w-[70%] ${classNameWrapper ?? ''}`}>
 	<div class="sticky top-0 flex h-14 items-center gap-2 border-b border-gray-100 bg-gray-100 p-4">
 		<Sidebar.Trigger />
 		<Breadcrumb {breadcrumbItems} />

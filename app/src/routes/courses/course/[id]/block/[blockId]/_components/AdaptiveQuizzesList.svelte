@@ -38,10 +38,14 @@
 </script>
 
 {#if $adaptiveQuizQuery.isLoading}
-	<Spinner />
+	<div class="flex flex-col items-center justify-center gap-3 py-10 text-center">
+		<Spinner />
+		<p class="text-gray-600">Preparing your next quiz…</p>
+		<p class="text-sm text-gray-500">We’re selecting the best questions to help you progress.</p>
+	</div>
 {:else}
 	<div class="mt-8 flex w-full flex-col flex-wrap gap-4">
-		<Card.Title class="text-2xl">Next quiz:</Card.Title>
+		<Card.Title class="text-2xl">Your next quiz is ready</Card.Title>
 		{#if $adaptiveQuizQuery.data}
 			<AdaptiveQuizCard adaptiveQuiz={$adaptiveQuizQuery.data} />
 		{/if}

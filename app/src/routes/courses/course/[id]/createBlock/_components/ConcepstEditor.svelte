@@ -32,7 +32,7 @@
 	};
 
 	const removeAt = (i: number) => {
-		if(items.length < 2) return;
+		if (items.length < 2) return;
 		const copy = [...items];
 		copy.splice(i, 1);
 		emit(copy);
@@ -81,7 +81,7 @@
 </script>
 
 <div class="p-4">
-	<Card.Title>2. Specify concepts</Card.Title>
+	<Card.Title class="text-xl font-semibold text-gray-900">2. Edit concepts</Card.Title>
 	<Card.Description class="mt-1">
 		You can modify the identified concepts below. You can change their names, reorder them by
 		drag-and-drop or using the arrows, and remove any unnecessary concepts. You can also add new
@@ -105,7 +105,7 @@
 					>
 						<span class="w-6 select-none text-xs opacity-60">{i + 1}.</span>
 						<Input
-							class=" w-60 rounded border px-2 py-1"
+							class=" w-60 flex-grow rounded border px-2 py-1"
 							placeholder="Concept name"
 							value={c.name}
 							oninput={(e) => updateName(i, (e.target as HTMLInputElement).value)}
@@ -133,9 +133,14 @@
 						</div>
 					</div>
 				{/each}
-				<Button class="cursor-pointer rounded border px-3 py-1" variant="outline" onclick={add}
-					>+ Add concept</Button
+				<Button
+					type="button"
+					variant="outline"
+					class="w-full cursor-pointer border-dashed border-gray-300 bg-gray-50 text-sm hover:bg-gray-100"
+					onclick={add}
 				>
+					+ Add concept
+				</Button>
 				<div class="flex justify-between pt-2">
 					<Button
 						class="cursor-pointer rounded border px-3 py-1"

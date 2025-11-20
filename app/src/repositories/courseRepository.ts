@@ -7,19 +7,21 @@ import {
 	block
 } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 import type { GetCoursesRequest, GetCoursesResponse } from '../schemas/courseSchema';
 
 export type CourseWithBlocksCount = CourseDto & { blocksCount: number };
 
 export class CourseRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(courseId: string, tx?: Transaction): Promise<CourseDto | undefined> {
-		const result = await getDbClient(tx).select().from(course).where(eq(course.id, courseId));
+		const result = await this.getDbClient(tx).select().from(course).where(eq(course.id, courseId));
 		return result[0];
 	}
 
 	async create(newCourse: CreateCourseDto, tx?: Transaction): Promise<CourseDto> {
-		const result = await getDbClient(tx).insert(course).values(newCourse).returning();
+		const result = await this.getDbClient(tx).insert(course).values(newCourse).returning();
 		return result[0];
 	}
 
@@ -28,7 +30,7 @@ export class CourseRepository {
 		updateCourse: UpdateCourseDto,
 		tx?: Transaction
 	): Promise<CourseDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(course)
 			.set(updateCourse)
 			.where(eq(course.id, courseId))
@@ -37,16 +39,16 @@ export class CourseRepository {
 	}
 
 	async delete(courseId: string, tx?: Transaction): Promise<CourseDto | undefined> {
-		const result = await getDbClient(tx).delete(course).where(eq(course.id, courseId)).returning();
+		const result = await this.getDbClient(tx).delete(course).where(eq(course.id, courseId)).returning();
 		return result[0];
 	}
 
 	async getByIds(courseIds: string[], tx?: Transaction): Promise<CourseDto[]> {
-		return await getDbClient(tx).select().from(course).where(inArray(course.id, courseIds));
+		return await this.getDbClient(tx).select().from(course).where(inArray(course.id, courseIds));
 	}
 
 	async getManyByCreatorId(creatorId: string, tx?: Transaction): Promise<CourseDto[]> {
-		return await getDbClient(tx).select().from(course).where(eq(course.creatorId, creatorId));
+		return await this.getDbClient(tx).select().from(course).where(eq(course.creatorId, creatorId));
 	}
 	async getAll(
 		{
@@ -59,7 +61,7 @@ export class CourseRepository {
 		}: GetCoursesRequest = {},
 		tx?: Transaction
 	): Promise<GetCoursesResponse[]> {
-		const db = getDbClient(tx);
+		const db = this.getDbClient(tx);
 		const where = and(
 			isNull(course.deletedAt),
 			or(eq(course.published, true), creatorId ? eq(course.creatorId, creatorId) : undefined),

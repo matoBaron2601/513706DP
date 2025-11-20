@@ -6,7 +6,8 @@ export const baseAdaptiveQuizAnswerSchema = t.Object({
 	adaptiveQuizId: t.String(),
 	baseQuestionId: t.String(),
 	answerText: t.String(),
-	isCorrect: t.Boolean()
+	isCorrect: t.Boolean(),
+	time: t.Number()
 });
 
 export const adaptiveQuizAnswerSchema = t.Intersect([baseSchema, baseAdaptiveQuizAnswerSchema]);
@@ -21,7 +22,6 @@ export type UpdateAdaptiveQuizAnswer = Static<typeof updateAdaptiveQuizAnswerSch
 // EXTENDED
 
 export const submitAdaptiveQuizAnswerSchema = t.Omit(createAdaptiveQuizAnswerSchema, [
-	'adaptiveQuizId',
 	'isCorrect'
 ]);
 export type SubmitAdaptiveQuizAnswer = Static<typeof submitAdaptiveQuizAnswerSchema>;

@@ -237,6 +237,7 @@ export const adaptiveQuizAnswer = pgTable('adaptiveQuizAnswer', {
 		.references(() => baseQuestion.id),
 	answerText: varchar('answerText').notNull(),
 	isCorrect: boolean('isCorrect').notNull(),
+	time: integer('time').notNull(),
 	createdAt: timestamp('createdAt').notNull().defaultNow(),
 	updatedAt: timestamp('updatedAt'),
 	deletedAt: timestamp('deletedAt')

@@ -69,43 +69,56 @@
 </script>
 
 <form method="POST" enctype="multipart/form-data" use:enhance class="p-4">
-	<Card.Title>1. Upload file</Card.Title>
-	<Card.Description class="mt-1 p-2">
+	<Card.Title class="text-xl font-semibold text-gray-900">1. Upload file</Card.Title>
+	<Card.Description class="mt-1 text-sm text-gray-500">
 		Upload a .txt file containing the main content of the block you want to create. The system will
 		analyze the content and identify key concepts for you to review and edit.
 	</Card.Description>
-	<Card.Card class="mx-auto mt-4">
-		<Card.Content class="flex flex-col gap-6">
+
+	<Card.Card class="mx-auto mt-4 rounded-2xl border border-gray-200 bg-white shadow-sm">
+		<Card.Content class="flex flex-col gap-6 px-6 py-6">
 			<Form.Field {form} name="file">
 				<Form.Control>
 					{#snippet children({ props })}
-						<Form.Label>File</Form.Label>
-						<input
-							{...props}
-							id="fileInput"
-							type="file"
-							accept=".txt"
-							class="hidden w-full"
-							onchange={(event) => handleFileUpload(event)}
-						/>
-						<Button
-							type="button"
-							variant="outline"
-							class="w-full cursor-pointer"
-							onclick={() => document.getElementById('fileInput')?.click()}
-						>
-							<Upload class="mr-2 inline-block h-4 w-4" />
-							Select File
-						</Button>
-						{#if $formData.file}
-							<p class="text-muted-foreground mt-2 text-sm">Selected: {$formData.file.name}</p>
-						{/if}
+						<div class="space-y-2">
+							<Form.Label>File</Form.Label>
+
+							<input
+								{...props}
+								id="fileInput"
+								type="file"
+								accept=".txt"
+								class="hidden"
+								onchange={(event) => handleFileUpload(event)}
+							/>
+
+							<button
+								type="button"
+								class="flex w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer transition"
+								onclick={() => document.getElementById('fileInput')?.click()}
+							>
+								<Upload class="mr-2 inline-block h-4 w-4" />
+								<span>{$formData.file ? 'Change file' : 'Select .txt file'}</span>
+							</button>
+
+							{#if $formData.file}
+								<p class="mt-1 text-xs text-gray-500">
+									Selected: <span class="font-medium text-gray-700">{$formData.file.name}</span>
+								</p>
+							{/if}
+						</div>
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Upload block content as .txt file</Form.Description>
+
+				<p class="mt-1 text-xs text-gray-400">
+					Upload block content as a single .txt file.
+				</p>
+
 				<Form.FieldErrors />
 			</Form.Field>
+
 			<Button
+				type="button"
 				onclick={handleFormSubmit}
 				class="mx-auto w-full cursor-pointer lg:w-[50%]"
 				disabled={$identifyConceptsMutation.isPending || !$formData.file}
@@ -113,7 +126,7 @@
 				{#if $identifyConceptsMutation.isPending}
 					<Spinner />
 				{:else}
-					Uload file
+					Upload file
 				{/if}
 			</Button>
 		</Card.Content>

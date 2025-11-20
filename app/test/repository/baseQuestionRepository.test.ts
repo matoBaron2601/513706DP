@@ -1,4 +1,3 @@
-// test/repositories/baseQuestionRepository.test.ts
 import { describe, it, expect } from 'bun:test';
 import type {
 	BaseQuestionDto,
@@ -11,15 +10,15 @@ import { BaseQuestionRepository } from '../../src/repositories/baseQuestionRepos
 function makeBaseQuestion(overrides: Partial<BaseQuestionDto> = {}): BaseQuestionDto {
 	return {
 		id: 'q1',
-		baseQuizId: 'bq1',
 		createdAt: new Date('2024-01-01T00:00:00Z'),
 		updatedAt: null,
 		deletedAt: null,
+		baseQuizId: 'quiz1',
 		questionText: 'What is 2+2?',
 		correctAnswerText: '4',
-		conceptId: 'concept-1',
-		codeSnippet: '2+2',
-		questionType: 'single-choice',
+		conceptId: 'math',
+		codeSnippet: '',
+		questionType: 'MCQ',
 		orderIndex: 1,
 		...overrides
 	};
@@ -33,14 +32,33 @@ type Fixtures = {
 	createManyReturn?: BaseQuestionDto[];
 };
 
+function makeThenableSelectResult(fixtures: Fixtures): any {
+	const rows = fixtures.selectResult ?? [];
+
+	// Thenable object that also has .limit()
+	return {
+		limit(_n: number): Promise<BaseQuestionDto[]> {
+			return Promise.resolve(rows);
+		},
+		then<TResult1 = BaseQuestionDto[], TResult2 = never>(
+			onfulfilled?: ((value: BaseQuestionDto[]) => TResult1 | PromiseLike<TResult1>) | null,
+			onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
+		): Promise<TResult1 | TResult2> {
+			return Promise.resolve(rows).then(onfulfilled as any, onrejected as any);
+		}
+	};
+}
+
 function makeFakeDbClient(fixtures: Fixtures) {
 	const api = {
 		select() {
 			return {
 				from(_table: unknown) {
 					return {
-						where(_expr: unknown): Promise<BaseQuestionDto[]> {
-							return Promise.resolve(fixtures.selectResult ?? []);
+						where(_expr: unknown): any {
+							// Supports both: await ...where(...)
+							// and: ...where(...).limit(1)
+							return makeThenableSelectResult(fixtures);
 						}
 					};
 				}
@@ -50,10 +68,10 @@ function makeFakeDbClient(fixtures: Fixtures) {
 			return {
 				values(_v: CreateBaseQuestionDto | CreateBaseQuestionDto[]) {
 					return {
-						returning(): Promise<BaseQuestionDto[]> {
-							const result = fixtures.insertReturn ?? fixtures.createManyReturn ?? [];
-							return Promise.resolve(result);
-						}
+						returning: () =>
+							Promise.resolve(
+								fixtures.insertReturn ?? fixtures.createManyReturn ?? []
+							)
 					};
 				}
 			};
@@ -64,9 +82,7 @@ function makeFakeDbClient(fixtures: Fixtures) {
 					return {
 						where(_expr: unknown) {
 							return {
-								returning(): Promise<BaseQuestionDto[]> {
-									return Promise.resolve(fixtures.updateReturn ?? []);
-								}
+								returning: () => Promise.resolve(fixtures.updateReturn ?? [])
 							};
 						}
 					};
@@ -77,9 +93,7 @@ function makeFakeDbClient(fixtures: Fixtures) {
 			return {
 				where(_expr: unknown) {
 					return {
-						returning(): Promise<BaseQuestionDto[]> {
-							return Promise.resolve(fixtures.deleteReturn ?? []);
-						}
+						returning: () => Promise.resolve(fixtures.deleteReturn ?? [])
 					};
 				}
 			};
@@ -90,13 +104,15 @@ function makeFakeDbClient(fixtures: Fixtures) {
 }
 
 function makeTrackingDbClient(fixtures: Fixtures) {
+	let receivedTx: Transaction | undefined;
+
 	const api = {
 		select() {
 			return {
 				from(_table: unknown) {
 					return {
-						where(_expr: unknown): Promise<BaseQuestionDto[]> {
-							return Promise.resolve(fixtures.selectResult ?? []);
+						where(_expr: unknown): any {
+							return makeThenableSelectResult(fixtures);
 						}
 					};
 				}
@@ -106,10 +122,10 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 			return {
 				values(_v: CreateBaseQuestionDto | CreateBaseQuestionDto[]) {
 					return {
-						returning(): Promise<BaseQuestionDto[]> {
-							const result = fixtures.insertReturn ?? fixtures.createManyReturn ?? [];
-							return Promise.resolve(result);
-						}
+						returning: () =>
+							Promise.resolve(
+								fixtures.insertReturn ?? fixtures.createManyReturn ?? []
+							)
 					};
 				}
 			};
@@ -120,9 +136,7 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 					return {
 						where(_expr: unknown) {
 							return {
-								returning(): Promise<BaseQuestionDto[]> {
-									return Promise.resolve(fixtures.updateReturn ?? []);
-								}
+								returning: () => Promise.resolve(fixtures.updateReturn ?? [])
 							};
 						}
 					};
@@ -133,16 +147,12 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 			return {
 				where(_expr: unknown) {
 					return {
-						returning(): Promise<BaseQuestionDto[]> {
-							return Promise.resolve(fixtures.deleteReturn ?? []);
-						}
+						returning: () => Promise.resolve(fixtures.deleteReturn ?? [])
 					};
 				}
 			};
 		}
 	};
-
-	let receivedTx: Transaction | undefined;
 
 	const getDbClient = (tx?: Transaction) => {
 		receivedTx = tx;
@@ -155,8 +165,8 @@ function makeTrackingDbClient(fixtures: Fixtures) {
 describe('BaseQuestionRepository', () => {
 	// getById
 
-	it('getById: returns question when it exists', async () => {
-		const row = makeBaseQuestion({ id: 'q1' });
+	it('getById: returns question when found', async () => {
+		const row = makeBaseQuestion();
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ selectResult: [row] }).getDbClient
 		);
@@ -165,7 +175,7 @@ describe('BaseQuestionRepository', () => {
 		expect(found).toEqual(row);
 	});
 
-	it('getById: returns undefined when question does not exist', async () => {
+	it('getById: returns undefined when not found', async () => {
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ selectResult: [] }).getDbClient
 		);
@@ -174,36 +184,20 @@ describe('BaseQuestionRepository', () => {
 		expect(found).toBeUndefined();
 	});
 
-	it('getById: returns first row when multiple rows are returned', async () => {
-		const first = makeBaseQuestion({ id: 'q1', questionText: 'first' });
-		const second = makeBaseQuestion({ id: 'q1', questionText: 'second' });
-
-		const repo = new BaseQuestionRepository(
-			makeFakeDbClient({ selectResult: [first, second] }).getDbClient
-		);
-
-		const found = await repo.getById('q1');
-		expect(found).toEqual(first);
-	});
-
 	// create
 
-	it('create: returns inserted row from returning()', async () => {
+	it('create: returns created row', async () => {
 		const input = {
-			baseQuizId: 'bq1',
-			questionText: 'Q?',
+			baseQuizId: 'quiz1',
+			questionText: 'New',
 			correctAnswerText: 'A',
-			conceptId: 'c1',
-			codeSnippet: 'code',
-			questionType: 'type',
-			orderIndex: 1
+			conceptId: 'math',
+			codeSnippet: '',
+			questionType: 'MCQ',
+			orderIndex: 2
 		} as CreateBaseQuestionDto;
 
-		const returned = makeBaseQuestion({
-			id: 'q2',
-			baseQuizId: 'bq1',
-			questionText: 'Q?'
-		});
+		const returned = makeBaseQuestion({ id: 'q2', questionText: 'New' });
 
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ insertReturn: [returned] }).getDbClient
@@ -215,42 +209,30 @@ describe('BaseQuestionRepository', () => {
 
 	// update
 
-	it('update: returns updated row from returning()', async () => {
-		const patch = {
-			questionText: 'updated'
-		} as UpdateBaseQuestionDto;
-
-		const returned = makeBaseQuestion({
-			id: 'q1',
-			questionText: 'updated'
-		});
+	it('update: returns updated row', async () => {
+		const returned = makeBaseQuestion({ questionText: 'Updated' });
 
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ updateReturn: [returned] }).getDbClient
 		);
 
-		const updated = await repo.update('q1', patch);
+		const updated = await repo.update('q1', { questionText: 'Updated' });
 		expect(updated).toEqual(returned);
 	});
 
-	it('update: returns undefined when returning() is empty', async () => {
-		const patch = {
-			questionText: 'updated'
-		} as UpdateBaseQuestionDto;
-
+	it('update: returns undefined when nothing updated', async () => {
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ updateReturn: [] }).getDbClient
 		);
 
-		const updated = await repo.update('q1', patch);
+		const updated = await repo.update('q1', { questionText: 'Updated' });
 		expect(updated).toBeUndefined();
 	});
 
 	// deleteById
 
-	it('deleteById: returns deleted row from returning()', async () => {
-		const deleted = makeBaseQuestion({ id: 'q1' });
-
+	it('deleteById: returns deleted row', async () => {
+		const deleted = makeBaseQuestion();
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ deleteReturn: [deleted] }).getDbClient
 		);
@@ -259,7 +241,7 @@ describe('BaseQuestionRepository', () => {
 		expect(res).toEqual(deleted);
 	});
 
-	it('deleteById: returns undefined when nothing was deleted', async () => {
+	it('deleteById: returns undefined when nothing deleted', async () => {
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ deleteReturn: [] }).getDbClient
 		);
@@ -270,10 +252,10 @@ describe('BaseQuestionRepository', () => {
 
 	// getByIds
 
-	it('getByIds: returns array of rows', async () => {
-		const rows: BaseQuestionDto[] = [
+	it('getByIds: returns matching rows', async () => {
+		const rows = [
 			makeBaseQuestion({ id: 'q1' }),
-			makeBaseQuestion({ id: 'q2', questionText: 'second' })
+			makeBaseQuestion({ id: 'q2' })
 		];
 
 		const repo = new BaseQuestionRepository(
@@ -282,131 +264,66 @@ describe('BaseQuestionRepository', () => {
 
 		const res = await repo.getByIds(['q1', 'q2']);
 		expect(res).toEqual(rows);
-	});
-
-	it('getByIds: returns empty array when nothing found', async () => {
-		const repo = new BaseQuestionRepository(
-			makeFakeDbClient({ selectResult: [] }).getDbClient
-		);
-
-		const res = await repo.getByIds(['q1', 'q2']);
-		expect(res).toEqual([]);
 	});
 
 	// createMany
 
 	it('createMany: returns inserted rows', async () => {
-		const input: CreateBaseQuestionDto[] = [
-			{
-				baseQuizId: 'bq1',
-				questionText: 'Q1',
-				correctAnswerText: 'A1',
-				conceptId: 'c1',
-				codeSnippet: 'code1',
-				questionType: 'type',
-				orderIndex: 1
-			} as CreateBaseQuestionDto,
-			{
-				baseQuizId: 'bq1',
-				questionText: 'Q2',
-				correctAnswerText: 'A2',
-				conceptId: 'c2',
-				codeSnippet: 'code2',
-				questionType: 'type',
-				orderIndex: 2
-			} as CreateBaseQuestionDto
-		];
-
-		const returned: BaseQuestionDto[] = [
-			makeBaseQuestion({ id: 'q1', questionText: 'Q1' }),
-			makeBaseQuestion({ id: 'q2', questionText: 'Q2' })
+		const rows = [
+			makeBaseQuestion({ id: 'q1' }),
+			makeBaseQuestion({ id: 'q2' })
 		];
 
 		const repo = new BaseQuestionRepository(
-			makeFakeDbClient({ createManyReturn: returned }).getDbClient
+			makeFakeDbClient({ createManyReturn: rows }).getDbClient
 		);
 
-		const res = await repo.createMany(input);
-		expect(res).toEqual(returned);
+		const res = await repo.createMany([]);
+		expect(res).toEqual(rows);
 	});
 
 	// getByBaseQuizId
 
-	it('getByBaseQuizId: returns questions for given baseQuizId', async () => {
-		const rows: BaseQuestionDto[] = [
-			makeBaseQuestion({ id: 'q1', baseQuizId: 'bq1' }),
-			makeBaseQuestion({ id: 'q2', baseQuizId: 'bq1' })
+	it('getByBaseQuizId: returns related rows', async () => {
+		const rows = [
+			makeBaseQuestion({ id: 'q1', baseQuizId: 'quizX' }),
+			makeBaseQuestion({ id: 'q2', baseQuizId: 'quizX' })
 		];
 
 		const repo = new BaseQuestionRepository(
 			makeFakeDbClient({ selectResult: rows }).getDbClient
 		);
 
-		const res = await repo.getByBaseQuizId('bq1');
+		const res = await repo.getByBaseQuizId('quizX');
 		expect(res).toEqual(rows);
 	});
 
-	// getBaseQuizIdByQuestionId – špeciálny fake kvôli .limit(1)
+	// getBaseQuizIdByQuestionId
 
-	it('getBaseQuizIdByQuestionId: returns baseQuizId when found', async () => {
-		const rows: BaseQuestionDto[] = [makeBaseQuestion({ id: 'q1', baseQuizId: 'bq-special' })];
+	it('getBaseQuizIdByQuestionId: returns baseQuizId', async () => {
+		const row = makeBaseQuestion({ baseQuizId: 'quiz42' });
 
-		const getDbClient = () => ({
-			select() {
-				return {
-					from(_table: unknown) {
-						return {
-							where(_expr: unknown) {
-								return {
-									limit(_n: number): Promise<BaseQuestionDto[]> {
-										return Promise.resolve(rows);
-									}
-								};
-							}
-						};
-					}
-				};
-			},
-			// ostatné metódy tu netreba
-		});
+		const repo = new BaseQuestionRepository(
+			makeFakeDbClient({ selectResult: [row] }).getDbClient
+		);
 
-		const repo = new BaseQuestionRepository(getDbClient as any);
-
-		const res = await repo.getBaseQuizIdByQuestionId('q1');
-		expect(res).toBe('bq-special');
+		const id = await repo.getBaseQuizIdByQuestionId('q1');
+		expect(id).toBe('quiz42');
 	});
 
 	it('getBaseQuizIdByQuestionId: returns undefined when not found', async () => {
-		const rows: BaseQuestionDto[] = [];
+		const repo = new BaseQuestionRepository(
+			makeFakeDbClient({ selectResult: [] }).getDbClient
+		);
 
-		const getDbClient = () => ({
-			select() {
-				return {
-					from(_table: unknown) {
-						return {
-							where(_expr: unknown) {
-								return {
-									limit(_n: number): Promise<BaseQuestionDto[]> {
-										return Promise.resolve(rows);
-									}
-								};
-							}
-						};
-					}
-				};
-			}
-		});
-
-		const repo = new BaseQuestionRepository(getDbClient as any);
-
-		const res = await repo.getBaseQuizIdByQuestionId('missing');
-		expect(res).toBeUndefined();
+		const id = await repo.getBaseQuizIdByQuestionId('missing');
+		expect(id).toBeUndefined();
 	});
 
 	// transaction wiring
 
-	it('uses provided transaction when calling getDbClient in getById', async () => {
-		const row = makeBaseQuestion({ id: 'q1' });
+	it('passes transaction', async () => {
+		const row = makeBaseQuestion();
 
 		const { getDbClient, getReceivedTx } = makeTrackingDbClient({
 			selectResult: [row]

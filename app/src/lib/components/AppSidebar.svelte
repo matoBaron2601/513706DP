@@ -22,12 +22,11 @@
 			url: '/courses/create',
 			icon: PlusIcon
 		}
-
 	];
 </script>
 
 <Sidebar.Root class="border border-gray-100">
-	<Sidebar.Content class="h-full border border-gray-100 bg-gray-100">
+	<Sidebar.Content class="h-full border border-r-1 border-gray-100 border-r-gray-200 bg-gray-100">
 		<a href="/">
 			<img src={logo} alt="Owl mascot" class="translate-2 h-20 w-20 rounded-full object-cover" /></a
 		>
@@ -40,7 +39,7 @@
 								{#snippet child({ props })}
 									<a href={item.url} {...props}>
 										<item.icon />
-										<span >{item.title}</span>
+										<span>{item.title}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>

@@ -6,11 +6,13 @@ import {
 	type UpdateDocumentDto
 } from '../db/schema';
 import type { Transaction } from '../types';
-import getDbClient from './utils/getDbClient';
+import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 export class DocumentRepository {
+	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
+
 	async getById(documentId: string, tx?: Transaction): Promise<DocumentDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(document)
 			.where(and(eq(document.id, documentId), isNull(document.deletedAt)));
@@ -18,7 +20,7 @@ export class DocumentRepository {
 	}
 
 	async getByFilePath(filePath: string, tx?: Transaction): Promise<DocumentDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.select()
 			.from(document)
 			.where(and(eq(document.filePath, filePath), isNull(document.deletedAt)));
@@ -26,7 +28,7 @@ export class DocumentRepository {
 	}
 
 	async create(newDocument: CreateDocumentDto, tx?: Transaction): Promise<DocumentDto> {
-		const result = await getDbClient(tx).insert(document).values(newDocument).returning();
+		const result = await this.getDbClient(tx).insert(document).values(newDocument).returning();
 		return result[0];
 	}
 
@@ -35,7 +37,7 @@ export class DocumentRepository {
 		updateDocument: UpdateDocumentDto,
 		tx?: Transaction
 	): Promise<DocumentDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(document)
 			.set(updateDocument)
 			.where(eq(document.id, documentId))
@@ -44,7 +46,7 @@ export class DocumentRepository {
 	}
 
 	async delete(documentId: string, tx?: Transaction): Promise<DocumentDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(document)
 			.set({ deletedAt: new Date() })
 			.where(eq(document.id, documentId))
@@ -53,21 +55,21 @@ export class DocumentRepository {
 	}
 
 	async getManyByBlockId(blockId: string, tx?: Transaction): Promise<DocumentDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(document)
 			.where(and(eq(document.blockId, blockId), isNull(document.deletedAt)));
 	}
 
 	async getByBlockId(blockId: string, tx?: Transaction): Promise<DocumentDto[]> {
-		return await getDbClient(tx)
+		return await this.getDbClient(tx)
 			.select()
 			.from(document)
 			.where(and(eq(document.blockId, blockId), isNull(document.deletedAt)));
 	}
 
 	async deleteByName(filePath: string, tx?: Transaction): Promise<DocumentDto | undefined> {
-		const result = await getDbClient(tx)
+		const result = await this.getDbClient(tx)
 			.update(document)
 			.set({ deletedAt: new Date() })
 			.where(eq(document.filePath, filePath))

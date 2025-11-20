@@ -122,9 +122,13 @@
 				{#if $creatorQuery.isLoading}
 					<Spinner />
 				{:else}
-					<div>
-						<p class="truncate">{`Created by: ${creatorName}`}</p>
-						<p class="truncate">{`Blocks count: ${course.blocksCount}`}</p>
+					<div class="space-y-0.5">
+						<p class="truncate text-xs text-gray-500">
+							<span class="font-medium text-gray-700">Created by:</span> {creatorName}
+						</p>
+						<p class="truncate text-xs text-gray-500">
+							<span class="font-medium text-gray-700">Blocks:</span> {course.blocksCount}
+						</p>
 					</div>
 				{/if}
 			</div>

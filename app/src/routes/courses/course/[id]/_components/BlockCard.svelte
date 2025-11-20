@@ -26,14 +26,24 @@
 <Card.Root class="relative">
 	<Card.Content class="flex flex-col gap-2">
 		<Card.Title class="m-auto text-xl">{block.name}</Card.Title>
-		<div class="flex items-center gap-2">
-			<p class="truncate">{`Concepts: ${block.concepts.length}`}</p>
+		<div class="mx-auto">
+			{#if completed}
+				<span
+					class="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-200 px-4 py-1 text-[10px] font-semibold text-emerald-700"
+				>
+					Completed
+				</span>
+			{:else}
+				<span
+					class="inline-flex items-center rounded-full bg-[#f8e8d2] px-4 py-1 text-[10px] font-semibold text-yellow-700 hover:bg-[#f8e8d2]"
+				>
+					Not completed
+				</span>
+			{/if}
 		</div>
-		<div class="flex items-center gap-2">
-			<p class="truncate">
-				{`Status: ${completed ? 'Completed' : 'Not completed'}`}
-			</p>
-		</div>
+		<p class="text-center text-xs text-gray-500">
+			{block.concepts.length} concepts
+		</p>
 		<div class="flex flex-col gap-2">
 			{#if completed}
 				<Button

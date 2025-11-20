@@ -183,7 +183,7 @@ export class ConceptFacade {
 				b = cp.beta;
 			const variance = (a * b) / ((a + b) ** 2 * (a + b + 1));
 			const width = 2 * 1.96 * Math.sqrt(variance);
-			const criterium3 = width <= 0.15; //0.15
+			const criterium3 = width <= 0.15;
 
 			if (criterium1 && criterium2 && criterium3 && criterium4) {
 				idsToComplete.push(cp.id);

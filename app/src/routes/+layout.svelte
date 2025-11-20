@@ -7,13 +7,14 @@
 	import { page } from '$app/state';
 	import queryClient from './queryClient';
 
-	import bubble from './bubble.png';
 	import hed from './hed.png';
 	import hed2 from './hed2.png';
 	import todbubble from './todbubble.png';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { onDestroy, onMount } from 'svelte';
 
 	let { children } = $props();
+	let currentQuote = $state('');
 
 	const learningQuotes: string[] = [
 		'Every mistake is a lesson in disguise.',
@@ -61,6 +62,22 @@
 		"Stay hungry for knowledge; there's always more to learn!",
 		'Each concept you grasp opens doors to new possibilities.'
 	];
+
+	function pickRandomQuote() {
+		currentQuote = learningQuotes[Math.floor(Math.random() * learningQuotes.length)];
+	}
+
+	onMount(() => {
+		pickRandomQuote();
+
+		const interval = setInterval(() => {
+			pickRandomQuote();
+		}, 10000);
+
+		onDestroy(() => {
+			clearInterval(interval);
+		});
+	});
 </script>
 
 <svelte:head>
@@ -76,30 +93,31 @@
 		{/if}
 		<main class="w-full bg-gray-100">
 			{@render children?.()}
-			<div
-				class="right-25 invisible absolute top-[40%] order-first flex flex-col justify-center gap-40 md:order-none md:justify-end xl:visible"
-			>
-				<div class="relative w-[240px]">
+
+			{#if page.url.pathname !== '/'}
+				<div
+					class="pointer-events-none fixed bottom-10 right-30 z-20 hidden flex-col items-center gap-4 2xl:flex"
+				>
+					<div class="pointer-events-auto relative w-[240px]">
+						<img
+							src={todbubble}
+							alt="Speech bubble"
+							class="w-[240px] select-none drop-shadow-md translate-y-5.5"
+							draggable="false"
+						/>
+						<p class="absolute inset-0 flex items-center justify-center px-8 text-center text-sm font-medium text-gray-800">
+							{currentQuote}
+						</p>
+					</div>
+
 					<img
-						src={todbubble}
-						alt="Speech bubble"
-						class="w-[240px] -translate-y-16 select-none drop-shadow-md"
+						src={hed2}
+						alt="Owl mascot"
+						class="pointer-events-auto w-[200px] select-none drop-shadow-md"
 						draggable="false"
 					/>
-					<p
-						class="-translate-y-22.5 text-md absolute inset-0 flex items-center justify-center px-8 text-center"
-					>
-						{learningQuotes[Math.floor(Math.random() * learningQuotes.length)]}
-					</p>
 				</div>
-
-				<img
-					src={hed2}
-					alt="Owl mascot"
-					class="absolute top-40 w-[240px] select-none drop-shadow-md"
-					draggable="false"
-				/>
-			</div>
+			{/if}
 		</main>
 	</Sidebar.Provider>
 </QueryClientProvider>

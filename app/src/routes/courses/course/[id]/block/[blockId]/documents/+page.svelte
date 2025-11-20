@@ -120,55 +120,110 @@
 	]}
 	goBackUrl={`/courses/course/${courseId}/block/${blockId}`}
 >
-	<h1 class="mb-4 text-2xl font-bold">Block Documents</h1>
-	{#each $documentsQuery.data as document}
-		<div class="my-2 flex items-center justify-between rounded border p-4">
-			<h2 class="text-xl font-semibold">{document.filePath}</h2>
-			<Trash
-				class="cursor-pointer text-red-500"
-				onclick={async () => await $deleteDocumentMutation.mutateAsync(document.filePath)}
-			/>
-		</div>
-	{/each}
+	<div class="space-y-6">
+		<header class="space-y-1">
+			<h1 class="text-2xl font-semibold tracking-tight text-gray-900">Block documents</h1>
+			<p class="text-sm text-gray-500">
+				Manage text documents attached to this block.
+			</p>
+		</header>
 
-	<Form.Field {form} name="file">
-		<Form.Control>
-			{#snippet children({ props })}
-				<Form.Label>File</Form.Label>
-				<input
-					{...props}
-					id="fileInput"
-					type="file"
-					accept=".txt"
-					class="hidden w-full"
-					onchange={(event) => handleFileUpload(event)}
-				/>
-				<Button
-					type="button"
-					variant="outline"
-					class="w-full cursor-pointer"
-					onclick={() => document.getElementById('fileInput')?.click()}
-				>
-					<Upload class="mr-2 inline-block h-4 w-4" />
-					Select File
-				</Button>
-				{#if $formData.file}
-					<p class="text-muted-foreground mt-2 text-sm">Selected: {$formData.file.name}</p>
+		<div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
+			<section class="rounded-2xl border border-gray-200 bg-white shadow-sm px-4 py-4 sm:px-5 sm:py-5 space-y-3">
+				<div class="flex items-center justify-between">
+					<h2 class="text-sm font-medium text-gray-900">Uploaded documents</h2>
+					<p class="text-xs text-gray-400">
+						{$documentsQuery.data?.length ?? 0} file(s)
+					</p>
+				</div>
+
+				{#if $documentsQuery.data && $documentsQuery.data.length > 0}
+					<div class="divide-y divide-gray-100">
+						{#each $documentsQuery.data as document}
+							<div class="flex items-center justify-between gap-3 py-3">
+								<div class="min-w-0">
+									<p class="truncate text-sm font-medium text-gray-900">
+										{document.filePath}
+									</p>
+								</div>
+
+								<button
+									type="button"
+									class="inline-flex items-center rounded-md p-2 text-xs font-medium text-red-500 hover:bg-red-50 transition"
+									onclick={async () =>
+										await $deleteDocumentMutation.mutateAsync(document.filePath)}
+									aria-label="Delete document"
+								>
+									<Trash class="h-4 w-4 cursor-pointer" />
+								</button>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<p class="text-sm text-gray-500">
+						No documents uploaded yet.
+					</p>
 				{/if}
-			{/snippet}
-		</Form.Control>
-		<Form.Description>Upload block content as .txt file</Form.Description>
-		<Form.FieldErrors />
-	</Form.Field>
-	<Button
-		onclick={handleFormSubmit}
-		class="mx-auto w-full cursor-pointer lg:w-[50%]"
-		disabled={$uploadDocumentMutation.isPending || !$formData.file}
-	>
-		{#if $uploadDocumentMutation.isPending}
-			<Spinner />
-		{:else}
-			Upload file
-		{/if}
-	</Button>
+			</section>
+
+			<section class="rounded-2xl border border-gray-200 bg-white shadow-sm px-4 py-5 sm:px-5 sm:py-6 space-y-4">
+				<div class="space-y-1">
+					<h2 class="text-sm font-medium text-gray-900">Upload new document</h2>
+					<p class="text-xs text-gray-500">
+						Upload a .txt file to add content to this block.
+					</p>
+				</div>
+
+				<Form.Field {form} name="file">
+					<Form.Control>
+						{#snippet children({ props })}
+							<div class="space-y-2">
+								<Form.Label>File</Form.Label>
+
+								<input
+									{...props}
+									id="fileInput"
+									type="file"
+									accept=".txt"
+									class="hidden"
+									onchange={(event) => handleFileUpload(event)}
+								/>
+
+								<button
+									type="button"
+									class="flex w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer transition"
+									onclick={() => document.getElementById('fileInput')?.click()}
+								>
+									<Upload class="mr-2 h-4 w-4" />
+									<span>
+										{$formData.file ? 'Change file' : 'Select .txt file'}
+									</span>
+								</button>
+
+								{#if $formData.file}
+									<p class="mt-1 text-xs text-gray-500">
+										Selected: <span class="font-medium text-gray-700">{$formData.file.name}</span>
+									</p>
+								{/if}
+							</div>
+						{/snippet}
+					</Form.Control>
+
+					<Form.FieldErrors />
+				</Form.Field>
+
+				<Button
+					onclick={handleFormSubmit}
+					class="mt-2 w-full cursor-pointer"
+					disabled={$uploadDocumentMutation.isPending || !$formData.file}
+				>
+					{#if $uploadDocumentMutation.isPending}
+						<Spinner />
+					{:else}
+						Upload file
+					{/if}
+				</Button>
+			</section>
+		</div>
+	</div>
 </PageWrapper>
