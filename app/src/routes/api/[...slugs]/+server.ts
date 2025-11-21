@@ -11,6 +11,7 @@ import adaptiveQuizApi from './adaptiveQuizApi';
 import { placementQuizApi } from './placementQuizApi';
 import documentApi from './documentApi';
 import { AppError } from '../../../errors/AppError';
+import analysisApi from './analysisApi';
 
 const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
 
@@ -42,7 +43,8 @@ const app = new Elysia({ prefix: '/api' })
 	.use(adaptiveQuizApi)
 	.use(adaptiveQuizAnswerApi)
 	.use(placementQuizApi)
-	.use(documentApi);
+	.use(documentApi)
+	.use(analysisApi);
 
 const handler: RequestHandler = async (event) => {
 	const { request, url, locals } = event;
