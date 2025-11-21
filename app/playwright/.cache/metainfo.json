@@ -1,0 +1,22 @@
+{
+  "version": "1.56.1",
+  "viteVersion": "6.4.1",
+  "registerSourceHash": "759a8358ffb61b2d436732b8cc43960bb9f916b4",
+  "components": [
+    {
+      "id": "_home_martin_Desktop_diplomka_final_2_diplomka_final_app_test_components__lib_components_PageWrapper_svelte",
+      "filename": "/home/martin/Desktop/diplomka_final_2/diplomka_final/app/test/components/PageWrapper.spec.ts",
+      "importSource": "$lib/components/PageWrapper.svelte"
+    }
+  ],
+  "sources": {
+    "/home/martin/Desktop/diplomka_final_2/diplomka_final/app/playwright/index.html": {
+      "timestamp": 1763737646290.0466
+    }
+  },
+  "deps": {
+    "/home/martin/Desktop/diplomka_final_2/diplomka_final/app/src/lib/components/PageWrapper.svelte": [
+      "/home/martin/Desktop/diplomka_final_2/diplomka_final/app/src/lib/components/PageWrapper.svelte"
+    ]
+  }
+}

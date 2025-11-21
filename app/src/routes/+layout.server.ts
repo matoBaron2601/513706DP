@@ -1,9 +1,23 @@
-import { access } from 'fs';
 import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 
+const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
+
 export const load: LayoutServerLoad = async (event) => {
-	const session = await event.locals.auth();
+	let session = await event.locals.auth();
+
+	// Test-only fake session
+	if (!session?.user && AUTH_BYPASS) {
+		session = {
+			user: {
+				email: 'test@example.com',
+				name: 'E2E Test User',
+				image: 'testimage.png'
+			},
+			accessToken: 'test-token'
+		} as any;
+	}
+
 	if (session?.user) {
 		await fetch('http://localhost:5173/api/auth/getOrCreate', {
 			method: 'POST',
@@ -21,11 +35,10 @@ export const load: LayoutServerLoad = async (event) => {
 
 	const authPage = '/auth';
 
-	if (!session && event.url.pathname !== authPage) {
+	// Only redirect to /auth if we're NOT bypassing auth
+	if (!session && !AUTH_BYPASS && event.url.pathname !== authPage) {
 		throw redirect(302, authPage);
 	}
 
-	return {
-		session
-	};
+	return { session };
 };

@@ -49,11 +49,11 @@
 			</Sidebar.GroupContent>
 			<Sidebar.Footer>
 				<div class="flex items-center">
-					<img
+					<!-- <img
 						src={page.data.session?.user?.image}
 						alt="Google Logo"
 						class="mr-2 h-8 w-8 rounded-2xl"
-					/>
+					/> -->
 					<div>
 						<p>{page.data.session?.user?.name}</p>
 						<p class="text-muted-foreground text-sm">{page.data.session?.user?.email}</p>

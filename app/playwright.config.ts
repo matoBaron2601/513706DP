@@ -1,15 +1,17 @@
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './test/frontend',
+	testDir: './test/frontend',
+	use: {
+		baseURL: 'http://localhost:5173'
+	},
 
-  use: {
-    baseURL: 'http://127.0.0.1:5173', // Vite default
-  },
-
-  webServer: {
-    command: 'docker compose up -d && bun run dev',
-    url: 'http://127.0.0.1:5173',   
-    reuseExistingServer: true,
-  },
+	webServer: {
+		command: 'docker compose up -d && bun run dev',
+		url: 'http://localhost:5173',
+		reuseExistingServer: true,
+		env: {
+			E2E_AUTH_BYPASS: 'true'
+		}
+	}
 });

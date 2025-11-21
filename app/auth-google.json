@@ -1,0 +1,79 @@
+{
+  "cookies": [
+    {
+      "name": "WMF-Uniq",
+      "value": "iwqv5vP6L10lg_Qcq81aJgKyAAAAAFvdQ0GgESnavchaf_NUCfNlFWd9HDYUbXyz",
+      "domain": ".upload.wikimedia.org",
+      "path": "/",
+      "expires": 1795238849.538421,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "authjs.callback-url",
+      "value": "http%3A%2F%2Flocalhost%3A5173%2Fauth",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "authjs.pkce.code_verifier",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiSjRjSXpvWjJFbndZZ0NZLW5QUmRxNGRHbl9JeVpzWTQwMHF4cFQyZXBoM3lnRXcwa09QMm12X3pvYXZxRTlMZHlzQ1JQcmFZT2lNYktKMjFEc3p4aEEifQ..fHm10JgVaG7nPw9bYtrlKw.kF1GlfR-4oC5LjluTT2vMoZpBP9OnfGiS0SozttTAO5wInLKUs7QbUXOhiokfSeLJAoQ0TXBjZyRQA_xQP4-GT2m7ERdJ1lKJnpdrFyYYyIzZma3WRsFSY_2PeYyzPMwp77hUqBTNPIVR-7rSOhcYU0EvajP7JhhMgQ9r4k5tosL38fX468SH0l6Wq4MCejo.2fEV8nwtx8HNupon_OnnUJfnydVcazxMszWP2OnmfNA",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763734903.703005,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__Host-GAPS",
+      "value": "1:2o_oDNo7NBuVjpMYKiLzkymcpg2PwQ:-20siRrSHDjKZ1cS",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1798294003.836767,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "OTZ",
+      "value": "8357167_52_52_123900_48_436380",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1766326004,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__Secure-ENID",
+      "value": "29.SE=UFMmUTdcUwY719JyetccIE-RCM3u-tqny9YCEGB5TPW55iaO9isYOG_ZIuo2MI-8NHzbUvD_XXYDiifV0c1NmJIhxhvEBcCP26DAPe94yA22YvaZ1w_mtE6qmrlNTz-Y1xM8nb9alcAX6HtclI_YFyuXJft3SfS4ohKGxajNldAt9lYIKrFimroPhCVVduIdY7rtudpAR739o2MfH-BcJfi5RESjj4J7CFZB9UMLRHwW-s1RNy8",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1797920712.480614,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "mode-watcher-theme",
+          "value": ""
+        },
+        {
+          "name": "mode-watcher-mode",
+          "value": "system"
+        }
+      ]
+    }
+  ]
+}

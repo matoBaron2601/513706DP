@@ -12,6 +12,8 @@ import { placementQuizApi } from './placementQuizApi';
 import documentApi from './documentApi';
 import { AppError } from '../../../errors/AppError';
 
+const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
+
 const app = new Elysia({ prefix: '/api' })
 	.onError(({ error, set }) => {
 		if (error instanceof AppError) {
@@ -44,9 +46,20 @@ const app = new Elysia({ prefix: '/api' })
 
 const handler: RequestHandler = async (event) => {
 	const { request, url, locals } = event;
-
 	if (!url.pathname.startsWith('/api/auth')) {
-		const session = await locals.auth?.();
+		let session = await locals.auth?.();
+
+		// Test-only fake session
+		if (!session?.user && AUTH_BYPASS) {
+			session = {
+				user: {
+					email: 'test@example.com',
+					name: 'E2E Test User',
+					image: 'testimage.png'
+				},
+				accessToken: 'test-token'
+			} as any;
+		}
 
 		if (!session?.user) {
 			return new Response(
