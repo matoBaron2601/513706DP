@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "arctic": "^3.7.0",
-    "elysia-oauth2": "^2.1.0",
-    "jsonwebtoken": "^9.0.2"
-  }
-}

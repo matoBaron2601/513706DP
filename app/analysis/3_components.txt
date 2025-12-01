@@ -1,0 +1,2165 @@
+4
+All About Components
+Up until now, we’ve mostly been talking about the tools that make React development possible,
+including your development environment, Node.js, ReactDOM, JavaScript modules, and JSX.
+Now it’s time to dig deeply into the heart of what makes React tick: the component. In this
+chapter, you’ll learn:
+➤➤ The relationship between components and elements.
+➤➤ How to use React’s HTML elements.
+➤➤ How to pass data between components with props.
+➤➤ How to write class components.
+➤➤ How to write function components.
+➤➤ How to bind functions in JavaScript.
+➤➤ How to manage React state.
+WHAT IS A COMPONENT?
+Components are the building blocks of React applications. A React component is a function or
+a JavaScript class that optionally accepts data and returns a React element that describes some
+piece of the user interface. A React user interface is made up of a hierarchy of components that
+build up to a single component (called the root component) that is rendered in the web browser.
+Figure 4‑1 shows an example of a React component tree.
+It’s possible to create a React application with only a single component, but for all but the
+smallest apps, breaking your app up into multiple components makes development and man‑
+agement of the code easier.
+44 ❘ CHAPTER 4 All About Components
+App
+ResultList
+Header
+Search Result SearchResult
+Search Navigation
+Image Description Image Description
+SearchInput
+NavItem NavItem
+FIGURE 4- 1: A tree of react components
+COMPONENTS VS. ELEMENTS
+Before we talk about components, it’s important to understand the relationship between components
+and elements in React.
+Components Define Elements
+The job of a component is to return an element.
+Each component within an application has a unique name, which is how you use it. The component
+name becomes the name of the React element when you include a component in another component,
+as shown in Listing 4‑1.
+LISTING 4- 1: Components define elements
+function WelcomeMessage(){
+return "Welcome!";
+}
+export default WelcomeMessage;
+Components vs. Elements ❘ 45
+In this very simple example, WelcomeMessage is a React component that was created using a function
+and exported as a JavaScript module. Once it’s exported, WelcomeMessage can be imported into any
+other React component where you need to make use of its functionality, as shown in Listing 4‑2.
+LISTING 4- 2: Components can be imported into other components
+import WelcomeMessage from './WelcomeMessage';
+function WelcomeTitle(){
+return <h1><WelcomeMessage /></h1>;
+}
+export default WelcomeTitle;
+It’s not a requirement that each component have its own module, but that’s the most common way
+components are defined. In components created using a default export, the file containing the module
+usually takes the name of the component defined in the file.
+Once you import a component into another component, this is where React elements come in.
+Elements Invoke Components
+Once you’ve imported a component into another component, the imported component’s function‑
+ality can be included in your new component’s JSX using an element. You can include as many
+components inside another component as you need to, and there’s no limit to how many levels of
+components a tree of components can have. Once you import a component, you can use the element
+it defines as many times as you need to and each usage will create a new instance of the component
+with its own data and memory.
+In general, the point of using components is to provide a higher level of abstraction that reduces the
+complexity of an application and enables reuse. Listing 4‑3 shows an example of a top‑ level React
+component that uses the functionality of other components to display a shopping cart user interface.
+LISTING 4- 3: Using components to reduce complexity
+import React from 'react';
+import CartItems from './CartItems';
+import DisplayTotal from './DisplayTotal';
+import CheckoutButton from './CheckoutButton';
+import styles from './Cart.css.js';
+function Cart(props){
+return(
+<div style={styles.cart}>
+<h2>Cart</h2>
+<CartItems items = {props.inCart} />
+continues
+46 ❘ CHAPTER 4 All About Components
+LISTING 4-3 (continued)
+<DisplayTotal items = {props.inCart} />
+<CheckoutButton />
+</div>
+);
+}
+export default Cart;
+Notice that the component in Listing 4‑3 uses a combination of ordinary JavaScript and imported
+modules to return a combination of custom elements and HTML elements. It’s fairly trivial to figure
+out the gist of what will be rendered by this component just by looking at the return statement.
+The entire component could have been written with everything in a single file, as shown (partially) in
+Listing 4‑4, but the result would be a file that would be much larger, more difficult to work with, and
+more difficult to maintain.
+Don’t worry if much of the code in Listing 4‑4 looks strange or unfamiliar to you. Remember that
+React is just JavaScript, and this example uses several relatively new JavaScript tools and functions
+that I’ll explain later in this chapter.
+LISTING 4- 4: Putting everything in one component
+import React,{useState} from 'react';
+import styles from './Cart.css.js';
+function Cart(props){
+const [inCart,setInCart] = useState(props.inCart);
+const removeFromCart = (item)=>{
+const index = inCart.indexOf(item);
+const newCart = [...inCart.slice(0, index), ...inCart.slice(index + 1)];
+setInCart(newCart);
+};
+const calculatedTotal = inCart.reduce((accumulator, item) => accumulator +
+(item.price || 0), 0);
+let ItemList = inCart.map((item)=>{
+return (<div key={item.id}>{item.title} – {item.price}
+<button onClick={()=>{removeFromCart(item)}}>remove</button></div>)
+});
+return(
+<div style={styles.cart}>
+<h2>Cart</h2>
+Built- in Components ❘ 47
+{ItemList}
+<p>total: ${calculatedTotal}</p>
+<button>Checkout</button>
+</div>
+);
+}
+export default Cart;
+BUILT- IN COMPONENTS
+React has built‑i n components for the most commonly used HTML elements and their attributes.
+There are also built‑ in components for Scalable Vector Graphics (SVG) elements and attributes. These
+built‑ in components produce output in the DOM and are the base for your custom components.
+HTML Element Components
+React’s built‑i n HTML element components have the same names as elements from HTML5. Using
+them in your React app causes the equivalent HTML element to be rendered.
+Many React developers (and web application developers in general) tend to use the div element
+for every type of container in their user interfaces. While this is convenient, it’s not always recom‑
+mended. HTML is a rich and descriptive language when used correctly, and using meaningful (aka
+semantic) HTML elements to mark up your content makes it more accessible for search engines and
+people as well.
+Table 4‑1 shows all the HTML elements that React supports, along with a brief explanation of each
+element. If an element that you want to use in your user interface isn’t on this list, try using it to see
+if it’s been added since this list was compiled. If it isn’t, you can submit a request to Facebook that
+the element be added to React by filing an issue in the React github.com repository at https://
+github.com/facebook/react/issues/new.
+TABLE 4-1 : HTML Elements Supported by React
+HTML ELEMENT DESCRIPTION
+a Creates a hyperlink.
+abbr Represents an abbreviation or acronym.
+address Indicates that the containing HTML includes contact information.
+area Defines a clickable area in an imagemap.
+article Represents a self- contained composition (such as a story or an article) in a page.
+aside Represents content that is indirectly related to the main content.
+continues
+48 ❘ CHAPTER 4 All About Components
+TABLE 4-1 (continued)
+HTML ELEMENT DESCRIPTION
+audio Embeds sound content.
+b Used to draw the reader’s attention to the contents. Previously, this was
+the “bold” element, but it’s now called the “Bring to Attention” element to
+separate its purpose from how it’s styled.
+base Specifies the base URL for all relative URLs in the document.
+bdi Bidirectional Isolate. Isolates text that may flow in a different direction from text
+around it.
+bdo Bidirectional Text Override. Changes the direction of text.
+big Renders text at a font size one level larger (obsolete).
+blockquote Indicates an extended quotation.
+body Represents the content of an HTML document.
+br Produces a line break.
+button Represents a clickable button.
+canvas Creates an area for drawing with the canvas API or WebGL.
+caption Specifies a caption for a table.
+cite Describes a reference to a cited work.
+code Indicates that its content should be styled as computer code.
+col Defines a column within a table.
+colgroup Defines a group of columns in a table.
+data Links content to a machine-r eadable translation.
+datalist Contains option elements indicating the permissible options available for a
+form control.
+dd Provides the definition for a preceding term (specified using dt).
+del Represents text that has been deleted from a document.
+details Creates a widget in which information is visible when the widget is toggled to its
+“open” state.
+dfn Indicates the term being defined within a sentence.
+dialog Represents a dialog box, subwindow, alert box, or other such interactive
+element.
+div A generic container with no effect on content or layout.
+Built- in Components ❘ 49
+HTML ELEMENT DESCRIPTION
+dl Represents a description list.
+dt Specifies a term in a definition list. Used inside dl.
+em Marks text that has emphasis.
+embed Embeds external content in the document.
+fieldset Groups controls and labels within a form.
+figcaption Describes the contents of a parent figure element.
+figure Represents self-c ontained content, optionally with a caption.
+footer Represents a footer for its nearest sectioning content.
+form Represents a document section containing interactive controls.
+h1 First- level section heading.
+h2 Second- level section heading.
+h3 Third- level section heading.
+h4 Fourth- level section heading.
+h5 Fifth- level section heading.
+h6 Sixth- level section heading.
+head Contains machine- readable information about the document.
+header Represents introductory content.
+hr Represents a thematic break between sections.
+html Represents the root of an HTML document.
+i Represents idiomatic text that is set off from the normal text.
+iframe Represents a nested browser context.
+img Embeds an image into the document.
+input Creates interactive controls for web- based forms.
+ins Represents a range of text that has been added to the document.
+kbd Represents a span of text denoting textual user input.
+keygen Facilitates generation of key material and submission of the public key in an
+HTML form.
+label Represents a caption for an item in a user interface.
+legend Represents a caption for an element in a fieldset.
+continues
+50 ❘ CHAPTER 4 All About Components
+TABLE 4-1 (continued)
+HTML ELEMENT DESCRIPTION
+li Represents an item in a list.
+link Specifies a relationship between the document and an external resource.
+Commonly used to link stylesheets.
+main Represents the dominant content of the body of a document.
+map Used with area elements to define an imagemap.
+mark Represents marked, or highlighted, text.
+menu Represents a group of commands.
+menuitem Represents a command in a menu.
+meta Represents metadata that can’t be represented with other metadata elements
+(such as title, link, script, or style).
+meter Represents a fractional value or a scalar value within a known range.
+nav Represents a section containing navigation links.
+noscript Represents a section to be inserted if a script type is unsupported or if scripting
+is disabled in the browser.
+object Represents an external resource.
+ol Represents an ordered list.
+optgroup Creates a grouping of options within a select element.
+option Defines an item in a select or optgroup.
+output Creates a container for the results of a calculation or for user input.
+p Represents a paragraph.
+param Defines parameters for an object.
+picture Contains source elements and an img element to provide alternative versions
+of an image.
+pre Represents preformatted text which should be presented exactly as written.
+progress Displays an indicator showing progress towards the completion of a task, such
+as a progress bar.
+q Indicates that its content is a quotation.
+rp Used to provide fallback content for browsers that don’t support ruby
+annotations using the ruby element.
+rt Specifies the ruby text component of a ruby annotation.
+ruby Represents annotations for showing the pronunciation of East Asian characters.
+Built- in Components ❘ 51
+HTML ELEMENT DESCRIPTION
+s Represents a strikethrough.
+samp Encloses text that represents sample output from a computer program.
+script Embeds executable code or data.
+section Represents a standalone section in a document.
+select Represents a control that shows a menu of options.
+small Represents small print, such as copyright or legal text.
+source Specifies multiple media resources for picture and audio elements.
+span A generic inline container.
+strong Indicates that its contents have strong importance.
+style Contains style information for a document.
+sub Specifies inline text that should be displayed as subscript.
+summary Specifies a summary, legend, or caption for details content.
+sup Specifies inline text that should be displayed as superscript.
+table Represents tabular data.
+tbody Encapsulates table rows in a table.
+td Defines a cell in a table.
+textarea Represents a multi-l ine text editing control.
+tfoot Defines a set of rows summarizing the columns in a table.
+th Defines a cell as a header of a group of table cells.
+thead Defines a set of rows defining the head of the columns in a table.
+time Represents a period of time.
+title Defines the title that is shown in the browser’s title bar and browser tab.
+tr Defines a row of cells in a table.
+track Contains timed text tracks (such as subtitles) for audio and video content.
+u Originally the underline element, specifies that text should be rendered in a way
+that indicates that it has non- textual annotation (whatever that means).
+ul Represents an unordered list (usually rendered as a bulleted list).
+var Represents the name of a variable in mathematic or programming context.
+video Embeds a media player that supports video playback.
+wbr Represents a word break opportunity, where the browser may optionally break
+a line.
+52 ❘ CHAPTER 4 All About Components
+Attributes vs. Props
+In markup languages (such as XML and HTML), attributes define properties or characteristics of the
+element, and are specified using the name=value format.
+Because JSX is an XML markup language, JSX elements can have attributes, and there’s no limit to
+the number of attributes that a single JSX element can have.
+Passing Props
+Attributes that you write in JSX elements are passed to the component represented by the element
+as properties, or props for short. You can access props inside the component using the component’s
+props object.
+To illustrate how props are used for passing data between components, I’ll use the example of a
+component called Farms, which includes multiple instances of the Farm component, as shown in List‑
+ing 4‑5. Props that you pass into the Farm component are what make it possible for the generic Farm
+component to represent any farm.
+Note that a string can be passed into a component by surrounding it with quotes, and that any other
+type of data can be passed to a component by using curly braces to indicate that the value should be
+treated as JavaScript.
+LISTING 4- 5: Passing props
+import Farm from './Farm';
+export default function Farms(){
+return(
+<>
+<Farm
+farmer="Old McDonald"
+animals={['pigs','cows','chickens']} />
+<Farm
+farmer="Mr. Jones"
+animals={['pigs','horses','donkey','goat']} />
+</>
+)
+}
+Accessing Props
+Once values have been passed as props, you can access that data inside the component. Listing 4‑6
+shows the Farm component and how it makes use of the data passed into it.
+LISTING 4- 6: Using props inside a component
+export default function Farm(props){
+return (
+Built- in Components ❘ 53
+<div>
+<p>{props.farmer} had a farm.</p>
+<p>On his farm, he had some {props.animals[0]}.</p>
+<p>On his farm, he had some {props.animals[1]}.</p>
+<p>On his farm, he had some {props.animals[2]}.</p>
+</div>
+)
+}
+As in all JavaScript functions, if data is passed into a function component, you can give that data a
+name inside the function arguments. This name, technically, could be anything. However, since React’s
+class‑ based components accept passed data using this.props, it’s standard practice and smart to use
+the name props in function components as well.
+Notice that when you use props inside the return statement, you have to enclose them in curly
+braces. You can use props elsewhere inside a component as well, as shown in the slightly improved
+version of the Farm component shown in Listing 4‑7.
+LISTING 4- 7: An improved version of the Farm component
+export default function Farm(props){
+let onHisFarm = [];
+if(props.animals){
+onHisFarm = props.animals.map((animal,index)=>
+<p key={index}>On his farm he had some {animal}.</p>);
+}
+return (
+<>
+<p>{props.farmer} had a farm.</p>
+{onHisFarm}
+</>
+)
+}
+JAVASCRIPT LESSON: USING ARRAY.MAP()
+JavaScript’s Array.map function creates a new array using the result of applying a
+function to every element in an existing array. The map function is commonly used in
+React to build lists of React elements or strings from arrays.
+The syntax of Array.map is as follows:
+array.map(function(currentValue, index, arr),thisValue)
+Take a closer look at the details:
+➤➤ The array is any JavaScript array. The function passed into the map function
+will run once for every element in the array.
+continues
+54 ❘ CHAPTER 4 All About Components
+(continued)
+➤➤ The currentValue is the value passed into the function and will change with
+every iteration through the array.
+➤➤ The index parameter is a number representing the current value’s position in
+the array.
+➤➤ The arr parameter is the array object that the currentValue belongs to.
+➤➤ The thisValue parameter is a value to be used as the “this” value inside
+the function.
+The only required parameter is currentValue. It is also what you will most com‑
+monly see in real‑ world React applications. Here’s how you can use Array.map() to
+make a series of list items from an array:
+const bulletedList = listItems.map(function(currentItem){
+return <li>{currentItem}</li>
+}
+For performance reasons, React requires each item in a list of JSX elements (such as
+one built from an array) to have a unique key attribute. One way to give each ele‑
+ment a unique key is to use the index parameter, like this:
+const bulletedList = listItems.map(function(currentItem,index){
+return <li key={index}>{currentItem}</li>
+}
+Standard HTML Attributes
+As you saw in Chapter 3, React’s HTML components support most of the standard HTML attributes,
+but with a couple of important differences, which I’ll reiterate and expand upon here.
+Attributes Use camelCase
+Whereas HTML5 attributes use all lowercase letters, and a few of them use dashes between multiple
+words (such as the accept- charset attribute), all attributes in React’s HTML components use capi‑
+tal letters for words in the attribute after the first one. This type of capitalization is commonly called
+camelCase.
+For example, the HTML tabindex attribute is represented by tabIndex in React and onclick is
+represented by onClick.
+Two Attributes Are Renamed
+In a couple of cases, React attributes for built‑ in elements have different names than HTML attrib‑
+utes. The reason for this is to avoid potential clashes with reserved words in JavaScript. The attributes
+that are different in React are:
+➤➤ class in HTML is className in React.
+➤➤ for in HTML is htmlFor in React.
+Built- in Components ❘ 55
+React Adds Several Attributes
+Several attributes that are available for React’s built‑ in HTML components don’t exist in HTML.
+Chances are good that you’ll never need to use any of these special attributes, but I’m including them
+here for completeness. These are:
+➤➤ dangerouslySetInnerHTML, which allows you to set the innerHTML property of an
+element directly from React. As you can tell by the name of the attribute, this is not a
+recommended practice.
+➤➤ suppressContentEditableWarning, which suppresses a warning that React will give you if
+you use the contentEditable attribute on an element that has children.
+➤➤ suppressHydrationWarning. No, it’s not a way to tell React to stop nagging you to drink
+more water. This attribute will suppress a warning that React gives you when content gener‑
+ated by server‑ side React and client‑ side React produce different content.
+Some React Attributes Behave Differently
+Several attributes behave differently in React than they do in standard HTML:
+➤➤ checked and defaultChecked. The checked attribute is used to dynamically set and unset
+the checked status of a radio button or checkbox. The defaultChecked attribute sets
+whether a radio button or checkbox is checked when the component is first mounted in
+the browser.
+➤➤ selected. In HTML, when you want to make an option in a dropdown be the currently
+selected option, you use the selected attribute. In React, you set the value attribute of the
+containing select element instead.
+➤➤ style. React’s style attribute accepts a JavaScript object containing style properties and
+values, rather than CSS, which is how the style attribute in HTML works.
+React Supports Many HTML Attributes
+The following list contains the standard HTML attributes supported by React’s built‑ in HTML
+components:
+accept acceptCharset accessKey action allowFullScreen allowTransparency alt async
+autoComplete autoFocus autoPlay capture cellPadding cellSpacing charset challenge
+checked classID className cols colSpan content contentEditable contextMenu
+controls coords crossOrigin data dateTime defer dir disabled download draggable
+encType form formAction formEncType formMethod formNoValidate formTarget frame-
+border headers height hidden high href hrefLang htmlFor httpEquiv icon id
+inputMode keyParams keyType label lang list loop low manifest marginHeight
+marginWidth max maxLength media mediaGroup method min minLength multiple muted
+name noValidate open optimum pattern placeholder poster preload radioGroup rea-
+dOnly rel required role rows rowSpan sandbox scope scoped scrolling seamless
+selected shape size sizes span spellCheck src srcDoc srcSet start step style
+summary tabIndex target title type useMap value width wmode wrap
+56 ❘ CHAPTER 4 All About Components
+Non-Standard Attributes
+In addition to the standard HTML attributes, React also supports several non‑ standard attributes
+that have specific purposes in some browsers and meta‑ data languages, including:
+➤➤ autoCapitalize and autoCorrect, which are supported by Mobile Safari.
+➤➤ property is used for Open Graph meta tags.
+➤➤ itemProp, itemScope, itemType, itemRef, and itemID for HTML5 microdata.
+➤➤ unselectable for Internet Explorer.
+➤➤ results and autoSave are attributes supported by browsers built using the WebKit or Blink
+browser engines (including Chrome, Safari, Opera, and Edge).
+Custom Attributes
+As of version 16, React will pass any custom attributes that you use with HTML components
+through to the generated HTML, provided that the custom attributes are written using only lower‑
+case letters.
+USER- DEFINED COMPONENTS
+Have you ever thought that it would be awesome if you weren’t just limited to the standard set of
+HTML elements? What if you could, for example, make an element called PrintPageButton that
+you could use anywhere that you need to display a functional print button in your app? Or what
+if you had an element called Tax that would calculate and display the taxes in your online store’s
+shopping cart?
+Essentially, this is what React components enable through custom components. Custom components,
+also known as user‑ defined components, are the components that you make by putting together built‑
+in components and other custom components.
+The possibilities for custom components are infinite. Even better, if you design your components to be
+reusable, you can reuse components not only inside of a single React application, but across any num‑
+ber of React applications. There are even hundreds of open source libraries of custom components
+created by other developers that you can repurpose inside your own apps.
+Writing useful and reusable React components can sometimes require considerable work up front, but
+the benefits of writing them the right way are that you can reduce work for yourself overall and make
+apps that are sturdier and more dependable.
+In the rest of this chapter, you’ll learn about writing custom components and putting them together to
+build robust user interfaces.
+TYPES OF COMPONENTS
+React components can be written in two different ways: by using JavaScript classes or by using JavaS‑
+cript functions.
+Types of Components ❘ 57
+In most cases, making a component with a function is much simpler and requires less code and less
+detailed knowledge of the inner workings of JavaScript than the class method. However, both meth‑
+ods are widely used, and it’s important to have a good understanding of how to write components
+using classes as well as using functions.
+NOTE Having a knowledge of JavaScript classes and class components is
+necessary in order for you to get a complete picture of how React works, but
+it is possible to write complete React applications without using classes. An
+explanation of classes can get pretty dense and theoretical, but don’t let it
+bog you down. If this chapter’s “Class Components” section confuses you, feel
+free to skip ahead or skim it for now and go straight to the “Function Compo-
+nents” section, which is what we’ll be working with for most of the rest of the
+book. You can come back and learn all about class components and JavaScript
+classes when you need to.
+Class Components
+Classes were new to JavaScript when React was first released. The early versions of the React library
+had a function called React.createClass, which was the only way to create components. To use
+React.createClass, you could pass an object containing the component’s properties as a parameter
+to the function and the result would be a React component.
+In one of the bigger changes made to React in its lifetime so far, React.createClass was deprecated
+as of React 15.5.
+You can still use createClass if you need to by installing the create- react- class package. List‑
+ing 4‑8 shows the code for a component created using createClass.
+LISTING 4- 8: Creating a component with React.createClass
+import React from 'react';
+import createClass from 'create-r eact- class';
+const UserProfile = createClass({
+render() {
+return (
+<h1>User Profile</h1>
+);
+}
+});
+export default UserProfile;
+Beginning with React 15.5, the preferred way of writing classes was by extending the React
+.Component base class directly.
+58 ❘ CHAPTER 4 All About Components
+Listing 4‑9 shows how to write the component from Listing 4‑8 using a class that extends
+React.Component.
+LISTING 4- 9: Creating a component using a class
+import React from 'react';
+class UserProfile extends React.Component {
+constructor(props) {
+super(props);
+}
+render() {
+return (
+<h1>User Profile</h1>
+);
+}
+};
+export default UserProfile;
+JAVASCRIPT LESSON: CLASSES
+Classes in JavaScript resemble classes in traditional object‑ oriented languages, such
+as Java or C, but with some fundamental differences.
+Traditional classes are blueprints for creating objects. In JavaScript, classes are
+objects themselves that serve as a template for objects. In other words, JavaScript has
+prototypes, not true classes.
+You may see the term “syntactic sugar” used to describe classes and some other new
+features of JavaScript that were introduced in ES2015 and more recent versions of
+JavaScript. Syntactic sugar refers to a simplified or abstracted way of writing some‑
+thing that makes it easier to write or to understand, but doesn’t actually do anything
+that you couldn’t previously do. It helps the medicine go down, you might say.
+The introduction of the class syntax in JavaScript didn’t create any new functional‑
+ity. Classes merely expose existing functionality in JavaScript using a different syntax
+that’s more familiar to developers who have worked with class‑ based languages
+(such as Java or C).
+More specifically, the class syntax in JavaScript is just a new way to use function
+constructors and prototypal inheritance. So, to understand classes, you first need to
+understand the basics of function constructors and prototypal inheritance.
+Types of Components ❘ 59
+Prototypal Inheritance
+JavaScript objects are collections of properties. JavaScript has several ways to cre‑
+ate objects:
+➤➤ By using Object Literal notation.
+➤➤ By using the Object.create method.
+➤➤ By using the new operator.
+Using the new Operator
+One way to use the new operator is to write a constructor function and then invoke
+the function with the new keyword.
+To see how it works, open your browser’s JavaScript console (by pressing
+Cmd+Shift+j (on Windows) or Cmd+Option‑j (on Mac) and enter the fol‑
+lowing code:
+let a = function () {
+this.x = 10;
+this.y = 8;
+};
+let b = new a();
+The result of creating the b object will be an object with two properties, x and y.
+Type the following two statements to confirm this:
+b.x; // 10
+b.y // 8
+These properties are called the object’s “own” properties, and a is the proto‑
+type for b.
+Modifying and Using the Prototype
+You can add new properties to an object’s prototype, like this:
+a.prototype.z = 100;
+In the preceding statement, we added a new property, z, to the prototype of b. In
+prototypal inheritance, every object inherits properties and methods from its proto‑
+type object.
+Here’s where things get interesting. When you try to access the property z on the b
+object, JavaScript will look first for an “own” property of b named z. If it doesn’t
+find one, it will look at the object’s prototype. If it doesn’t find it there, it will look
+at the prototype’s prototype. This will happen all the way up to the built‑ in Object
+object, which is the prototype for every JavaScript object.
+Try it out!
+b.z; // 100
+continues
+60 ❘ CHAPTER 4 All About Components
+(continued)
+Methods Are Properties Too
+A property of an object can have a function as its value. A property with a function
+value is what we refer to as a “method” in JavaScript.
+You can use the this keyword in methods, and it refers to the inheriting object, not
+the prototype.
+For example, add a method called sum() to the prototype object:
+a.prototype.sum = function() { return this.x + this.y };
+Now, change the values of x and y on the b object:
+b.x = 1000
+b.y = 2000
+And then invoke the sum function on the b object:
+b.sum() // 3000
+Even though b doesn’t have its own function called sum, JavaScript runs the sum
+function on the prototype but uses the this values from b.
+Summary
+To sum it all up, every object that you create in JavaScript is a copy of another
+object, which is called its prototype. Objects inherit properties and values from their
+prototype and have a link back to their prototype. If a property is referenced on
+an object and that object doesn’t contain that property, JavaScript will look at the
+object’s prototype and so on up the chain of prototypes until it gets to the built‑
+in Object.
+Now that we’ve covered prototypal inheritance, let’s get back to talking about
+classes and the most commonly used features of classes used in React.js.
+Understanding JavaScript Classes
+To define a class, you can use either a class declaration or a class expression.
+Class Declarations
+A class declaration starts with the class keyword followed by the name of the class.
+The following is an example of a class declaration:
+class Pizza (
+constructor(toppings,size) {
+this.toppings = toppings;
+this.size = size;
+}
+}
+Types of Components ❘ 61
+Class declarations are similar in structure to function declarations. Here’s an example
+of a function declaration:
+function Pizza(toppings,size) {
+this.toppings = toppings;
+this.size = size;
+}
+An important difference between class declarations and function declarations, how‑
+ever, is that function declarations are hoisted. Function hoisting means that you can
+reference a function created using a function declaration anywhere in a script, even
+before the function declaration actually appears in the file. For example, the follow‑
+ing code will function just fine even though we invoke the Pizza() function before
+it appears in the order of the code:
+let MyPizza = new Pizza(['sausage','cheese'],'large');
+function Pizza(toppings,size) {
+this.toppings = toppings;
+this.size = size;
+}
+However, the class version of this code will produce an error, because the class
+named Pizza doesn’t exist when this code tries to use it:
+let MyPizza = new Pizza(['sausage','cheese'],'large');
+class Pizza {
+constructor(toppings,size) {
+this.toppings = toppings;
+this.size = size;
+}
+}
+Class Expression
+To create a class using a class expression, you use either a named or unnamed class
+and assign it to a variable. Here’s an example of a class expression that uses an
+unnamed class:
+let Pizza = class {
+constructor(toppings, size) {
+this.toppings = toppings;
+this.size = size;
+}
+};
+Here’s an example of a class expression that uses a named class:
+let Pizza = class MyPizza {
+constructor(toppings,size) {
+continues
+62 ❘ CHAPTER 4 All About Components
+(continued)
+this.toppings = toppings;
+this.size = size;
+}
+};
+Note that when you use a class expression with a named class, the name you specify
+after the class keyword becomes the value of the name property of the class:
+console.log(Pizza.name); // Output: "MyPizza"
+Using a named class expression is not a way of extending an existing class. It’s just a
+convenient way to give a class instance a name property.
+Class Body and the Constructor Method
+The body of a class, like the body of a function, is the part between the curly braces.
+Inside the class body, you can define class members, such as its methods, fields, and
+constructor.
+The constructor method of a class can be used to initialize objects created using
+the class. It isn’t required that you include a constructor in classes you create. If
+you don’t include it, your class will have a default constructor, which is just an
+empty function.
+When you instantiate a class, you can optionally pass in arguments and these argu‑
+ments become the arguments to the constructor method. Inside the constructor, you
+can create a property in the new instance by assigning these values to this, which
+represents the new object.
+For example, the following Pizza class’s constructor takes three parameters:
+class Pizza {
+constructor(sauce,cheese,toppings){
+this.sauce = sauce;
+this.cheese = cheese;
+this.toppings = toppings;
+}
+}
+To create an instance of Pizza, you use the new keyword and pass in arguments,
+like this:
+let myPizza = new Pizza('tomato','mozzarella',['basil','tomato',
+'garlic']);
+Inside the myPizza object, sauce is equal to tomato, cheese is equal to
+mozzarella, and toppings is equal to the array of toppings that was passed in.
+When you assign each value to a new property of this, you create an instance prop‑
+erty that can be accessed inside of the instance using this.[property] and outside
+the instance by using the instance name followed by a period and the property name.
+Types of Components ❘ 63
+Inside myPizza:
+this.cheese;
+Outside myPizza:
+myPizza.cheese;
+Creating Subclasses with extends
+You can use the extends keyword in a class declaration or a class expression to cre‑
+ate a child of any existing class. If the new class doesn’t have a constructor, the prop‑
+erties it inherits from the parent will be automatically accessible in the new instance.
+For example, here’s a class that we’ll use as the parent for our new child class:
+class Animal {
+constructor(numberOfLegs,weight){
+this.numberOfLegs = numberOfLegs;
+this.weight = weight;
+}
+}
+You can use extends to create a subclass, like this:
+class Insect extends Animal {
+}
+Once you extend a class, you can define methods in the new subclass that reference
+inherited properties:
+class Insect extends Animal {
+countLegs() {
+console.log(`This insect has ${this.numberOfLegs} legs.`);
+}
+}
+If you do include a constructor method in the subclass, you must specifically call the
+super method from within the constructor before you can use the this keyword, as
+in this example:
+class Insect extends Animal {
+constructor(numberOfLegs,weight,name) {
+super(numberOfLegs,weight);
+this.name = name;
+}
+countLegs() {
+console.log(`The ${this.name} has ${this.numberOfLegs}
+legs.`);
+}
+}
+In the preceding example, the constructor of Insect calls the constructor of Animal
+and passes in the arguments that were used to instantiate the Insect class, mak‑
+ing the properties defined in Animal’s constructor available in Insect even though
+they’re not specifically defined inside of Insect’s constructor.
+continues
+64 ❘ CHAPTER 4 All About Components
+(continued)
+For example, let’s take the numberOfLegs out of the Animal class and make it
+specific to the Insect subclass. We’ll leave weight as a property of Animal, since all
+animals have a weight:
+class Animal {
+constructor(weight){
+this.weight = weight;
+}
+}
+class Insect extends Animal {
+constructor(numberOfLegs,weight) {
+super(weight);
+this.numberOfLegs = numberOfLegs;
+}
+}
+With these two classes defined, we can now create an instance of the Insect class Fly:
+let Fly = new Insect(6,.045);
+Now, the Fly instance can reference its own weight and numberOfLegs properties
+internally using the this keyword, and these properties can be referenced externally
+using the name of the instance:
+console.log(Fly.weight); // .045
+Understanding this
+One of the really interesting (some would say confusing) things about JavaScript is
+that it sometimes looks like an object‑o riented programming language, but it’s actu‑
+ally a functional programming language.
+In functional programming, programs are created by applying and composing func‑
+tions, and functions are “first‑ class citizens.” What this means is that JavaScript
+functions are treated like any other variable. They can be passed as values into other
+functions, they can return other functions, and they can be assigned as a value to
+a variable.
+Because functions are so versatile, you can define functions as part of a class, or you
+can pass functions as arguments into a class to be used by that class.
+The this keyword plays a vital role in the ability of functions to be used inside of
+and shared between objects.
+Having a good understanding of what the this keyword does and how to use it to
+bind functions to objects is important to being able to write React code with classes.
+this Doesn’t Have a Value until Invocation
+Function (or method) invocation in JavaScript happens when an expression that
+evaluates to a function is followed by open and close parentheses, optionally with
+Types of Components ❘ 65
+a comma‑ separated list of arguments between them. For example, here’s a function,
+followed by an invocation of the function:
+// function definition
+function sum(a,b){
+return a+b;
+}
+// function invocation
+let mySum = sum(2,5);
+console.log(mySum); // 7
+What Is this in a Function?
+By default, when you use the this keyword inside a function and then invoke
+that function, this gets set to the global object, which in a web browser is the
+window object:
+function sum(a,b){
+this.secretNumber = 100;
+return a+b;
+}
+let mySum = sum(2,5);
+console.log(window.secretNumber); // 100
+What Is this in “strict” Mode?
+If your JavaScript code is running in strict mode, however, this will be set to
+undefined instead of the global object:
+function getSecretNumber(){
+'use strict';
+this.secretNumber = 100;
+return this.secretNumber;
+}
+console.log(getSecretNumber()); // error: cannot set property
+'secretNumber' of undefined.
+The reason for the different behavior of this in strict mode is that use of global vari‑
+ables should be discouraged because when every function has access to a variable, it
+makes it difficult to know which functions make use of or modify the variable, and
+chaos ensues.
+More often than not, when you add properties to the global object, it’s a mistake.
+Strict mode makes this mistake have immediate consequences, rather than letting
+your code appear to work correctly while containing potentially dangerous global
+variables.
+continues
+66 ❘ CHAPTER 4 All About Components
+(continued)
+What Is this in Methods?
+Remember that a method is a function that’s stored in a property of an object.
+Method invocation is when you access a method followed by parentheses (with
+optional arguments between the parentheses).
+In the following code, the author object has a method named write, and we can
+invoke it using author.write:
+const author = {
+write: function(){
+return 'Writing!';
+}
+}
+let status = author.write();
+JavaScript also allows you to write methods using “method” syntax. In method syn‑
+tax, you can eliminate the colon and the function keyword. So, the preceding object
+declaration can also be written like this:
+const author = {
+write() {
+return 'Writing!';
+}
+}
+More often than not, this shorter syntax is what you’ll see used in React
+components.
+In method invocation, this is the object that owns the method:
+const author = {
+totalWords: 0,
+write: function(words) {
+this.totalWords += words;
+return this.totalWords;
+}
+}
+let totalWords = author.write(500);
+This is all well and good, but remember it’s often the case that you’ll want to use a
+function with different objects, as in this case:
+const author1 = {
+totalWords: 0
+}
+const author2 = {
+totalWords: 0
+}
+Types of Components ❘ 67
+const write = function(words){
+this.totalWords += words;
+return this.totalWords;
+}
+If you invoke the write function now, this.totalWords will be undefined (in
+strict mode) or will try to access window.totalWords (if not in strict mode). To
+associate the totalWords function with an object, you need to bind it to the object
+by using call, apply, or bind.
+Function Binding with call
+The JavaScript call function binds a function with an object and invokes the func‑
+tion. It accepts the name of the object you want to bind the function to, followed by
+a list of individual arguments to pass into the function. To invoke the write function
+within the context of the author1 object and pass in the number 500, you can use
+this statement:
+write.call(author1,500);
+Function Binding with apply
+The apply function also binds a function with an object and invokes the function.
+It accepts the name of the object you want to bind the function to, followed by an
+array that will be passed into the function. To invoke the write function within the
+context of the author1 object and pass in an array you can use this statement:
+write.apply(author1,[500]);
+Function Binding with bind
+The bind function works the same as call, but instead of invoking a function, it
+returns a new function that’s bound to the specified object. To create a new function
+that will invoke the write function within the context of the author1 object and
+pass in 500 each time it’s invoked, you can use this statement:
+let write500Words = write.bind(author1,500);
+write500Words();
+The second argument to bind is optional. In React, it’s most common to see bind
+used with only the first argument.
+Function binding is important in React components, because it allows you to define
+a function in one component and then pass it as a variable into other components,
+while still operating on the component where the function was initially defined.
+This method of passing a bound function to a child component looks like this:
+continues
+68 ❘ CHAPTER 4 All About Components
+(continued)
+class Dog
+eat () { this.tummy = “full” }
+this.eat = this.eat.bind (this) ;
+class Mouth
+eat () ;
+A function that you pass as an argument to another function, to be executed from
+within that component, is called a callback function.
+Stepping through a React Class Component
+Once you have an understanding of how prototypal inheritance works in JavaScript, and you know
+that classes are just another way to use function constructors, creating React components using the
+class method is actually quite easy and it becomes a powerful tool in your React toolbox.
+Let’s take a look, piece by piece, at a basic class component.
+React.Component
+React.Component is the base class for every class component that you’ll make. It defines a number
+of methods, lifecycle methods, class properties, and instance properties that you can make use of and
+extend in your components.
+Importing React.Component
+Because a custom component is a subclass of React.Component, any file that defines a class com‑
+ponent (or more than one class component, in the case of a library) must start by importing React.
+You’ll see two ways that this is typically done: by importing the entire React library, or by importing
+individual objects from the React library.
+Here’s the import statement for importing the entire React library:
+import React from 'react';
+This import is called a “default import.”
+Types of Components ❘ 69
+You potentially save a few keystrokes inside your component by using a named import to import the
+Component class specifically, as shown here:
+import {Component} from 'react';
+The Class Header
+If you import the entire library into your new component module, the first line of your new compo‑
+nent will be as follows (assuming that your component is named MyComponent):
+class MyComponent extends React.Component{
+If you import Component using a named import, the header of your new component will look
+like this:
+class MyComponent extends Component{
+The Constructor Function
+Next up is the constructor. If you include a constructor in your class, it will run one time when an
+instance of the class is created. The constructor is where you will bind event handler functions to the
+instance of the class and set up the local state for the instance.
+A typical constructor in a component looks like this:
+constructor(props) {
+super(props);
+this.state = {
+score: 0;
+userInput: ''
+}
+this.saveUserInput = this.saveUserInput.bind(this);
+this.updateScore = this.updateScore.bind(this);
+}
+After the constructor header and the call to the super function, this constructor has two
+purposes— it initializes the component instance’s state, and it binds event handler methods to the
+component instance.
+Initializing Local State
+Each instance of a React component maintains its own state, and the constructor is where you initial‑
+ize this state. The state of a component determines whether and when a component should re‑ render.
+State and state management is at the heart of how React works, so I’ll introduce the topic here and
+I’ll go into much more detail about it in Chapter 6. For now, just know that the state of a component
+is stored in an object called state, and every time state changes, React attempts to re‑ render the UI.
+The other object in a component instance that stores data is called props (which is short for proper‑
+ties). This is data that is passed to a component by its parent component in a React component hier‑
+archy. If you’re going to use the props object in the constructor, you need to pass it to the superclass’s
+constructor when you call super.
+70 ❘ CHAPTER 4 All About Components
+In a component that makes use of the state object, the basic constructor should now look like this:
+import {Component} from 'react';
+class MyComponent extends Component {
+constructor(props){
+super(props);
+this.state = {};
+}
+...
+}
+export default MyComponent;
+Binding Event Handlers
+Event handlers are the functions that run in response to events. Binding makes the this keyword
+work. By binding an event handler to the component instance, you also make it possible to share the
+function with other components while maintaining its link to the state of the instance with which
+it’s bound. The result is that no matter where the event handler is, it always uses and affects the data
+from its bound object.
+Listing 4‑10 shows what happens when you don’t properly bind your event handler.
+LISTING 4- 10: Not binding your functions results in errors
+import React from 'react';
+class Foo extends React.Component{
+constructor( props ){
+super( props );
+this.message = "hello";
+}
+handleClick(event){
+console.log(this.message); // 'this' is undefined
+}
+render(){
+return (
+<button type="button" onClick={this.handleClick}>
+Click Me
+</button>
+);
+}
+}
+export default Foo;
+What’s happening here is that we’re passing this.handleClick into the button component as
+a prop. When we do that, it’s passed as a variable and becomes an ordinary function without an
+Types of Components ❘ 71
+owner object. When the click event happens inside the button component, this falls back to refer‑
+ring to the global object, and we get an error because this.message doesn’t exist.
+To solve this problem, you can use the bind function to create a new function that’s bound to the
+Foo class, as shown in Listing 4‑11. Once you do that, you can pass handleClick as a prop to other
+components and it will always run within the context of Foo.
+LISTING 4- 11: Binding a function and using it in another class
+import React from 'react';
+class Foo extends React.Component{
+constructor( props ){
+super( props );
+this.message = "hello";
+this.handleClick = this.handleClick.bind(this);
+}
+handleClick(event){
+console.log(this.message); // 'hello'
+}
+render(){
+return (
+<button type="button" onClick={this.handleClick}>
+Click Me
+</button>
+);
+}
+}
+export default Foo;
+You’ll learn much more about the importance of binding event handlers in React, as well as how to
+avoid having to think about it at all, in Chapters 6 and 7.
+Managing State in Class Components
+The constructor function is the only place where you should ever directly update the state object
+of a component. For updating the state after the constructor function has run (during the life of the
+component, in other words), React provides a function called setState.
+The setState function tells React to update the state of the component using an object or function
+that you pass into it.
+Listing 4‑12 shows a class component that displays a counter and has a button for incrementing
+that counter.
+72 ❘ CHAPTER 4 All About Components
+LISTING 4- 12: Using state and setState in a class component
+import {Component} from 'react';
+class Counter extends Component {
+constructor(props){
+super(props);
+this.state = {count: 0};
+this.incrementCount = this.incrementCount.bind(this);
+}
+incrementCount(){
+this.setState({count: this.state.count + 1});
+}
+render(){
+return (
+<div>
+<p>The current count is: {this.state.count}.</p>
+<button onClick = {()=>{this.incrementCount(this.state.count+1)}}>
+Add 1
+</button>
+</div>
+);
+}
+}
+export default Counter;
+A very important point to remember about the setState function (and one that I’ll repeat fre‑
+quently because it’s so important and can be the cause of many bugs in React apps) is that setState
+is asynchronous, and changes to state that you make using setState may be batched for perfor‑
+mance reasons.
+The reason that the asynchronous nature of setState is important is that if you try to access state
+immediately after setting it, you may get the old value rather than the new value that you expect. In
+Listing 4‑13, I’ve added a console.log statement immediately after the setState function in the
+incrementCount method. Even though the console.log statement appears after setState, it will
+log the value of this.state.count prior to the incrementing happening, as shown in Figure 4‑2.
+We’ll talk about how to work with state to avoid this problem in Chapter 6.
+LISTING 4- 13: setState() is asynchronous
+import {Component} from 'react';
+class Counter extends Component {
+constructor(props){
+super(props);
+this.state = {count: 0};
+this.incrementCount = this.incrementCount.bind(this);
+}
+incrementCount(){
+this.setState({count: this.state.count + 1});
+Types of Components ❘ 73
+console.log(this.state.count);
+}
+render(){
+return (
+<div>
+<p>The current count is: {this.state.count}.</p>
+<button onClick = {()=>{this.incrementCount(this.state.count+1)}}>
+Add 1
+</button>
+</div>
+);
+}
+}
+export default Counter;
+FIGURE 4- 2: Using state immediately after calling setState() may produce unexpected results
+The Render Function
+The render function is the only function that’s required in a class‑ based React component. It runs
+when the component mounts and then again each time the component updates. It contains a return
+statement that outputs the piece of the user interface that the component is responsible for.
+74 ❘ CHAPTER 4 All About Components
+Like any JavaScript function, the render function may contain JavaScript functions and variables.
+The return statement inside the render function contains JSX or variables with JSX values.
+Listing 4‑14 shows a component that outputs a simple static figure and caption.
+LISTING 4- 14: Rendering a figure and caption
+import {Component} from 'react';
+class BasicFigure extends Component {
+render() {
+return(
+<figure>
+<img src="images/cat.jpeg" alt="a cat" />
+<figcaption>This is a picture of a cat.</figcaption>
+</figure>
+);
+}
+}
+Remember that the return statement can only return one thing, such as one element, or one array, or
+one string. In the preceding example, it returns a single <figure> element.
+The beauty of React is that once you’ve built a simple component such as the one in Listing 4‑14,
+you can reuse it as many times as you need to. However, there’s a major piece missing from this
+BasicFigure component. It will currently output the same image and caption every time you use it.
+To fix that, we need to use props.
+Creating and Using Props
+Props are the arguments that you pass into a component from a parent component. With JSX, the
+attributes that you write (which take the form of name=value in JSX elements) become properties
+inside the props object of the resulting component instance.
+To illustrate how props work, let’s create a component that will make use of the BasicFigure com‑
+ponent. I’ll call this component FigureList. The code for FigureList is shown in Listing 4‑15.
+LISTING 4- 15: The FigureList component
+import {Component} from 'react';
+import BasicFigure from './BasicFigure';
+class FigureList extends Component {
+render() {
+return (
+<>
+<BasicFigure />
+<BasicFigure />
+<BasicFigure />
+</>
+Types of Components ❘ 75
+)
+}
+}
+export default FigureList;
+You can probably figure out from looking at the code for this component and the BasicFigure com‑
+ponent that the result of rendering FigureList will be that three identical figures and captions will
+be outputted. To make our figures different, we need to pass data from FigureList to BasicFigure.
+This is where props come in, as shown in Listing 4‑16.
+LISTING 4- 16: Using props to pass data to a child component
+import {Component} from 'react';
+import BasicFigure from './BasicFigure';
+class FigureList extends Component {
+render() {
+return (
+<div style={{display:"flex"}}>
+<BasicFigure filename="dog.jpg" caption="Chauncey" />
+<BasicFigure filename="cat.jpg" caption="Murray" />
+<BasicFigure filename="chickens.jpg" caption="Lefty and Ginger" />
+</div>
+)
+}
+}
+export default FigureList;
+With these attributes in place, the first part of rendering different output from a single component is
+in place. The BasicFigure component instances are all receiving different props.
+The next step is to modify the BasicFigure component so that it makes use of the received props.
+We can do this by inserting variables in place of static values in the return statement, as shown in
+Listing 4‑17.
+LISTING 4- 17: Using props in a class component
+import {Component} from 'react';
+class BasicFigure extends Component {
+render() {
+return(
+<figure>
+<img src={this.props.filename} alt={this.props.caption}/>
+<figcaption>{this.props.caption}</figcaption>
+</figure>
+);
+}
+}
+export default BasicFigure;
+76 ❘ CHAPTER 4 All About Components
+With that done, the FigureList component will now render three BasicFigure components, each
+of which will output a figure element with different images and captions. I’ve changed the value of
+the display style property to flex so that they’ll display in a row, rather than vertically, as shown in
+Figure 4‑3.
+FIGURE 4- 3: The result of rendering FigureList
+Function Components
+Now that you understand JavaScript classes, how the this keyword works in JavaScript, what the
+constructor is, and the basics of writing React components using the class method, we can get to the
+good stuff.
+Although a knowledge of classes is important for understanding how React works, the React world is
+moving very quickly away from using classes whenever possible. The reason: using classes is com‑
+plicated, and many people don’t understand how this works. If you do have an understanding of
+classes and how the this keyword works in JavaScript, you’ll have a better appreciation and under‑
+standing of how function components work, so I do recommend learning about classes still.
+The function component was created to simplify the creation of React components. To illustrate how
+much easier writing a function component can be than a class component, consider the simple To Do
+List example class in Listing 4‑18.
+LISTING 4- 18: A typical class component
+import React from 'react';
+class ToDoClass extends React.Component{
+constructor(props){
+super(props);
+this.state = {
+item: '',
+todolist: []
+}
+this.handleSubmit = this.handleSubmit.bind(this);
+this.handleChange = this.handleChange.bind(this);
+}
+Types of Components ❘ 77
+handleSubmit(e){
+e.preventDefault();
+const list = [...this.state.todolist, this.state.item];
+this.setState({
+todolist:list
+})
+}
+handleChange(e){
+this.setState({item:e.target.value});
+}
+render(){
+const currentTodos = this.state.todolist.map(
+(todo,index)=><p key={index}>{todo}</p>);
+return (
+<form onSubmit={this.handleSubmit}>
+<input type="text"
+id="todoitem"
+value={this.state.item}
+onChange={this.handleChange}
+placeholder="what to do?" />
+<button type="submit">
+Add
+</button>
+{currentTodos}
+</form>
+);
+}
+}
+export default ToDoClass;
+Listing 4‑19 shows how you can write a component that does the same thing as the class in List‑
+ing 4‑18 using a function component.
+LISTING 4- 19: A typical function component
+import React,{useState} from 'react';
+function ToDoFunction(props){
+const [item,setItem] = useState('');
+const [todolist,setTodoList] = useState([]);
+const handleSubmit = (e)=>{
+e.preventDefault();
+const list = [...todolist, item];
+setTodoList(list)
+}
+const currentTodos = todolist.map((todo,index)=><p key={index}>{todo}</p>);
+return (
+<form onSubmit={handleSubmit}>
+<input type="text"
+continues
+78 ❘ CHAPTER 4 All About Components
+LISTING 4-19 (continued)
+id="todoitem"
+value={item}
+onChange={(e)=>{setItem(e.target.value)}}
+placeholder="what to do?" />
+<button type="submit">
+Add
+</button>
+{currentTodos}
+</form>
+);
+}
+export default ToDoFunction;
+Notice how much simpler the function component version is. There’s no render method, no con‑
+structor, and no binding of this. It’s even possible to further simplify this function component by
+removing the import of React, since we’re not directly using it, using an arrow function for the com‑
+ponent, and moving the export statement up to the function expression, as shown in Listing 4‑20.
+LISTING 4- 20: Further simplifying a function component
+import {useState} from 'react';
+export const ToDoFunction = (props)=>{
+const [item,setItem] = useState('');
+const [todolist,setTodoList] = useState();
+const handleSubmit = (e)=>{
+e.preventDefault();
+const list = [...todolist, item];
+setTodoList(list)
+}
+const currentTodos = todolist.map((todo,index)=><p key={index}>{todo}</p>);
+return (
+<form onSubmit={handleSubmit}>
+<input type="text"
+id="todoitem"
+value={item}
+onChange={(e)=>{setItem(e.target.value)}}
+placeholder="what to do?" />
+<button type="submit">
+Add
+</button>
+{currentTodos}
+</form>
+);
+}
+Types of Components ❘ 79
+Note that in this example, we’ve changed the export from a default export to a named export. To
+import this component into another component, you’ll need to surround the name of the component
+with curly braces, like this:
+import {ToDoFunction} from './ToDoFunction';
+Now that you’ve seen how much more simple function components can be than class components,
+let’s look at how to write them and what their limitations are.
+What Are Function Components?
+Function components are JavaScript functions that return React elements.
+When they were first introduced into React, function components were a simplified way to write cer‑
+tain kinds of components called “stateless functional components.” Stateless functional components
+are also known as “dumb components” or “presentational components.”
+Stateless functional components simply accept props from their parent and return a piece of the user
+interface. They don’t perform additional operations, such as fetching and posting data, and they don’t
+have their own internal state data.
+In version 16.8 of React, however, a new feature was added to React called hooks. Hooks allow func‑
+tion components to do most of the things that class components can do, such as interacting with data
+stores and using state. The result is that function components have now become the primary way that
+most React components are written.
+React’s official documentation states that class components will continue to be supported for the
+foreseeable future. At this point, however, no one can foresee how much longer they’ll be necessary. If
+you’re currently writing class components, there’s no need to convert them to function components.
+If you’re coming to React from a background working with object‑ oriented languages, you may feel
+more comfortable working with class components than with function components and that’s fine too.
+With function components being so much simpler to work with, you may very well want to use them
+exclusively, and that’s great! Be aware, however, that fully functional function components weren’t
+introduced into React until years after it became one of the most popular UI libraries, so you’re going
+to come into contact with a lot of class components. As long as you understand them and how to
+convert them to function components (which we’ll cover in detail in Chapter 11), you may never need
+to write another class component.
+How to Write Function Components
+Since a function component is simply a JavaScript function, it starts the same way as any other
+function— as either a function expression or a function declaration. The choice of whether to use an
+expression or a declaration is mostly a matter of style and personal choice.
+Here’s an example of a function component created using a function declaration:
+function Foo(props){
+return <h1>Welcome</h1>;
+}
+export default Foo;
+80 ❘ CHAPTER 4 All About Components
+Here’s an example of a function component created using a function expression:
+const Foo = function(props){
+return <h1>Welcome</h1>;
+}
+export default Foo;
+Components created using function expressions can also be written using JavaScript’s arrow function
+syntax, which saves several characters. For example:
+const Foo = (props) => {
+return <h1>Welcome</h1>;
+}
+export default Foo;
+The difference in terms of performance or actual bytes of data between using the function keyword
+and using an arrow function is negligible. Many React developers opt for the arrow syntax because it
+allows additional shortcuts (as described in the following section), and because arrow functions are
+generally more convenient to use internally inside of components, why not use them everywhere and
+be consistent? Also, arrow functions look kind of cool.
+Whether you choose to use function expressions or function declarations for your function com‑
+ponents, it’s a good practice (and looks cleaner) if you stick to one or the other for every function
+component you write.
+Optimizations and Function Component Shortcuts
+One of the challenges in writing any type of computer code is to balance readability with concise‑
+ness. JavaScript offers many ways to minimize the number of characters and lines of code required
+to perform tasks, and React developers, in particular, are fond of using the shorthand syntax when‑
+ever possible.
+For example, the following is a perfectly valid function component:
+export const Foo = props => <h1>Hello, World!</h1>;
+That’s the whole thing! The preceding code snippet takes advantage of the following rules of arrow
+functions:
+1. The parentheses around the parameter list are optional when a function only takes one
+parameter.
+2. The return keyword is optional when an arrow function doesn’t do anything except
+return data.
+3. The curly braces around the function body are optional if you skip the return keyword.
+Types of Components ❘ 81
+JAVASCRIPT LESSON: VARIABLES
+With the ES2015 version of JavaScript, we gained two new keywords for declaring
+variables: const and let. We also gained some new ways to work with variables,
+including the destructuring assignment syntax.
+If it’s been a while since you’ve written any JavaScript, the new keywords and ways
+to work with variables will be new to you. They are widely used and relied upon by
+most React apps, however, so it’s important that you understand when, why, and
+how to use these new tools.
+Goodbye to var
+In the original JavaScript syntax, and up until 2015, the way to create a variable was
+with the var keyword. The var keyword is still present in JavaScript, and it always
+will be. The simplest form of using var looks like this:
+var x;
+When you want to assign a value to x or change the value of x, you can simply use
+the assignment operator:
+x=10;
+You can also initialize a variable created using var at the same time as you declare it:
+var x=10;
+JavaScript evaluates declarations first within their scope through a process called
+hoisting. When you use the var keyword to declare a variable, JavaScript also initial‑
+izes the variable with a value of undefined during the hoisting. What this means in
+practice is that it’s possible to use a variable created with var before it’s declared, as
+in the following example:
+x = 10;
+console.log(x);
+var x;
+The previous example, when compiled by a JavaScript interpreter, is exactly
+the same as:
+var x;
+x = 10;
+console.log(x);
+and
+var x=10;
+console.log(x);
+Variables created using var have function scope. What this means is that if
+you declare a variable inside a function, you can use that variable anywhere in
+the function.
+continues
+82 ❘ CHAPTER 4 All About Components
+continued
+If you declare a variable outside of a function, it will have global scope, meaning that
+you can use it anywhere in your program.
+In reality, if a global is what you want (and if you’re not using “strict” mode) you
+didn’t even need to use the var keyword, because if you just assigned a value to a
+name, the result will be a global variable, no matter where in your program you
+do the assignment. Another way to think about what happens when you create a
+variable without declaring it is that a new property is created on the global object
+(window in the case of a browser). This “feature” of loose‑ mode JavaScript is called
+implicit globals, and it can be very dangerous, which is why strict mode disallows it.
+In modern JavaScript, even variables created using the var keyword are considered
+to be dangerous, and their use is discouraged. The reason is that function scope is
+almost always unnecessarily broad and it makes it too easy to accidentally overwrite
+or redeclare a variable.
+Most developers and experts now recommend using the new const and let key‑
+words exclusively.
+Using const
+The const keyword creates a variable that can only have one value during its
+lifetime, which we call a constant. To create a constant, just use the const keyword
+followed by a valid name:
+const x;
+However, because you can’t change a constant, and because declaring a vari‑
+able automatically assigns it a value of undefined, if you want your constant to
+have a value other than undefined, you must initialize it at the same time as the
+declaration:
+const x = 10;
+Attempting to change the value of a const will result in an error in JavaScript. Note,
+however, that if you assign an object or an array to a constant, you can still change
+the properties of that object or the items in the array. You would not be able to reas‑
+sign the variable with a completely new object or array, however.
+Block Scoped Variables with let
+The other new way to declare variables is with the let keyword, which creates a
+block‑s coped variable. This is also known as lexical variable scoping. In JavaScript,
+a block is created by a pair of curly braces. Since loops and conditional statements
+as well as functions create blocks, let makes it possible to have variables that are
+function‑s coped in practice (by declaring them at the top level of a function), but
+it also enables you to create variables that have more limited scope, such as inside
+of a loop.
+Variables created using const also have block scope.
+Types of Components ❘ 83
+Destructuring Assignment
+Destructuring assignment syntax lets you create variables by unpacking the elements
+in an array or the properties of an object. For example, say you have the follow‑
+ing object:
+const User = {
+firstName: 'Lesley',
+lastName: 'Altenwerth',
+userName: 'roosevelt86',
+address: '81592 Daniel Underpass',
+city: 'Haileeshire',
+birthday: '1963- 10- 12'
+}
+If you want to create individual variables from the properties in this object, one way
+to do it is to declare and assign individual variables, like this:
+const firstName = User.firstName;
+const lastName = User.lastName;
+const userName = User.userName;
+...
+Using destructuring syntax, you can do it all in one statement:
+const {firstName,lastName,userName,address,city,birthday} = User;
+To use destructuring with arrays, use square brackets:
+const [firstName,lastName] = ['Lesley','Altenwerth'];
+Managing State in Function Components
+Each time a JavaScript function runs, the variables inside it are initialized. Because functional compo‑
+nents are merely JavaScript functions, it’s not possible for them to have persistent local variables.
+React provides hooks to allow functional components to create and access data that persists from one
+invocation of a functional component to the next (aka “state”).
+Hooks are functions that let you “hook” into functionality of class components without writing a
+class. React has many built‑i n hooks and even lets you write your own hooks. The hook that lets you
+persist data with functional components is useState.
+The first step in using useState is to import it from the React library, like this:
+import {useState} from 'react';
+Once imported, you can invoke useState inside your functional component as many times as you
+need to. The useState function accepts an initial value as an argument and each time you invoke
+useState it returns an array containing a stateful variable and a function for updating that variable.
+Using destructuring syntax, you can extract this array and function into two variables:
+const [todos, setTodos] = useState([{item: 'Learn About Hooks'}]);
+84 ❘ CHAPTER 4 All About Components
+Listing 4‑21 shows a functional component that uses useState to create and update a counter.
+LISTING 4- 21: Using state in functional components
+import {useState} from 'react';
+function Counter() {
+const [count, setCount] = useState(0);
+return (
+<div>
+<p>The current count is: {count}.</p>
+<button onClick = {()=>{setCount(count+1)}}>
+Add 1
+</button>
+</div>
+);
+}
+export default Counter;
+I’ll cover hooks in detail in Chapter 11.
+Differences between Function and Class Components
+Table 4‑2 summarizes the main differences between function components and class components.
+TABLE 4-2 : Functions vs. Classes
+FUNCTION COMPONENTS CLASS COMPONENTS
+Accepts props as arguments and returns a React element Extends React.Component
+No render method Requires a render method
+No internal state (can be simulated using hooks) Has internal state
+Can use hooks Cannot use hooks
+Cannot use lifecycle methods (can be simulated using hooks) Can use lifecycle methods
+REACT COMPONENT CHILDREN
+Components that are rendered inside other components are called children, and the component
+they’re rendered inside of is called their parent. As in the physical world, being a child doesn’t prevent
+a component from being a parent to some other child, and all parents except for the root component
+are also children.
+A React UI of any complexity will have many components nested within other components and the
+parent/child terminology is how their relationships are described.
+React Component Children ❘ 85
+In the React component shown in Listing 4‑22, the UsernameInput, PasswordInput, and
+LoginSubmit components are all children of LoginForm. Technically, the built‑ in form component is
+the child of LoginForm, and the three custom components are its grandchildren.
+LISTING 4- 22: A component made up of three child components
+export default function LoginForm() {
+return (
+<form>
+<UsernameInput />
+<PasswordInput />
+<LoginSubmit />
+</form>
+)
+}
+this.props.children
+Every component in a React UI has a property called children that stores the children of that com‑
+ponent. By using this.props.children (or props.children in the case of function components) in
+the return statement of a component, you can create components where the child components aren’t
+known until the component is invoked.
+For example, Listing 4‑23 shows a component named ThingsThatAreFunny, which you can wrap
+around any other components and it will render them with a title of “Here are some funny things.”
+LISTING 4- 23: Presenting ThingsThatAreFunny
+export default function ThingsThatAreFunny(props) {
+return (
+<>
+<h1>Here are some funny things.</h1>
+{props.children}
+</>
+)
+}
+To use the ThingsThatAreFunny component, split it into starting and ending tags instead of using the
+self‑ closing slash at the end of the component element name. Between the starting and ending tags,
+include child elements that you want to be rendered inside of it, as shown in Listing 4‑24.
+LISTING 4- 24: Passing children into a component
+import ThingsThatAreFunny from './ThingsThatAreFunny';
+import Joke from './Joke';
+continues
+86 ❘ CHAPTER 4 All About Components
+LISTING 4-24 (continued)
+export default function ThingsILike(props){
+return (
+<ThingsThatAreFunny>
+<ul>
+<li><Joke id="0" /></li>
+<li><Joke id="1" /></li>
+</ul>
+</ThingsThatAreFunny>
+)
+}
+Assuming that the Joke component outputs one joke, the result of rendering the ThingsILike com‑
+ponent is shown in Figure 4‑4.
+FIGURE 4- 4: Rendering the ThingsILike component
+Manipulating Children
+React provides several built‑ in ways to access information about and manipulate elements. These are:
+➤➤ isValidElement
+➤➤ cloneElement
+➤➤ React.Children
+React.Children
+React.Children provides several utility functions that operate on the children of a component. For
+each of these, you can pass in props.children as an argument. These utilities are:
+➤➤ React.Children.map. Invokes a function for each immediate child element and returns a
+new array of elements.
+➤➤ React.Children.forEach. Invokes a function for each immediate child but doesn’t
+return anything.
+➤➤ React.Children.count. Returns the number of components in children.
+➤➤ React.Children.only. Verifies that children only has one child.
+➤➤ React.Children.toArray. Converts children to an array.
+React Component Children ❘ 87
+isValidElement
+The isValidElement function takes an object as an argument and returns either true or false
+depending on whether the object is a React element.
+cloneElement
+The cloneElement function creates a copy of an element passed into it. Here’s the basic syntax for
+cloneElement:
+const NewElement = React.cloneElement(element,[props],[children]);
+With cloneElement, you can create new elements from a component’s child elements, and modify
+them in the process. For example, say you have a NavBar component that has NavItem children. You
+can render these in your App component, as shown in Listing 4‑25.
+LISTING 4- 25: Rendering a NavBar inside of App
+import NavBar from './NavBar';
+import NavItem from './NavItem';
+function App(props){
+return (
+<NavBar>
+<NavItem />
+<NavItem />
+<NavItem />
+</NavBar>);
+}
+export default App;
+The NavBar component in this example could use props.children to render all of the NavItems
+that are children of it, as shown in Listing 4‑26.
+LISTING 4- 26: Rendering the children using props.children
+function NavBar(props){
+return (
+<div>
+{props.children}
+</div>
+)
+}
+export default NavBar;
+However, what if you want to add an onClick attribute to each NavItem from within the NavBar
+component? Because props.children isn’t actually the children (it’s a descriptor of the children),
+you can’t modify the children by using props.children.
+88 ❘ CHAPTER 4 All About Components
+Instead, what you need to do is to clone the children from within the NavBar component and then
+add or change properties in them, as shown in Listing 4‑27.
+LISTING 4- 27: Cloning the children in NavBar.js
+import React from 'react';
+function NavBar(props){
+return (
+<div>
+{React.Children.map(props.children, child => {
+return React.cloneElement(child, {
+onClick: props.onClick })
+})}
+</div>
+)
+}
+export default NavBar;
+With that done, you can then pass a function into NavBar, as shown in Listing 4‑28, and it will be
+added to each of its child components.
+LISTING 4- 28: Passing onClick into the parent component
+import NavBar from './NavBar';
+import NavItem from './NavItem';
+function App(props){
+return (
+<NavBar onClick={()=>{console.log('clicked');}}>
+<NavItem />
+<NavItem />
+<NavItem />
+</NavBar>);
+}
+export default App;
+The child components can then make use of this new prop, as shown in Listing 4‑29.
+LISTING 4- 29: Making use of props in a child component
+function NavItem(props){
+return (
+<button onClick={props.onClick}>Click Me</button>
+)
+}
+export default NavItem;
+The Component Lifecycle ❘ 89
+THE COMPONENT LIFECYCLE
+During the time when a React application is running, components become active, do their thing,
+and are destroyed. At each stage in the life of a component, certain events are fired and methods are
+invoked. These events and methods make up the component lifecycle.
+The stages of a component’s life are:
+➤➤ Mounting: Mounting is where a component is constructed using the props passed into it and
+the default state, and the JSX returned by the component is rendered.
+➤➤ Updating: Updating happens when the state of the component changes and the component is
+re‑ rendered.
+➤➤ Unmounting: Unmounting is the end of the component lifecycle, when the component is
+removed from the active application.
+➤➤ Error handling: The error handling methods run when an error happens during a compo‑
+nent’s lifecycle.
+In class components, you can override the lifecycle methods to run your own code in response to
+lifecycle events. Function components can simulate lifecycle methods using a hook called useEffect,
+which I’ll cover in detail in Chapter 11.
+Understanding the main events in the lifecycle of a component is key to understanding how React
+works. Figure 4‑5 shows the component lifecycle as a flowchart.
+Mounting Updating Unmounting
+constructor New props setState() forceUpdate()
+“Render phase” getDerivedStateFromProps
+Pure and has no side
+effects. May be
+paused, aborted, or
+restarted by React. shouldComponentUpdate
+render
+“Pre-commit phase”
+getSnapshotBeforeUpdate
+Can read the DOM.
+React updates DOM and refs
+“Commit phase”
+Can work with DOM,
+run side effects,
+schedule updates.
+componentDidMount componentDidUpdate componentWillUnmount
+FIGURE 4- 5: The component lifecycle
+90 ❘ CHAPTER 4 All About Components
+The following sections will examine the four stages of the component lifecycle and then will explore
+how you can avoid errors and improve performance with the lifecycle as well.
+Mounting
+The mounting stage includes everything from when a component is first constructed until it is
+inserted into the DOM. During the mounting lifecycle stage, the following methods run, in this order:
+➤➤ constructor
+➤➤ static getDerivedStateFromProps
+➤➤ render
+➤➤ componentDidMount
+constructor()
+You’ve already learned about the constructor. This is the method that automatically runs in an
+instance of a class when it’s created. In a React component, it may include a call to the super method,
+initialization of the component’s state object, and binding of event handlers.
+static getDerivedStateFromProps
+This method is a static method, meaning that it doesn’t have access to the this keyword. The pur‑
+pose of getDerivedStateFromProps is to check whether the props that the component uses have
+changed and to use the new props to update the state. This method runs both during the mounting
+stage as well as during the updating stage.
+render
+Like getDerivedStateFromProps, the render method also runs once during the mounting stage.
+After mounting, render runs every time the component updates. This is the method that generates
+the JSX output of your component, and it’s the only required method in a class component.
+componentDidMount()
+The componentDidMount method runs when the component has finished mounting and has been
+inserted in the browser DOM. This is the point at which it’s safe to do things that depend on DOM
+nodes, or to fetch remote data.
+Updating
+After your component has mounted, the updating lifecycle methods start running. React components
+update their data and re‑r ender in response to changes to the state object made using the setState
+function. Every time a component updates, the following methods run, in this order:
+➤➤ static getDerivedStateFromProps
+➤➤ shouldComponentUpdate
+The Component Lifecycle ❘ 91
+➤➤ render
+➤➤ getSnapshotBeforeUpdate
+➤➤ componentDidUpdate
+The getDerivedStateFromProps and render methods serve the same purposes in the updating
+stage as they do during the mounting stage. So, let’s take a look at the three lifecycle methods that are
+unique to the updating stage.
+shouldComponentUpdate
+The default behavior of a React component is to update every time the state changes. There are times,
+however, when you might want to tell React that a change to the state doesn’t affect a component and
+so it’s not necessary to go through the updating process.
+This method, when it’s present, must return either true or false. If you have a component that you
+know will never need to be updated once it’s mounted, you can prevent it from updating by using
+this code:
+shouldComponentUpdate(){
+return false;
+}
+More often, the way shouldComponentUpdate is used is to compare the previous props and state
+with the new props and state and to decide whether to update the component. This is possible
+because React passes the props and state that will be used for the upcoming rendering into
+shouldComponentUpdate. In Listing 4‑30, the value of a prop is compared with the value of that
+prop in the nextProp object to determine whether to re‑ render.
+LISTING 4- 30: Comparing previous and next props in shouldComponentUpdate
+class ToDoItem extends Component {
+shouldComponentUpdate(nextProps, nextState) {
+return nextProps.isChecked != this.props.isChecked;
+}
+...
+}
+getSnapshotBeforeUpdate
+This lifecycle method happens right before the rendered output from the component is made active in
+the DOM. The purpose of this method is to allow you to capture information about the state of the
+browser (or other output device) prior to it changing.
+Although it’s rare that you’ll have a need to use this lifecycle method, one example use for it
+is to maintain the scroll position of an element (such as a text box) between renders. If an
+update to the browser DOM would affect what the user is currently viewing in the browser,
+getSnapshotBeforeUpdate can be used to find out the relevant information about the browser
+DOM so that it can be restored after the update happens.
+92 ❘ CHAPTER 4 All About Components
+componentDidUpdate
+This method runs immediately after a component updates. It’s useful for performing network requests
+based on new props passed to the component, or for performing operations that depend on the snap‑
+shot of the DOM created during the getSnapShotBeforeUpdate method.
+If your component has a shouldComponentUpdate method that returns false, the component won’t
+update and this method won’t run.
+Unmounting
+The process of removing a component from the DOM is called unmounting. Only one lifecycle
+method, componentWillUnmount, happens during this process.
+componentWillUnmount
+As its name implies, componentWillUnmount is invoked right before a component is removed from
+the DOM. If you need to do any cleanup in your application related to the component that
+will be unmounted, this is the place to do it. Examples of tasks that are commonly done in the
+componentWillUnmount method include:
+➤➤ Stopping any network requests that are in progress.
+➤➤ Stopping timers.
+➤➤ Removing event listeners created in componentDidMount.
+Error Handling
+The fourth type of lifecycle methods are the ones that only run when something goes
+wrong with your component. These lifecycle methods are getDerivedStateFromError and
+componentDidCatch. I’ll talk about both of these methods further in Chapter 13, but I want to
+introduce them to you here.
+getDerivedStateFromError
+If an error occurs in a component’s descendant components, the component will run the
+getDerivedStateFromError method. This lifecycle method receives the error that occurred and
+should return an object that will be used to update the state.
+componentDidCatch
+The componentDidCatch lifecycle method runs after a descendant component throws an error.
+Because componentDidCatch doesn’t run during the render phase of the lifecycle, it’s useful for per‑
+forming tasks such as error logging.
+Improving Performance and Avoiding Errors
+Lifecycle methods can be used to improve the performance of your React application and to prevent
+errors. In the following sections I’ll talk about a few tools and techniques you can use to make your
+components the best they can be.
+The Component Lifecycle ❘ 93
+Avoiding Memory Leaks
+To demonstrate the use of several lifecycle methods, we can look at a common problem in React
+applications— a memory leak—a nd how to fix it.
+A memory leak is a fault in a computer program where memory is allocated unnecessarily. This can
+happen when a component is unmounted without removing timers or network requests involving the
+component continue to happen after the unmounting.
+Because a memory leak is a wasted use of resources, having a memory leak in your program can lead
+to reduced performance and unexpected behaviors. Memory leaks have a tendency to build up the
+longer a program is running, and so you may not notice them at first but things can start to get weird
+as they accumulate. So, it’s best to take action to avoid them.
+To avoid memory leaks, you should always make sure to properly clean up after your components
+using the componentWillUnmount() method.
+Listing 4‑31 shows a component that uses the JavaScript setInterval function to increment
+a counter.
+LISTING 4- 31: A React component with a potential memory leak
+import {Component} from 'react';
+class Counter extends Component{
+constructor(){
+super();
+this.state = {count: 0};
+this.incrementCount = this.incrementCount.bind(this);
+}
+incrementCount(){
+this.setState({count: this.state.count + 1});
+console.log(this.state.count);
+}
+componentDidMount(){
+this.interval = setInterval(()=>{
+this.incrementCount();
+},1000)
+}
+render(){
+return (<p>The current count is: {this.state.count}.</p>);
+}
+}
+export default Counter;
+The component’s parent has a method, invoked using a button, that toggles whether the Counter
+component is rendered or not, as shown in Listing 4‑32.
+94 ❘ CHAPTER 4 All About Components
+LISTING 4- 32: Toggling the rendering of the Counter
+import {useState} from 'react';
+import {Counter} from './Counter';
+function CounterController() {
+const [displayCounter,setDisplayCounter] = useState(true);
+function toggleCounter(){
+setDisplayCounter(!displayCounter);
+};
+return (
+<div className="App">
+{displayCounter ? <Counter /> : null}
+<button onClick={toggleCounter}>Toggle Count</button>
+</div>
+);
+}
+export default CounterController;
+When the App component mounts, the Counter component will also mount and the timer will start
+running and incrementing the counter in the browser and in the console, as shown in Figure 4‑6.
+FIGURE 4- 6: Incrementing a counter
+The Component Lifecycle ❘ 95
+When you click the Toggle Count button, the Counter component will disappear. However, the timer
+created by the setInterval function in the Counter component is never cleared, and so it continues
+to run after the component is removed.
+After the component is unmounted, React will log a message to the browser console to tell you that
+you’re attempting to call setState on an unmounted component, as shown in Figure 4‑7.
+FIGURE 4- 7: The result of attempting to call setState on an unmounted component
+Trying to call setState on an unmounted component won’t do anything, since an unmounted com‑
+ponent doesn’t have state. But, as React’s error message points out, it’s indicative of a memory leak.
+To fix this problem, you can use the componentWillUnmount method in the Counter component
+to call clearInterval, which will stop the timer before the Counter component is unmounted, as
+shown in Listing 4‑33.
+96 ❘ CHAPTER 4 All About Components
+LISTING 4- 33: Fixing a memory leak
+import {Component} from 'react';
+class Counter extends Component{
+constructor(){
+super();
+this.state = {count: 0};
+this.incrementCount = this.incrementCount.bind(this);
+}
+incrementCount(){
+this.setState({count: this.state.count + 1});
+console.log(this.state.count);
+}
+componentDidMount(){
+this.interval = setInterval(()=>{
+this.incrementCount();
+},1000)
+}
+componentWillUnmount(){
+clearInterval(this.interval);
+}
+render(){
+return (<p>The current count is: {this.state.count}.</p>);
+}
+}
+export default Counter;
+Now Counter will be properly unmounted and the timer will be cleared when it’s removed from the
+browser. If you click the Toggle Counter button again, the counter will start over as you would expect
+it to, because a new timer will be created.
+React.PureComponent
+If you have a component that only accepts props and returns JSX, without modifying state or affect‑
+ing anything outside of itself, that component is known as a “pure component.” It gets this name
+from the concept of a pure function.
+A key characteristic of a pure function is that it always returns the same result when given the
+same input.
+Pure components are opportunities to improve the performance of your React user interface. Because
+their output only depends on props passed to them, a simple comparison of the previous props and
+the new props will tell you whether the component will change when re‑ rendered.
+One way to do this comparison is by using the shouldComponentUpdate lifecycle method along with
+React’s shallowCompare function, as shown in Listing 4‑34.
+The Component Lifecycle ❘ 97
+LISTING 4- 34: Using shouldComponentUpdate and shallowCompare
+import React from 'react';
+import shallowCompare from 'react- addons- shallow- compare';
+class ShallowCompare extends React.Component {
+shouldComponentUpdate(nextProps, nextState) {
+return shallowCompare(this, nextProps, nextState);
+}
+render() {
+return <div>foo</div>;
+}
+}
+export default ShallowCompare;
+Another way to accomplish the same thing as the code in Listing 4‑34 is to write your class compo‑
+nent by extending React.PureComponent instead of React.Component, as shown in Listing 4‑35.
+LISTING 4- 35: Extending React.PureComponent
+import React from 'react';
+class PureComponentExample extends React.PureComponent {
+render() {
+return <div>foo</div>;
+}
+}
+export default PureComponentExample;
+React.memo
+Function components can also be pure components, but because they can’t use lifecycle methods or
+extend React.PureComponent, a different method is required to optimize them.
+React.memo() is a higher‑ order function, meaning that it wraps around another function and adds
+its functionality to that function. When you wrap your function component in React.memo(), it per‑
+forms a comparison of the previous and next props and skip rendering if they’re the same.
+The name of React.memo() refers to memoization, which is the caching of the results of a function
+and using the cached result if the function has the same input as when the cache was created.
+Listing 4‑36 shows how to use React.memo().
+98 ❘ CHAPTER 4 All About Components
+LISTING 4- 36: Using React.memo
+import React from 'react';
+function ExampleComponent(props){
+return (<p>Hi, {props.firstName}. This component returns the same thing when
+given the same props.</p>);
+}
+export default React.memo(ExampleComponent);
+React.StrictMode
+React.StrictMode is a component that you can wrap around your components to activate addi‑
+tional checks of your code and produce warning messages that can be helpful during development.
+The default Create React App application wraps the root component with a <StrictMode> element
+to turn on strict mode for the entire component tree. But, you can also just use <StrictMode> on
+parts of your application by applying it more selectively.
+RENDERING COMPONENTS
+The end result of the mounting and updating stages of the lifecycle in React is a single rendered
+component, called the root component. Remember that by “rendered” we mean that all of the JSX for
+the root component and its subcomponents has been parsed and the resulting tree of components has
+been created.
+Once React’s work has been done and the tree of components has been created, it’s the job of a sepa‑
+rate node package to render the component in a way that it can be seen and used by people.
+Rendering with ReactDOM
+The most common place for a tree of React elements to end up being used is in a web browser. The
+library responsible for converting a React component into HTML and inserting it into the DOM and
+then managing updates to the DOM is ReactDOM.
+ReactDOM includes several methods that you can use to interact with the DOM, but the one that’s
+absolutely necessary for every React application designed for the browser to use is ReactDOM.render.
+If you look at the index.js file at the root of the src folder in a React project created using Cre‑
+ate React App, you’ll see where ReactDOM.render is invoked and where a single React element
+(which may be optionally wrapped with a React.StrictMode component) is passed in, as shown in
+Listing 4‑37.
+Rendering Components ❘ 99
+LISTING 4- 37: ReactDOM.render renders a single element in the DOM
+ReactDOM.render(
+<React.StrictMode>
+<App/>
+</React.StrictMode>,
+document.getElementById('root')
+);
+The beauty of ReactDOM.render is that it performs an incredible number of calculations and DOM
+manipulations, controls the timing of DOM updates, manages the virtual DOM, and more—b ut as
+far as you, the programmer, are concerned, it’s a black box. All you need to do is feed it a valid React
+component and a DOM node where you want that component to be rendered and ReactDOM.render
+takes it from there.
+If you examine the code in Listing 4‑37, you’ll see that, in this case, we’re telling ReactDOM.render
+to render the App component (you can ignore the StrictMode wrapper) inside the HTML element
+node that has an id attribute with a value of root.
+Every React application designed for rendering to web browsers will have a single HTML file that
+imports the React and ReactDOM libraries, plus all the rest of the JavaScript that the application
+needs. In the case of a Create React App application, this file is public/index.html. Listing 4‑38
+shows a version of Create React App’s index.html file (with the HTML comments and unimportant
+meta tags removed to save space). When a JavaScript application lives within a single HTML file like
+this, we call it a single page app.
+LISTING 4- 38: Create React App’s index.html file
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf- 8" />
+<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+<meta name="viewport" content="width=device-w idth, initial- scale=1" />
+...
+<title>React App</title>
+</head>
+<body>
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="root"></div>
+...
+</body>
+</html>
+100 ❘ CHAPTER 4 All About Components
+Virtual DOM
+After the root component has been mounted, the job of ReactDOM.render is to monitor changes
+to the rendered element coming in from React and figure out the most efficient way to update the
+browser DOM to match the newly rendered application through a process called reconciliation.
+As a programmer, you can think of rendering a React UI as a continual process of replacing a previ‑
+ous tree of elements with a new one: and this is in fact what React is doing. But, once a new tree of
+elements gets to ReactDOM.render’s reconciliation process, it looks for the minimal set of changes
+and just makes those.
+For example, compare the element shown in Listing 4‑39 with the element in Listing 4‑40. The
+second listing could be the <nav> element that results from the user clicking the “About Us” link.
+LISTING 4- 39: The initial element tree
+<nav>
+<ul>
+<li><a href="/" className="active navlink">Home</a></li>
+<li><a href="/aboutus" className="navlink">About Us</a></li>
+</ul>
+</nav>
+LISTING 4- 40: The element tree after the user clicks a link
+<nav>
+<ul>
+<li><a href="/" className="navlink">Home</a></li>
+<li><a href="/aboutus" className="active navlink">About Us</a></li>
+</ul>
+</nav>
+The only difference between these two element trees is which one has the active class. ReactDOM
+.render will find this difference during reconciliation and will simply remove active from the first
+link’s class element and add it to the second link’s class element without modifying anything else.
+This process of rendering the new UI in memory and then comparing it with the previous UI and fig‑
+uring out the minimal set of changes that can be applied to the browser DOM to make the previous
+state match the new one is what we call the Virtual DOM.
+One important thing to know about how reconciliation works is that updates to the browser DOM
+won’t always happen in the same order as when they were rendered in the Virtual DOM. This is
+because ReactDOM.render may batch changes if it creates more efficiency.
+Once again, the Virtual DOM’s inner workings happen without your intervention, and you won’t
+need to know exactly what’s happening in the reconciliation process (except perhaps in very rare
+cases). Knowing that it exists is important, however.
+Rendering Components ❘ 101
+If you’d like to learn more about how reconciliation works, you can read about it in more detail at
+https://reactjs.org/docs/reconciliation.html.
+Other Rendering Engines
+React doesn’t care whether you render the elements that it outputs in a web browser, on a billboard,
+as a mobile app, as text in a terminal application, or in any other user interface device.
+Although ReactDOM is the most commonly used rendering engine, and thus the one that most books
+and tutorials on React focus on, other rendering engines can and do exist. The following sections
+explore a few of the most common ones.
+React Native
+React Native converts React elements into native mobile applications. React Native has a set of built‑
+in elements that, when rendered, result in the creation of commonly used native app components such
+as View, Text, ScrollView, and Image.
+After React renders a tree of React Native elements, the React Native rendering engine compiles these
+elements into platform‑ specific code for different mobile operating systems (such as Android or iOS).
+Listing 4‑41 shows a “Hello, World” component written with React Native.
+LISTING 4- 41: Your first React Native component
+import React from 'react';
+import { Text, View } from 'react-n ative';
+const YourApp = () => {
+return (
+<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+<Text>
+Hello, World!
+</Text>
+</View>
+);
+}
+export default YourApp;
+Everything here is standard React and JavaScript, and everything you’re learning about React also
+applies to React Native. The only difference is that React Native adds a library of components that
+are relevant to native mobile apps, and React Native components are compiled into native mobile
+apps rather than for web browsers.
+After you write your React Native code, it needs to be compiled to generate platform‑ specific code
+that you can deploy on mobile devices or to app stores. You can compile React Native components
+using a Node.js program called Expo CLI (CLI stands for “command‑l ine interface”), or by using the
+React Native CLI.
+102 ❘ CHAPTER 4 All About Components
+React Native CLI requires you to have the appropriate native app development tools installed (either
+XCode for iOS apps, or Android Studio for Android apps). Expo CLI compiles your apps and deploys
+them inside a wrapper Expo mobile app on mobile phones.
+While React Native CLI is more familiar to developers who already have experience with mobile app
+development, Expo is great because it’s so easy to use and will have you writing functioning mobile
+apps very quickly.
+Figure 4‑8 shows the “Hello, World!” app from Listing 4‑41 running on an iPhone.
+FIGURE 4- 8: Hello, React Native
+ReactDOMServer
+ReactDOMServer renders React components and returns an HTML string. It can be used on a web
+server to generate the initial HTML for a React application, which can then be served to web brows‑
+ers to speed up the initial loading of the user interface.
+Component Terminology ❘ 103
+Once the initial HTML for the application is rendered on the server and served to a web browser, the
+regular ReactDOM renderer takes over and handles updates. This technique is referred to as “Isomor‑
+phic React” or “Universal React.”
+React Konsul
+React Konsul renders React components to the browser console. It includes a handful of built‑ in
+components, including container, text, image, button, and group, that allow developers to create
+interactive views inside the JavaScript console of a browser.
+The use cases for React Konsul are rather limited, but it can render images, interactive buttons, and
+styled text instead of the simple plain text console log messages that JavaScript outputs by default.
+react- pdf
+With react‑ pdf, you can use React components to render PDF files. The built‑i n components for
+assembling PDFs include Document, Page, View, and Text. Once you’ve composed your PDF docu‑
+ment using these components, you can render them in the browser using ReactDOM.render, or you
+can save them as PDF documents using ReactPDF.render.
+COMPONENT TERMINOLOGY
+Components and elements are the building blocks of React. If you understand components and
+JavaScript, you’re more than halfway to being a React developer. React components come with a lot
+of terminology, however. To help you keep everything straight, here’s a handy overview of some of the
+most commonly used lingo in React component development:
+➤➤ Class component: A class component is a React component created by extending React
+.Component or React.PureComponent.
+➤➤ Function component: A function component is a JavaScript function that returns JSX code.
+➤➤ State: State is the data in a React user interface that determines when updates will happen.
+➤➤ Props: Props are the data that’s passed from a parent component to a child component. In
+JSX, props are created using attributes (in the name=value format).
+➤➤ Stateful component: A stateful component is a component that has internal state, stored in
+either the state object (in the case of class components) or created using hooks (in the case of
+function components).
+➤➤ Stateless component: A stateless component is one that doesn’t have its own internal
+state. Stateless components are also known as “dumb” components or “presentational”
+components.
+➤➤ Pure component: A pure component is one that always returns the same output when given
+the same input.
+➤➤ Root component: The root component is the single component that contains all the other
+components in your React application. Rendering the root component (using ReactDOM)
+causes the entire component tree to be rendered.
+104 ❘ CHAPTER 4 All About Components
+➤➤ Parent component/child component: As in the HTML DOM, the relationship between com‑
+ponents in a React component tree is described using the terms parent and child.
+➤➤ Component lifecycle: The component lifecycle is the progression of events and methods
+that happen during the life of a React component. It starts with mounting and ends with
+unmounting. In between mounting and unmounting, the update lifecycle methods happen.
+SUMMARY
+React components are the building blocks of React. In this chapter, you learned:
+➤➤ The two methods for creating React components: class and function.
+➤➤ How React components return React elements.
+➤➤ How to use React’s built‑i n components.
+➤➤ How to pass data between components by using JSX attributes.
+➤➤ How data passed using attributes in React elements becomes props in child components.
+➤➤ How to manage state in a class component.
+➤➤ How to manage state in a function component.
+➤➤ What lifecycle methods are and how to use them in a class component.
+➤➤ How to prevent memory leaks in React components.
+➤➤ How to use PureComponent and React.memo.
+➤➤ How to render React components using ReactDOM.
+In the next chapter, you’ll learn how to use in‑ browser tools to inspect and test React components.
+Onward!

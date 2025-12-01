@@ -1,0 +1,890 @@
+
+12
+Routing
+Until now, every user interface example you’ve seen in this book has only had a single screen
+and everything the application can do is displayed at once. In the real world, apps have multiple
+modes, tabs, and screens. The ability to change from an app’s main screen to a settings screen,
+for example, makes it possible for user interfaces to do more while not overwhelming the user
+with complexity and clutter.
+In this chapter, you’ll learn:
+➤➤ What routing is and why you need it.
+➤➤ How routing works in single page applications.
+➤➤ How to install and use React Router.
+➤➤ How to create basic routes.
+➤➤ How to create navigation.
+➤➤ How to create nested routes.
+➤➤ How to use React Router’s hooks.
+WHAT IS ROUTING?
+The most basic concept behind the web (what we call Web 1.0) is that a web browser requests
+a web page from a web (HTTP) server using a unique URL. The web server then responds with
+an HTML page that is rendered in the browser, as shown in Figure 12‑1.
+When a user clicks a link on a web page, it requests a new HTML page, which the browser
+downloads and displays instead of the current page. Browsers and servers maintain a user’s
+state between different web pages by using browser cookies, the localStorage API, and
+server‑ side data.
+290 ❘ CHAPTER 12 Routing
+FIGURE 12- 1: How the web works
+The problem with loading a new web page each time a user clicks a link is that it doesn’t create a
+smooth experience for the user, and it doesn’t allow for refreshing data dynamically. The whole web
+page is downloaded and rendered each time a new URL is loaded.
+AJAX (which stands for Asynchronous JavaScript and XML) was created to solve this problem. With
+AJAX, JavaScript dynamically loads data into a web page without loading a new HTML page. AJAX
+made dynamic web user interfaces possible, and JavaScript libraries and frameworks made building
+them easier. This is what was referred to as Web 2.0.
+Now instead of the web browser requesting new pages from a web server, the browser only loads the
+first page containing the JavaScript code and the JavaScript virtual machine takes over from there and
+dynamically loads data and updates the browser using the DOM API.
+JavaScript user interface libraries hijack the original request/response model that the web was built
+on. This works well, but it means that the browser is always displaying the same HTML page. This is
+what we call a single page application (SPA). Having a website or web application that only con‑
+sists of one web page makes it impossible for other sites to link to specific data within your app or
+site using a URL, and it makes it more difficult for search engines to index the data on your site or
+in your app.
+The solution is to have the JavaScript that runs your web application simulate the browser’s built‑ in
+ability to load web pages that correspond to unique URLs, as shown in Figure 12‑2.
+This mapping of URLs to things happening inside a JavaScript application is what we call routing.
+How Routing Works in React ❘ 291
+FIGURE 12- 2: JavaScript routing
+HOW ROUTING WORKS IN REACT
+In React, routing has two purposes:
+1. To change the window.location property of the browser (when used with a web browser).
+2. To detect the current location and use it to show or hide different components or combina‑
+tions of components.
+The browser’s window.location.href property is what indicates the current URL of the web page.
+By setting window.location.href without making a server request, a JavaScript routing program
+can simulate the native way that browsers change the rendered view. What this means is that a user or
+search engine can navigate to or link to a specific URL, such as www.example.com/aboutUs.
+Once the value of window.location.href changes, this property can be read using JavaScript and
+different URLs can be associated with different components. This association is called a route.
+Listing 12‑1 shows a simple use of React Router to create two routes, such as you might do in a con‑
+figuration utility, a survey, or a text‑b ased adventure game.
+LISTING 12- 1: A simple routing component
+import React from "react";
+import {LessTraveledPath,MoreTraveledPath} from './PathOptions';
+import {
+BrowserRouter,
+Switch,
+Route,
+Link
+} from "react- router- dom";
+continues
+292 ❘ CHAPTER 12 Routing
+LISTING 12-1 (continued)
+function ChooseYourAdventure() {
+return (
+<BrowserRouter>
+<div>
+<p>You come to a fork in the road. Which path will you take?</p>
+<ul>
+<li>
+<Link to="/worn">The More Well-t raveled Path</Link>
+</li>
+<li>
+<Link to="/untrodden">The Less Well-t raveled Path</Link>
+</li>
+</ul>
+<Switch>
+<Route path="/worn">
+<MoreTraveledPath />
+</Route>
+<Route path="/untrodden">
+<LessTraveledPath />
+</Route>
+</Switch>
+</div>
+</BrowserRouter>
+);
+}
+export default ChooseYourAdventure;
+In this example, the Link component changes the current browser location. The Route components
+render the correct child component depending on the browser’s location. When the browser’s location
+(after the domain name) is /worn, the MoreTraveledPath component will be displayed, and when
+the location is /untrodden, the LessTraveledPath component will be displayed.
+You can verify that the window.location.href property changes by opening the JavaScript console
+and typing window.location.href, as shown in Figure 12‑3.
+Using React Router ❘ 293
+FIGURE 12- 3: Changing routes and viewing the window.location.href property
+USING REACT ROUTER
+React Router can be used for routing in web applications or in mobile apps. Because of the funda‑
+mental differences in routing in a browser versus routing in a native mobile app, there are two differ‑
+ent versions of React Router:
+➤➤ react- router- dom is the version of React Router for the web.
+➤➤ react- router- native is the version of React Router for native apps.
+Since this book is primarily about creating user interfaces for the web, we’ll use
+react- router- dom. However, the basic process that you’ll use to create routes and links in React
+Router applies for either version.
+Installing and Importing react- router- dom
+React Router isn’t installed with Create React App by default, so you’ll need to install it before you
+can start using it. Once you have a React application built with Create React App, you can install
+react- router- dom using npm by entering the following command into the terminal:
+npm install react-router-dom@5.3.0
+294 ❘ CHAPTER 12 Routing
+Once react- router- dom is installed, you can import components, functions, and hooks from the
+library into any of your components that will use routing. For most uses of React Router, you’ll need
+three parts:
+➤➤ A router component.
+➤➤ A linking component.
+➤➤ A route component.
+The Router Component
+A router component is the top‑l evel component that makes routing possible. It handles the changing
+of the window.location property and it provides React Router props to components below it.
+Selecting a Router
+React Router contains five different router components:
+➤➤ BrowserRouter
+➤➤ HashRouter
+➤➤ MemoryRouter
+➤➤ StaticRouter
+➤➤ NativeRouter
+No matter which router you choose, it’s a convention to import the router component using the name
+Router, like this:
+import {BrowserRouter as Router} from 'react-r outer- dom';
+Importing the router as Router also simplifies things later if you want to change the router.
+NOTE The five router components listed here are the “high- level” routers.
+React Router also has a component named Router, which is the “low- level”
+router. The low- level Router component is used for synchronizing routes with
+state management libraries (such as Redux). Unless you have a good reason to
+use the low- level Router, you can safely ignore it.
+BrowserRouter
+BrowserRouter is the Router component that you’ll use most, if not all, of the time. It uses the
+HTML5 history API to change the browser’s window.location.href property. Using Browser-
+Router allows your React UI to simulate the familiar way of navigating the web using URL paths.
+Using React Router ❘ 295
+HashRouter
+HashRouter uses the part of the URL after the hash symbol (#) to synchronize the location and the
+displayed components. HashRouter relies on the fact that anything after a # in a URL won’t cause a
+browser to load a new page by default. For example, the following two addresses both use the same
+HTML page:
+https://www.example.com/
+https://www.example.com/#/aboutUs
+The second URL passes a path after a #, which can be read using JavaScript and used to change the
+displayed components.
+Prior to the widespread availability of the HTML5 history API in browsers, which allows JavaScript
+to change the address without loading new pages, hash routing was how JavaScript routing always
+worked. Today, HashRouter is mostly still around for backwards compatibility with older apps
+and browsers.
+MemoryRouter
+MemoryRouter doesn’t update or read the browser’s window.location property at all. Instead, it
+keeps the routing history in memory. MemoryRouter is useful for non‑b rowser environments such as
+React Native, and for in‑m emory tests of your user interface.
+StaticRouter
+StaticRouter creates a router that never changes. It’s useful for server‑ side rendering of React,
+where the web server passes a path to React on the server and React generates static code to serve
+to the user.
+NativeRouter
+NativeRouter is used for creating navigation in iOS and Android apps built using React Native.
+Keep in mind that React apps can be rendered to many different types of user interface devices
+(as you saw in Chapter 4). Native apps handle routing differently from web browsers, and the
+NativeRouter component translates the lower‑ level React Router components to routing commands
+that work with your target mobile operating system.
+Using the Router Component
+Whichever router component you choose, it needs to wrap around the other React Router compo‑
+nents. One common way to make sure that the router is available to your entire app is by rendering it
+around your root component in the ReactDOM.render method.
+This is one of the few times that you’ll have a need to modify index.js after you initially create it.
+If you recall from Chapter 2, the ReactDOM.render method is used once in a React UI and takes a
+component (called the root component) and a DOM node where that component should be rendered
+as arguments.
+296 ❘ CHAPTER 12 Routing
+For example, the default Create React App ReactRouter.render method looks like this:
+ReactDOM.render(
+<React.StrictMode>
+<App />
+</React.StrictMode>,
+document.getElementById('root')
+);
+The React.StrictMode component is optional in the preceding example and may or may not be
+present depending on how and when you bootstrapped your app with Create React App. But, just
+as React.StrictMode wraps around the root component, App, you can wrap a router component
+around App to provide routing capabilities to your entire app.
+After you’ve imported your router component, enclose the root component in a router like this:
+import React from 'react';
+import ReactDOM from 'react- dom';
+import {BrowserRouter as Router} from 'react-r outer- dom';
+ReactDOM.render(
+<React.StrictMode>
+<Router>
+<App />
+</Router>
+</React.StrictMode>,
+document.getElementById('root')
+);
+With the router in place, you can move on to creating links and routes.
+Linking to Routes
+React Router has three different linking components:
+➤➤ Link
+➤➤ NavLink
+➤➤ Redirect
+The first two linking components are essentially wrappers around the HTML a element with some
+additional features and capabilities added. The Redirect component changes the current URL with‑
+out user interaction.
+Internal Linking with Link
+Because React Router overrides the default behavior of links in a browser, you can’t simply link
+between routes using the a element as you normally would in a website. The Link element is the basic
+linking element in React Router. All it requires is a path to link to, which can be provided using the
+to attribute, and a single child node, as in the following example:
+<Link to="/user/login">Log in</Link>
+Using React Router ❘ 297
+The value of the to attribute can be a string (or an expression that evaluates to a string) or an object.
+If the to property is specified as an object, the properties of the object are concatenated to create the
+destination location.
+Linking with a String
+If you pass a string to the to attribute, it can be any valid internal path that you would normally
+use as the value of the href attribute with the HTML a element. Any path that you pass to the Link
+component will be used to update the browser location relative to the path of the app. Because using
+Link updates the URL relative to the app, the following example won’t work as you might expect:
+<Link to="https://chrisminnick.com">Link to my website</Link>
+Figure 12‑4 shows what happens in the address bar when you click the preceding link in a React
+Router app.
+FIGURE 12- 4: React Router can’t be used for external linking
+If you want to link to an external site from a React app, just use the a element.
+Linking with an Object
+To use an object as the value of the to attribute, specify a combination of the allowed properties:
+➤➤ pathname: A string containing the path to link to.
+➤➤ search: A string containing query parameters (the question mark followed by the
+name=value pairs that form an HTML querystring).
+➤➤ hash: A string containing the hash symbol (#) followed by any values you want to provide to
+the destination route in the hash portion of the URL.
+➤➤ state: An object containing state that you want to persist in the destination location.
+For example, the following Link component, when followed, will pass a path and querystring to
+the destination Route component:
+<Link to={{path: '/orders, search: '?filterBy=new'}}>
+View New Orders
+</Link>
+Additional Link Props
+The Link component can receive several optional props. These include replace, component, and
+pass‑ through props, which are discussed next.
+298 ❘ CHAPTER 12 Routing
+replace
+Normally, when a Link element is clicked, React Router adds a new location entry to the browser
+history stack. If you want to return to the route you were previously at, you can use the browser back
+button or change the browser’s position in the history stack. The replace attribute replaces the cur‑
+rent entry in the history stack rather than adding a new one:
+<Link to="/somepath" replace>Go to the new location</Link>
+component
+The component attribute takes a custom navigation component as its value. You can use the
+component attribute to supply the name of the component you’d like to use in place of the default
+Link component. To create a custom navigation component that you want to use for the link and
+pass the prop from the Link component through to it, do this:
+const SpecialLink = (props)=>(
+<a {...props}>***Super Special Link*** {props.children}</a>
+);
+<Link to="/somepath" component={SpecialLink}>Click the special link</Link>
+pass- through props
+If you want to attach additional props to the a element that results from the Link, you can specify
+them as well. Examples include className, id, and title.
+Internal Navigation with NavLink
+Navigation links are a subset of internal links within an app. They’re used for changing modes, tabs,
+or pages within a web application. Examples of navigation links include the links in a navigation bar
+or mobile site navigation menu.
+Navigation links function the same as any other link in a web application, but it’s good user interface
+design to indicate which link is currently active, as shown in Figure 12‑5.
+FIGURE 12- 5: Navigation links indicate the current position
+Using React Router ❘ 299
+React Router’s NavLink component creates navigation links. The difference between a NavLink and a
+Link component is that the NavLink has attributes that allow it to be styled when the value of its to
+attribute matches the browser’s current location.
+You can style a NavLink component using either the activeClassName attribute, which accepts a
+CSS class name, or the activeStyle attribute, which accepts a style object:
+<NavLink to="/home" activeClassName="active">Home</NavLink>
+Depending on how your app is designed, there are options to consider when deciding when a
+NavLink will display in its “active” style. For example, in the navigation menu shown in Figure 12‑6,
+should the “Home” and “About Us” menus be highlighted when the “Meet the Team” sub‑m enu link
+is active?
+Listing 12‑2 shows the JSX used to build the navigation menu in Figure 12‑6.
+FIGURE 12- 6: A navigation menu with sub-i tems
+LISTING 12- 2: A list of NavLinks with sub-i tems
+<ul>
+<li><NavLink to="/" activeClassName="active">Home</NavLink></li>
+<li><NavLink to="/aboutUs" activeClassName="active">About Us</NavLink>
+<ul>
+<li>
+<NavLink to="/aboutUs/team" activeClassName="active">
+continues
+300 ❘ CHAPTER 12 Routing
+LISTING 12-2 (continued)
+Meet the Team
+</NavLink>
+</li>
+<li>
+<NavLink to="/aboutUs/history" activeClassName="active">
+Company History
+</NavLink>
+</li>
+</ul>
+</li>
+<li><NavLink to="/contactUs" activeClassName="active">Contact Us</NavLink></li>
+</ul>
+By default, NavLink will apply the active style when part of the path matches. In the preceding exam‑
+ple, when the Team link is active, the active style will be applied to not only the Team link, but also to
+the aboutUs and Home links, as shown in Figure 12‑7.
+FIGURE 12- 7: Partial matches activate the active style
+If you only want to activate the active style when there’s an exact match, you use the Boolean exact
+attribute, as shown in Listing 12‑3.
+Using React Router ❘ 301
+LISTING 12- 3: Using the exact attribute on NavLink components
+<ul>
+<li><NavLink exact to="/" activeClassName="active">Home</NavLink></li>
+<li><NavLink exact to="/aboutUs" activeStyle={{color:'green'}}>About
+Us</NavLink>
+<ul>
+<li><NavLink exact to="/aboutUs/team" activeClassName="active">Meet the
+Team</NavLink></li>
+<li><NavLink exact to="/aboutUs/history" activeClassName="active">
+Company History</NavLink></li>
+</ul>
+</li>
+<li><NavLink exact to="/contactUs" activeClassName="active">Contact
+Us</NavLink></li>
+</ul>
+Figure 12‑8 shows the resulting navigation bar after the exact attribute has been added to each of
+the NavLink components.
+FIGURE 12- 8: Using the exact attribute on NavLink components
+302 ❘ CHAPTER 12 Routing
+If you need an even more strict matching of paths, the strict attribute can be used with NavLink
+components to also take into account the trailing slash in a URL path:
+<li><NavLink strict to="/aboutUs" activeClassName="active">About Us</NavLink>
+In the preceding link, the active style will be applied if the location is /aboutUs, but not if it’s
+/aboutUs/.
+Automatic Linking with Redirect
+The Redirect component changes the current URL by replacing the current location in the history
+stack when it renders. Like the Link and NavLink components, Redirect takes an attribute named
+to, which can have a value of a string or object. Unlike Link and NavLink, a Redirect doesn’t
+have children.
+Redirect is often used to change the URL in response to the result of a conditional statement, as in
+the following example:
+{loginSuccess?<Redirect to="/members" />:<Redirect to="/forgotPassword" />}
+If you want to add a new location to the history stack, rather than replacing the current one, use the
+push attribute:
+<Redirect push to="/pageNotFound" />
+The Redirect component can also take an attribute called from, which causes it to function as a
+routing component. I’ll discuss the from attribute in the next section, “Creating Routes.”
+Creating Routes
+The Route component is the one that actually creates routes. In its simplest form, Route takes an
+attribute named path, which it compares with the current location. If there’s a match, Route will
+render its children:
+<Route path="/login">
+<LoginForm />
+</Route>
+By default, the path only needs to match part of the location. For example, if the current browser
+location is /login, the component in Listing 12‑4 will render both the Home component and the
+Login component.
+LISTING 12- 4: Multiple routes in a component may have matches
+import {BrowserRouter as Router, Route} from 'react-r outer- dom';
+function HomeScreen(props){
+return (
+<Router>
+<Route path="/">
+<Home />
+</Route>
+Using React Router ❘ 303
+<Route path="/login">
+<Login />
+</Route>
+</Router>
+)
+}
+export default HomeScreen;
+Figure 12‑9 shows what the resulting page might look like when the location is /login, with the
+Home and Login components both displaying.
+FIGURE 12- 9: Multiple routes can match the URL
+The ability to match and display multiple routes means that you can compose pages and create sub‑
+navigation with React Router.
+304 ❘ CHAPTER 12 Routing
+Restricting Path Matching
+You can use the exact attribute with Route to restrict path matching to exact matches. Figure 12‑10
+shows the result of adding exact to both of the Routes from the previous example and visiting the
+/login path.
+FIGURE 12- 10: Add the exact attribute to Routes to restrict matching
+If you want to enforce the ending slash in path matching, use the strict attribute:
+<Route strict path="/user/">
+<UserProfile />
+</Route>
+Using URL Parameters
+URLs frequently contain dynamic data that need to be available inside of child components. For
+example, in the following path, the directory name user is followed by a slash and then a number:
+/user/5455
+Using React Router ❘ 305
+This type of URL usually indicates that the number represents a unique identifier for a user, rather
+than a component named “5455” (which isn’t a valid component name).
+A Route component to match this path would look for the /user/ path and then indicate that the
+characters after the path are a parameter that should be available inside the child component, as
+shown in Listing 12‑5.
+LISTING 12- 5: Using URL parameters
+import {BrowserRouter as Router, Route} from 'react-r outer- dom';
+function HomeScreen(props){
+return (
+<Router>
+<Route exact path="/">
+<Home />
+</Route>
+<Route exact path="/login">
+<Login />
+</Route>
+<Route path="/user/:id">
+<UserProfile />
+</Route>
+</Router>
+)
+}
+export default HomeScreen;
+Inside the rendered child component, you can access URL parameters using the useParams hook, as
+shown in Listing 12‑6.
+LISTING 12- 6: Using the useParams hook
+function UserProfile() {
+let { id } = useParams();
+return (
+<div>
+<h3>User ID: {id}</h3>
+</div>
+);
+}
+The component Prop
+Instead of specifying the component to be rendered by a matching route using children of the Route
+component, you can use the component attribute, as shown in Listing 12‑7.
+306 ❘ CHAPTER 12 Routing
+LISTING 12- 7: Using the component attribute
+import React from "react";
+import {
+BrowserRouter as Router,
+Route,
+Link
+} from "react- router- dom";
+function ComponentProp(props) {
+const OrderDetails = (props)=>{
+return (
+<h1>Details for order # {props.match.params.orderid}</h1>
+)
+}
+return (
+<>
+<Router>
+<Link to="/orders/4">Order #4</Link>
+<Route path="/orders/:orderid" component={OrderDetails} />
+</Router>
+</>
+);
+}
+export default ComponentProp;
+React Router will use the component passed to the component attribute to create and render a
+new React element. Using the component attribute results in the component being unmounted and
+rendered with every render.
+Render Props
+Another option for rendering components when routes match is to specify a function inside the render
+attribute. When the route matches, this function will be called. Using the render attribute doesn’t
+require React Router to create an element, so it avoids the unmounting and mounting on each render
+that using the component attribute does.
+Listing 12‑8 shows an example of using the render attribute.
+LISTING 12- 8: Using the render attribute
+import React from "react";
+import {
+BrowserRouter as Router,
+Route,
+Link
+} from "react- router- dom";
+Using React Router ❘ 307
+function ComponentProp(props) {
+return (
+<>
+<Router>
+<Link to="/orders/4">Order #4</Link>
+<Route path="/orders/:orderid" render={props => (
+<h1>Details for order # {props.match.params.orderid}</h1>
+)
+} />
+</Router>
+</>
+);
+}
+export default ComponentProp;
+Use of Route’s render attribute is an example of an advanced technique in React known as render
+props. A render prop is a function provided to a component using props that the component calls
+instead of using its own render method.
+Render props can be used to share functionality between components and to dynamically determine
+what the child component will render. Inside of a component that accepts a render prop (such as
+Route in this case), the component will call the provided function. Listing 12‑9 shows a simplified
+version of what happens inside the Route component when you use the render prop.
+LISTING 12- 9: Rendering a render prop
+function Route(props) {
+return (
+<>
+{props.render({})}
+</>
+);
+}
+export default Route;
+Switching Routes
+The Switch component causes only the first matching Route to be rendered. This is useful in cases
+where you don’t want to render multiple routes when there are multiple matches. To use Switch,
+wrap the routes that you want it to choose the first match from with a <Switch> element, as shown
+in Listing 12‑10.
+308 ❘ CHAPTER 12 Routing
+LISTING 12- 10: Switching between multiple routes
+<Switch>
+<Route path="/">
+<p>home</p>
+</Route>
+<Route path="/aboutUs">
+<p>about us</p>
+</Route>
+<Route path="/aboutUs/team">
+<p>meet the team</p>
+</Route>
+</Switch>
+In this example, if the current URL is /aboutUs/team, only that route will be rendered.
+Rendering a Default Route
+Switch can also be used to render a default route when no other routes match. The default route
+should be the last one, and a Route with no path can be used so that it matches any location, as
+shown in Listing 12‑11.
+LISTING 12- 11: Rendering a default route
+<Switch>
+<Route path="/">
+<p>home</p>
+</Route>
+<Route path="/aboutUs">
+<p>about us</p>
+</Route>
+<Route path="/aboutUs/team">
+<p>meet the team</p>
+</Route>
+<Route>
+<PageNotFound />
+</Route>
+</Switch>
+Routing with Redirect
+The Redirect component can take a parameter named from that will be compared with the current
+URL and automatically redirect to a new location if it matches. Any matched parameters specified by
+the from attribute can be received by the to attribute by specifying them in both places. A Redirect
+with a from attribute can only be used inside a Switch component.
+One use for a Redirect with a from attribute is in cases where more than one location should map
+to the same URL, or where the URL has changed. For example, in Listing 12‑12, the /users route
+will redirect to /user/list.
+Using React Router ❘ 309
+LISTING 12- 12: Redirecting from one location to another
+import { BrowserRouter as Router, Redirect, Route, Switch, Link, useLocation }
+from "react- router- dom";
+function Header(props){
+return(<Link to="/users">View a list of users</Link>);
+}
+function UsersList(props){
+const location = useLocation();
+return(
+<>
+<h1>User List</h1>
+path: {location.pathname}
+</>);
+}
+function NoMatch(props){
+const location = useLocation();
+return(<h1>{location.pathname} is not a matching path</h1>)
+}
+function App(props){
+return(
+<Router>
+<Header />
+<Switch>
+<Route path="/users/list">
+<UsersList />
+</Route>
+<Redirect from="/users" to="/users/list" />
+<Route>
+<NoMatch />
+</Route>
+</Switch>
+</Router>
+);
+}
+export default App;
+The App component in the previous example will render a link to /users. When that’s clicked the
+Redirect component will change the location to /users/list and render the appropriate Route
+child component.
+Behind the Scenes: location, history, and match
+Routing depends on and uses three related objects: the history object, the location object, and the
+match object. By manipulating or reading values from these objects, you can gain greater control over
+how routing works in your app.
+310 ❘ CHAPTER 12 Routing
+The history Object
+The history object refers to the history package, which is separate from React Router, but which
+React Router depends upon. The history object’s job is to keep a record of the locations navigated
+to in the current session and to make changing the location possible. The concept of session history
+is device‑i ndependent, but is implemented in several different ways for different environments (which
+correspond to the router components in React Router):
+➤➤ Browser history.
+➤➤ Hash history.
+➤➤ Memory history.
+You can gain access to the history object in your React code by using the useHistory hook or by
+using the withRouter higher‑ order function.
+Listing 12‑13 shows how to use withRouter to gain access to the history.push method and use it
+to create a link.
+LISTING 12- 13: Using withRouter
+import React from "react";
+import {
+withRouter
+} from "react- router- dom";
+function NavMenu(props) {
+function handleClick() {
+props.history.push("/home");
+}
+return (
+<button type="button" onClick={handleClick}>
+Go home
+</button>
+);
+}
+export default withRouter(NavMenu);
+The useHistory hook is the newer, and slightly simpler, way of gaining access to the history object,
+as shown in Listing 12‑14.
+LISTING 12- 14: Using useHistory
+import React from "react";
+import {
+useHistory
+} from "react- router- dom";
+Using React Router ❘ 311
+function NavMenu(props) {
+const history = useHistory();
+function handleClick() {
+history.push("/home");
+}
+return (
+<button type="button" onClick={handleClick}>
+Go home
+</button>
+);
+}
+export default NavMenu;
+JAVASCRIPT LESSON: HIGHER- ORDER FUNCTIONS
+Higher‑ order functions and higher‑ order components are tools for abstracting and
+reusing code. They can be confusing at first, however, so I’ll explain them with sim‑
+ple examples.
+Higher- Order Functions
+A higher‑ order function is a function that operates on another function. Higher‑
+order functions aren’t specific to React or to JavaScript. Rather, they’re a common
+technique in mathematics and in computer science. Higher‑ order functions may take
+a function as a parameter and/or return a function.
+For example, consider this function, which just adds one to a number and returns
+the result:
+const addOne = (a)=>a+1;
+This function is called a first‑o rder function.
+The following higher‑ order function takes a function as a parameter and returns the
+result of that function with some text appended to it:
+const addText = f => x => f(x) + ' is the result.';
+A new function can then be defined using the addText function with addOne sup‑
+plied to it as a parameter:
+const addWithText = addText(addOne);
+The addWithText function can then be called, like this:
+addWithText(8);
+The result will be that the string "9 is the result" will be returned. You can test
+this out by copying each of the previous lines into your browser’s JavaScript console
+one at a time.
+continues
+312 ❘ CHAPTER 12 Routing
+continued
+Higher- Order Components
+In React, a higher‑ order component is a function that takes a component and returns
+a new component. In the process, it enhances the original component in some way.
+For example, in React Router, the withRouter function returns a new component
+that has access to the history object.
+To use a higher‑ order function, you can define a normal component, and then
+use the higher‑ order component to enhance that original component, as shown in
+this example:
+import React from "react";
+import { withRouter } from "react-r outer";
+class ShowTheLocation extends React.Component {
+render() {
+const { match, location, history } = this.props;
+return <div>You are now at {location.pathname}</div>;
+}
+}
+const ShowTheLocationWithRouter = withRouter(ShowTheLocation);
+export default ShowTheLocationWithRouter;
+In the preceding example, when you render a ShowTheLocationWithRouter
+component, it will have access to the match, location, and history props from
+React Router.
+Table 12‑1 shows all the properties and methods of the history object.
+TABLE 12-1 : Properties and Methods of history
+PROPERTIES DESCRIPTION
+AND METHODS
+length The number of location items in the history stack.
+action The current action (such as PUSH or REPLACE).
+location The current location.
+push() Adds a new item to the history stack.
+replace() Replaces the current location on the history stack.
+go() Moves the pointer by the passed- in number of entries in the history stack.
+goBack() Go back one entry in the history stack.
+goForward() Go forward one entry in the history stack.
+block() Prevents navigation. For example, if the user clicks the Back button, block can
+be used to interrupt the navigation to display a message or confirmation dialog.
+Using React Router ❘ 313
+The location Object
+A location object contains information about where the app is or has been or will be. It can contain
+a pathname, a querystring, a hash, state data, and a key. Location objects are stored in the history
+stack and can be accessed in a Route component or by using the withRouter higher‑ order function.
+Listing 12‑15 shows how to access properties of the Location object using withRouter.
+LISTING 12- 15: Viewing properties of the current location object
+import React from "react";
+import {
+withRouter
+} from "react- router- dom";
+function ViewLocation(props) {
+return (
+<>
+<h1>Current Location</h1>
+<ul>
+<li>pathname: {props.location.pathname}</li>
+<li>hash: {props.location.hash}</li>
+<li>search: {props.location.search}</li>
+<li>key: {props.location.key}</li>
+</ul>
+</>
+);
+}
+export default withRouter(ViewLocation);
+With this component rendered, try changing the location by adding a querystring or hash in the
+browser’s address bar, as shown in Figure 12‑11.
+The match Object
+The match object contains information about how a Route’s path matches the URL. Just as with the
+location and history objects, you can access the match object in several different ways:
+➤➤ Inside a Route component.
+➤➤ By using the withRouter higher‑ order component.
+➤➤ By using a hook.
+314 ❘ CHAPTER 12 Routing
+FIGURE 12- 11: Modifying the current location
+The match object contains the following properties:
+➤➤ params: An object containing the key/value pairs passed from the URL, which correspond to
+dynamic parts of the URL. For example, if the route’s path is /user/:id, id will be in the
+params property.
+➤➤ isExact: A Boolean that’s true if the entire URL matches, with no characters after it.
+➤➤ path: The pattern that was used to make the match.
+➤➤ url: The matched portion of the URL.
+The match object is useful for dynamically constructing links and routes in nested routes, as shown in
+Listing 12‑16.
+LISTING 12- 16: Dynamic links and routes in nested routes
+import {
+BrowserRouter as Router,
+Switch,
+Route,
+Link,
+useParams,
+useRouteMatch
+} from "react- router- dom";
+function Reports() {
+let { path, url } = useRouteMatch();
+Using React Router ❘ 315
+return (
+<div>
+<h2>Reports</h2>
+<ul>
+<li>
+<Link to={`${url}/profitloss`}>Profit and Loss</Link>
+</li>
+<li>
+<Link to={`${url}/balancesheet`}>Balance Sheet</Link>
+</li>
+<li>
+<Link to={`${url}/payroll`}>Payroll</Link>
+</li>
+</ul>
+<Switch>
+<Route exact path={path}>
+<h3>Select a report.</h3>
+</Route>
+<Route path={`${path}/:reportId`}>
+<Report />
+</Route>
+</Switch>
+</div>
+);
+}
+function Report() {
+let { reportId } = useParams();
+return (
+<div>
+<h3>{reportId}</h3>
+</div>
+);
+}
+function Nav() {
+return(
+<div>
+<ul>
+<li>
+<Link to={`/reports`}>Reports</Link>
+</li>
+</ul>
+<hr />
+<Switch>
+<Route path={`/reports`}>
+<Reports />
+</Route>
+</Switch>
+continues
+316 ❘ CHAPTER 12 Routing
+LISTING 12-16 (continued)
+</div>
+)
+}
+function App() {
+return (
+<Router>
+<Nav />
+</Router>
+);
+}
+export default App;
+This sub‑ navigation menu contains Link elements that use the URL from the match object as the base
+for the to attribute. To match these new links, Route components use the path from the match object
+as the base for their own path attribute values.
+Figure 12‑12 shows the result of rendering Listing 12‑16 and clicking the Reports link.
+FIGURE 12- 12: Dynamic link and path attributes with the match object properties
+React Router Hooks ❘ 317
+REACT ROUTER HOOKS
+As you’ve seen in the previous examples, React Router includes several hooks that give you access to
+the state of the Router. These hooks are:
+➤➤ useHistory: Gives you access to the history object.
+➤➤ useLocation: Gives you access to the current location object.
+➤➤ useParams: Returns an object containing the current URL parameters.
+➤➤ useRouteMatch: Attempts to match the current URL. The useRouteMatch hook works
+the same way as the Route component matches URLs, but it can do so without ren‑
+dering a Route.
+useHistory
+To use the useHistory hook, assign the return value of the useHistory hook to a new variable. The
+properties and methods of the history object then become available through the new object:
+const history = useHistory();
+useLocation
+The useLocation hook works the same way as the useHistory hook. Create a new object from the
+returned value of useLocation to gain access to the properties of the location object:
+const location = useLocation();
+useParams
+The useParams hook returns an object containing key/value pairs for each of the current Route’s
+params. You can deconstruct the object to use individual params:
+const {orderNumber,size,color} = useParams();
+useRouteMatch
+The useRouteMatch hook attempts to match the current URL in the same way that a Route com‑
+ponent would, but without rendering anything. For example, if you have the following Route with a
+render prop:
+<Route
+path="/order/:orderId"
+render={({ match }) => {
+return <> {match.path}</>;
+}}
+/>
+you could gain access to the same match object without rendering anything like this:
+let match = useRouteMatch("/order/:orderId");
+318 ❘ CHAPTER 12 Routing
+The useRouteMatch hook can be used with a single argument, which is the path to match against,
+or it can be used without an argument, in which case it will return the match object of the cur‑
+rent Route.
+SUMMARY
+Routing makes navigation and organization within React apps possible. React Router’s declarative
+and composable API is logical and conforms to standard React best practices. With hooks, gaining
+access to the inner workings of routing when you need to is also easy.
+In this chapter, you learned:
+➤➤ What routing is.
+➤➤ How JavaScript and React Router enable routing in SPAs.
+➤➤ About the different routers in React Router.
+➤➤ How to link between routes.
+➤➤ How to create routes.
+➤➤ How to use the Redirect component.
+➤➤ How to use React Router’s hooks.
+➤➤ What higher‑ order functions and components are.
+In the next chapter, you’ll learn how to properly handle errors in React components by using error
+boundaries.

@@ -1,0 +1,2442 @@
+BEGINNING
+R JS FOUNDATIONS BUILDING USER
+eact
+INTERFACES WITH R JS
+eact
+INTRODUCTION  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . xxvii
+X CHAPTER 1 Hello, World! .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+CHAPTER 2 The Foundation of React  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+CHAPTER 3 JSX  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+CHAPTER 4 All About Components  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 43
+X CHAPTER 5 React DevTools .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 105
+CHAPTER 6 React Data Flow .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 123
+CHAPTER 7 Events .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 199
+CHAPTER 8 Forms  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 221
+X CHAPTER 9 Refs .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 233
+CHAPTER 10 Styling React .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 243
+CHAPTER 11 Introducing Hooks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 257
+CHAPTER 12 Routing .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 289
+X CHAPTER 13 Error Boundaries .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 319
+X CHAPTER 14 Deploying React .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 339
+X CHAPTER 15 Initialize a React Project from Scratch .  . . . . . . . . . . . . . . . . . . . . . . 351
+CHAPTER 16 Fetching and Caching Data  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 369
+X CHAPTER 17 Context API  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 387
+X CHAPTER 18 React Portals .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 399
+X CHAPTER 19 Accessibility in React  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 413
+X CHAPTER 20 Going Further .  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 425
+INDEX  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 437
+
+
+
+17
+Context API
+The primary way to pass data from parent components to child components in React is through
+props. However, in some cases props can be tedious to use and can lead to code that’s more dif‑
+ficult to read and maintain. The Context API was created for these cases.
+In this chapter, you’ll learn:
+➤➤ What prop drilling is.
+➤➤ When the right time is to use Context.
+➤➤ How to make a Provider.
+➤➤ How to use Context in class components.
+➤➤ How to use Context in function components.
+➤➤ Best practices and conventions for Context.
+WHAT IS PROP DRILLING?
+React props make passing data from parent components to child components simple and intui‑
+tive. If you have a piece of data in a component and you want to make it available to subcom‑
+ponents, just add an attribute to the child component’s element and the value will be available
+in the child. If you have data in a component that you want to use in a grandchild component,
+you can pass the data through the child component and then into the grandchild.
+This process of passing data through multiple levels of the component tree is called prop
+drilling. In a tree of components, you may have multiple levels of components that don’t use
+a particular piece of data but just pass it along to their descendants using props, as shown in
+Listing 17‑1.
+388 ❘ CHAPTER 17 Context API
+LISTING 17- 1: Using prop drilling
+const Grandpa = (props) => {
+return (<Dad story = {props.story} />);
+}
+const Dad = (props) => {
+return (<Son story = {props.story} />);
+}
+const Son = (props) => {
+return (<Grandson story = {props.story} />);
+}
+const Grandson = (props) => {
+return (<p>Here's the story that was passed down to the Grandson component:
+{props.story}</p>);
+}
+export default Grandpa;
+HOW CONTEXT API SOLVES THE PROBLEM
+Prop drilling isn’t necessarily a problem. In most cases, it’s exactly what you should do. However, if
+you have data or functions in your app that could be considered “global” (or global to a particular
+tree of components), Context lets you avoid prop drilling.
+Here’s how Context works:
+1. You create a Context object, which includes the Provider and Consumer components and
+properties.
+2. You create a Provider for the Context, which will publish a value to its descendants.
+3. Any of the Provider’s descendants can subscribe to the Provider.
+4. Components that subscribe to a Provider will update when the Provider’s data changes.
+Creating a Context
+To create a Context, use React.createContext:
+const MyContext = React.createContext(defaultValue);
+The createContext method returns a Context object. The defaultValue argument that you pass
+into createContext is the data that will be available to its descendants if there isn’t a matching Pro‑
+vider. Since the default value most likely won’t ever get used, many developers leave the default value
+as undefined or set it to some sample object.
+For example, in Listing 17‑2, I’ve created a Context for user preferences, which passes default values
+for the lang and timezone properties.
+How Context API Solves the Problem ❘ 389
+LISTING 17- 2: A Context for user preferences
+const PrefsContext = React.createContext({lang:'English',timezone:'Pacific
+Time'});
+You’ll need to import the Context (PrefsContext in this case) into components where you want to
+use it, so it’s common to put the call to createContext in its own module, or in a module containing
+a Provider.
+Creating a Provider
+A Context’s Provider is a component that publishes changes to context data to its descendant com‑
+ponents. The Provider component takes an attribute named value, which overrides the default value
+you set in React.createContext:
+<MyContext.Provider value={/*some value here*/}>
+The process for using a Provider is the same in function components and class components. To use
+a Provider, wrap it around the component or components that need access to its value. To simplify
+your code and make reuse of a Provider easier, it’s common to create a higher‑ order component that
+renders a Provider component and its children, as shown in Listing 17‑3.
+LISTING 17- 3: Using a Provider component
+import React, {useState} from 'react';
+import {PrefsContext} from './contexts/UserPrefs';
+const UserPrefsProvider = ({ children }) => {
+const [lang, setLang] = useState("English");
+const [timezone, setTimezone] = useState("UTC");
+return (
+<PrefsContext.Provider value={{ lang, timezone }}>
+{children}
+</PrefsContext.Provider>
+);
+};
+function App(){
+return (
+<UserPrefsProvider>
+<Header />
+<Main />
+<Footer />
+</UserPrefsProvider>
+)
+}
+export default App;
+390 ❘ CHAPTER 17 Context API
+The Provider component can be used as many times as you need, and it can be nested. Components
+that use a Context will access the closest Provider ancestor or will use the Context’s default value if
+there isn’t a Provider ancestor.
+Consuming a Context
+Once you have a Context and a Provider, descendant components can become Consumers of the Con‑
+text. Context Consumers will be re‑r endered when the Provider’s value changes.
+Using Context in a Class Component
+There are two ways to consume Context in a class component:
+➤➤ Set the contextType property on the class.
+➤➤ Use the Context.Consumer component.
+If you only need to use one Context in a class, setting the contextType class property is the easiest
+method. Because contextType is a class property, you can set it using public class fields syntax, as
+shown in Listing 17‑4.
+LISTING 17- 4: Consuming a Context in a class component
+import React from 'react';
+import {PrefsContext} from './contexts/UserPrefs';
+class TimeDisplay extends React.Component {
+static contextType = PrefsContext;
+render() {
+return (
+<>
+Your language preference is {this.context.lang}.<br />
+Your timezone is {this.context.timezone}.
+</>
+)
+}
+}
+export default TimeDisplay;
+If your component needs to use multiple Context objects, you can use the Context.Consumer com‑
+ponent. Context.Consumer requires a function as its child, and the value of the Context is passed as
+an argument to that function, as shown in Listing 17‑5.
+LISTING 17- 5: Using the Context.Consumer component
+import React from 'react';
+import {PrefsContext} from './contexts/UserPrefs';
+Common Use Cases for Context ❘ 391
+class TimeDisplay extends React.Component {
+render() {
+return (
+<PrefsContext.Consumer>
+{userPrefs => {
+<>
+Your language preference is {userPrefs.lang}.<br />
+Your timezone is {userPrefs.timezone}.
+</>
+}};
+</ PrefsContext.Consumer >
+)
+}
+}
+export default TimeDisplay;
+Using Context in a Function Component
+You can consume a Context in a function component by using the Context.Consumer component or
+by using the useContext hook.
+To use useContext, import the Context and pass it to useContext, which will return the value from
+the Provider. Listing 17‑6 shows a function component that uses useContext to get user preferences.
+LISTING 17- 6: Consuming a Context in a function component
+import {useContext} from 'react';
+import {PrefsContext} from './contexts/UserPrefs';
+function TimeDisplay(props){
+const userPrefs = useContext(PrefsContext);
+return (
+<>
+Your language preference is {userPrefs.timezone}.<br />
+Your timezone is {userPrefs.timezone}.
+</>
+);
+}
+export default TimeDisplay;
+COMMON USE CASES FOR CONTEXT
+Context is most useful for managing global data. What fits the description of global data is a judg‑
+ment call, but if some piece of data needs to be accessed by multiple components at different nesting
+levels, it may be a candidate for using Context.
+392 ❘ CHAPTER 17 Context API
+Examples of when Context is helpful include:
+➤➤ Theming an app (light mode or dark mode, for example).
+➤➤ User preferences.
+➤➤ Language preference.
+➤➤ User authorization and roles.
+WHEN NOT TO USE CONTEXT
+When a component uses React Context, it becomes dependent on the global state, which makes the
+component less reusable.
+If it’s likely that a component will be reused, it’s best to avoid coupling it with the global state using
+Context. In many cases, there are alternatives to prop drilling and Context that accomplish the same
+thing but maintain the standard explicit React way of passing data from parents to children. One
+such alternative is the composition pattern.
+COMPOSITION AS AN ALTERNATIVE TO CONTEXT
+A good alternative to Context and to prop drilling is composition. In React composition, you create a
+component that renders its child components and adds something to them in the process.
+To understand how composition can be a better alternative to prop drilling than Context, consider
+the example app in Listing 17‑7. This app has a login button that, when clicked, passes the username
+variable and the setUsername function into the Dashboard component. The username and its setter
+function are then passed through two levels of components that don’t use them before they’re used by
+the WelcomeMessage and Logout components.
+LISTING 17- 7: Getting data to a deeply nested component with prop drilling
+import {useState} from 'react';
+const App = () => {
+const [username,setUsername] = useState();
+if (username) {
+return <Dashboard setUsername={setUsername} username={username} />
+} else {
+return <button onClick={()=>setUsername('Chris')}>Login</button>
+}
+}
+const Dashboard = (props) => {
+return <Header setUsername={props.setUsername} username={props.username} />
+}
+Composition as an Alternative to Context ❘ 393
+const Header = (props) => {
+return <UserControls setUsername={props.setUsername} username={props.user-
+name} />
+}
+const UserControls = (props) => {
+return (<>
+<WelcomeMessage username={props.username} />
+<Logout setUsername={props.setUsername} />
+</>)
+}
+const WelcomeMessage = (props) => {
+return <> Welcome {props.username}!</>
+}
+const Logout = (props) => {
+return <button onClick = {()=>{props.setUsername('')}}>Logout</button>
+}
+export default App;
+Listing 17‑8 shows how you might eliminate the prop drilling in this application by using
+React Context.
+LISTING 17- 8: Eliminating prop drilling with Context
+import React,{useState,useContext} from 'react';
+const UserContext = React.createContext();
+const App = () => {
+const [username,setUsername] = useState();
+if (username) {
+return (
+<UserContext.Provider value={{username,setUsername}}>
+<Dashboard/>
+</UserContext.Provider>
+)
+} else {
+return <button onClick={()=>setUsername('Chris')}>Login</button>
+}
+}
+const Dashboard = (props) => {
+return <Header />
+}
+const Header = (props) => {
+return <UserControls />
+}
+continues
+394 ❘ CHAPTER 17 Context API
+LISTING 17-8 (continued)
+const UserControls = (props) => {
+return (<>
+<WelcomeMessage />
+<Logout />
+)</>
+}
+const WelcomeMessage = () => {
+const {username} = useContext(UserContext);
+return <> Welcome {username}!</>
+}
+const Logout = (props) => {
+const {setUsername} = useContext(UserContext);
+return <button onClick = {()=>{setUsername('')}}>Logout</button>
+}
+export default App;
+Although Context has eliminated the need for prop drilling in the preceding example, it also makes
+the WelcomeMessage and Logout components dependent on UserContext. To illustrate why this is a
+bad thing, in Listing 17‑9, I’ve attempted to reuse the Logout component outside of the Context.
+LISTING 17- 9: Using a component outside of a required Context
+const App = () => {
+const [username,setUsername] = useState();
+const UserContext = React.createContext();
+if (username) {
+return (
+<>
+<UserContext.Provider value={{username,setUsername}}>
+<Dashboard/>
+</UserContext.Provider>
+<Logout />
+</>
+)
+} else {
+return <button onClick={()=>setUsername('Chris')}>Login</button>
+}
+}
+The result of this code will be an error, as shown in Figure 17‑1.
+Composition can be used to eliminate prop drilling while also maintaining the reusability of the
+WelcomeMessage and Logout components. To use composition, render the children property inside
+the Dashboard, Header, and UserControl components, and then compose your user interface
+inside the App component, as shown in Listing 17‑10.
+Composition as an Alternative to Context ❘ 395
+FIGURE 17- 1: Using a component outside of its Context
+LISTING 17- 10: Using composition instead of Context
+import React,{useState} from 'react';
+const App = () => {
+const [username,setUsername] = useState();
+if (username) {
+return (
+<Dashboard>
+<Header>
+<UserControls>
+<WelcomeMessage username={username} />
+<Logout setUsername={setUsername} />
+</UserControls>
+</Header>
+</Dashboard>
+)
+} else {
+return <button onClick={()=>setUsername('Chris')}>Login</button>
+}
+}
+const Dashboard = (props) => {
+return (<>{props.children}</>);
+}
+const Header = (props) => {
+return (<>{props.children}</>);
+}
+const UserControls = (props) => {
+return (<>{props.children}</>);
+}
+continues
+396 ❘ CHAPTER 17 Context API
+LISTING 17-10 (continued)
+const WelcomeMessage = (props) => {
+return <>Welcome {props.username}!</>
+}
+const Logout = (props) => {
+return <button onClick = {()=>{props.setUsername('')}}>Logout</button>
+}
+export default App;
+EXAMPLE APP: USER PREFERENCES
+In this example app, we’ll create a user interface for setting global preferences for units of tempera‑
+ture and units of length for an app. The larger app that this component belongs to is unimportant— it
+could be reused in many different types of apps.
+Figure 17‑2 shows the finished user interface. The user can change the dropdown menu between
+metric and imperial units, which changes the corresponding state changes and updates the value of
+the Provider.
+FIGURE 17- 2: A user preferences component with Context
+The first step in creating this user interface is to create the Context and a Provider, as shown in
+Listing 17‑11.
+LISTING 17- 11: Making a Provider
+import React, {createContext, useState} from 'react';
+export const UnitsContext = createContext();
+export const UnitsProvider = ({ children }) => {
+const [lengthUnit, setLengthUnit] = useState("cm");
+const [tempUnit, setTempUnit] = useState("c");
+return (
+<UnitsContext.Provider value={{ lengthUnit, setLengthUnit, tempUnit,
+setTempUnit }}>
+{children}
+</UnitsContext.Provider>
+);
+};
+Example App: User Preferences ❘ 397
+In a smaller app, it’s common to put the call to createContext and the Provider higher‑ order
+component (if you create one) in the same file as the top‑ level component in the tree that uses the
+Context. If your app makes use of multiple Contexts or uses the same Context or Provider more than
+once, it’s common to put them in a separate file, often in a directory named context.
+The next step is to wrap the tree of components that will consume the Context with the Provider
+component, as shown in Listing 17‑12.
+LISTING 17- 12: Providing a Context to a tree
+import { UnitsProvider } from './contexts/UnitsContext';
+import Header from './Header';
+const App = (props) => {
+return (
+<UnitsProvider>
+<Header />
+</UnitsProvider>
+)
+}
+export default App;
+With the Provider in place, you can consume the Context from anywhere inside the Header com‑
+ponent and its descendants. Listing 17‑13 shows a component that’s a descendant of Header that
+uses the Context to display the current values of lengthUnit and tempUnit and allows the user to
+change them.
+LISTING 17- 13: Consuming a Context
+import {useContext} from 'react';
+import {UnitsContext} from './contexts/UnitsContext';
+const UserPrefs = (props) => {
+const unitPrefs = useContext(UnitsContext);
+const changeLengthUnit = () => {
+unitPrefs.setLengthUnit((unitPrefs.lengthUnit === 'cm')?"inch":"cm");
+}
+const changeTempUnit = () => {
+unitPrefs.setTempUnit((unitPrefs.tempUnit === 'c')?"f":"c");
+}
+return (
+<>
+Your preferred length unit: {unitPrefs.lengthUnit}&nbsp;
+<button onClick={changeLengthUnit}>Switch to {(unitPrefs.lengthUnit
+=== 'cm')?"inch":"cm"}</button><br />
+continues
+398 ❘ CHAPTER 17 Context API
+LISTING 17-13 (continued)
+Your preferred temperature unit: {unitPrefs.tempUnit}&nbsp;
+<button onClick={changeTempUnit}>Switch to {(unitPrefs.tempUnit ===
+'c')?"f":"c"}</button><br />
+<br />
+</>
+)
+}
+export default UserPrefs;
+SUMMARY
+The ability to consume Context from function components with the useContext Hook makes React
+Context easy and convenient. But, React Context is a tool that should be used sparingly or not at
+all in most apps. When you need it, however, it’s invaluable as a way to manage small pieces of
+global data.
+In this chapter, you learned:
+➤➤ What prop drilling is and how React Context can eliminate it.
+➤➤ When to use React Context.
+➤➤ When not to use React Context.
+➤➤ How to use composition as an alternative to Context.
+In the next chapter, you’ll learn about using React Portals to break out of the confines of a React
+app’s root DOM node.
+18
+React Portals
+ReactDOM.render renders a React application in a single DOM node in a web page. But it
+may be a big document outside that node, and there are times when your application may need
+access to that larger world. React Portals provide you with a way to access and control DOM
+nodes beyond the root in which it’s rendered.
+In this chapter, you’ll learn:
+➤➤ How to create a Portal.
+➤➤ Common use cases for Portals.
+➤➤ How to make a modal dialog with Portals.
+➤➤ How to listen for and handle events within Portals.
+➤➤ How to properly handle keyboard focus with Portals.
+WHAT IS A PORTAL?
+A Portal is a way to render child components into different DOM nodes than the root of your
+React application. For example, if you have a modal dialog box that appears when the user
+clicks a help link, a Portal lets you render that dialog box in a separate element in the HTML
+that’s styled to appear on top of the React application, as shown in Figure 18‑1.
+How to Make a Portal
+Because Portals interact with the DOM, they’re a part of the ReactDOM library. To create
+a Portal, use the ReactDOM.createPortal method within a React component. ReactDOM.
+createPortal works the same way as ReactDOM.render, except that it works inside a React
+component’s render method. Like ReactDOM.render, it takes two arguments: the component
+to render and the DOM node in which to render it.
+400 ❘ CHAPTER 18 React PoRtals
+FIGURE 18- 1: Portals enable modal dialogs
+Making a React Portal starts with knowing the structure of the HTML document in which your app
+is rendered. Unlike every example you’ve seen so far, Portals depend on having more than just a root
+node inside the HTML body element. Listing 18‑1 shows an HTML document with two elements
+inside the body.
+LISTING 18- 1: An HTML document with multiple nodes in the body
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF- 8">
+<meta name="viewport" content="width=device-w idth, initial- scale=1.0">
+<title>Portal Demo</title>
+</head>
+<body>
+<div style="display:flex;">
+<div id="root" style="width:50%"></div>
+<div id="sidebar" style="width:50%"></div>
+</div>
+</body>
+</html>
+What Is a Portal? ❘ 401
+The div element with the id of root is where we want to render the React app with ReactDOM
+.render. The div element with the id of sidebar is where we want to render a Portal.
+Any component in your React app can call ReactDOM.createPortal. In Listing 18‑2, a component
+named SidebarHelp renders a paragraph of text as a Portal.
+LISTING 18- 2: Creating a Portal
+import {createPortal} from 'react-d om';
+function SidebarHelp(props){
+return createPortal(
+<p>{props.helpText}</p>,
+document.getElementById('sidebar')
+);
+}
+export default SidebarHelp;
+Listing 18‑3 shows an example of a component that renders the SidebarHelp component. Notice
+that from the perspective of this component, rendering a component containing a Portal is no differ‑
+ent from rendering any other component.
+LISTING 18- 3: Using the SidebarHelp component
+import Chart from './Chart';
+import SidebarHelp from './SidebarHelp';
+function SalesChart(props){
+return (
+<>
+<Chart type="sales" />
+<SidebarHelp helpText="This chart shows your sales over time." />
+</>
+)
+}
+export default SalesChart;
+Figure 18‑2 shows the result of rendering the SalesChart component.
+If you inspect the resulting HTML in the Chrome Developer Tools, you’ll see the HTML generated by
+the SidebarHelp component rendered outside of the root component, as shown in Figure 18‑3.
+If you inspect the app using the React Developer Tools, you’ll see the SidebarHelp component ren‑
+dered as a normal child component, as shown in Figure 18‑4.
+402 ❘ CHAPTER 18 React PoRtals
+FIGURE 18- 2: Rendering the SalesChart component
+FIGURE 18- 3: Inspecting an app with a Portal in Chrome Developer Tools
+Common Use Cases ❘ 403
+FIGURE 18- 4: Inspecting an app with a Portal in React Developer Tools
+Why Not Just Render Multiple Component Trees?
+Another way to render React components into multiple DOM nodes is to use multiple calls to
+ReactDOM.render. If the components in the two DOM nodes don’t need to interact and they use
+separate data, this works fine.
+The benefit of using React Portals is that a Portal behaves like any other child in a React applica‑
+tion. This means that Portals are both inside and outside of the React user interface. They mount and
+unmount outside of the root DOM node, but they behave the same as they would if they were normal
+React children— they accept props, can listen for and handle events, and so forth.
+COMMON USE CASES
+Portals are useful for any situation in which you need to display and interact with DOM nodes out‑
+side of the root node of your application. Common uses for Portals include:
+➤➤ Rendering child elements elsewhere in the browser window.
+➤➤ Modal dialogs.
+➤➤ Tooltips.
+➤➤ Hovercards.
+404 ❘ CHAPTER 18 React PoRtals
+It is possible to create modal dialogs and other sorts of temporary pop‑ up windows without using
+Portals. However, any element rendered without using a Portal inherits the height and width from its
+parent element. This can lead to problems in which a dialog box is cropped by its parent element, as
+shown in Figure 18‑5.
+FIGURE 18- 5: Rendering a modal without using React Portals can have unexpected results
+Rendering and Interacting with a Modal Dialog
+Depending on how and why they open and close, temporary windows that overlay the main content
+of an HTML document go by different names, including modal dialogs, popup windows, tooltips,
+and hovercards. Most of the time, their opening and closing is triggered by an event happening within
+the application, such as a click on a help link or the mouse hovering over a line on a chart.
+Follow these steps to create a modal dialog with Portals:
+1. Create a node for the modal in the DOM tree. This can be any element outside of the root
+node. It should have an id attribute to make it easy to select:
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF- 8">
+<meta name="viewport" content="width=device-w idth, initial- scale=1.0">
+<title>Modal Dialog with React</title>
+</head>
+Common Use Cases ❘ 405
+<body>
+<div id="main"></div>
+<div id="modal"></div>
+</body>
+</html>
+2. Create a modal component. Our example component will display a header and the children
+prop. By rendering the children prop, we make the modal dialog a flexible container that
+can be reused throughout the user interface:
+import "./styles.css";
+function Modal(props){
+return (
+<div className="modalOverlay">
+<div className="modalContainer">
+<h1 className="modalTitle">{props.title}</h1>
+<div className="modalContent">
+{props.children}
+</div>
+</div>
+</div>
+)
+}
+export default Modal;
+3. Create a CSS document, which we’ll call styles.css, that will position and style the modal.
+You can style your modal any way you like. My sample styles are shown in Listing 18‑4.
+LISTING 18- 4: One way to style a modal
+.modalOverlay {
+position: absolute;
+top: 0;
+left: 0;
+height: 100%;
+width: 100%;
+padding- top: 60px;
+background- color: rgba(50,50,50,0.6);
+}
+.modalContainer {
+border:1px solid black;
+background: white;
+width: 50%;
+margin: 0 auto;
+padding: 25px;
+}
+.modalTitle {
+text- align:center;
+background- color: black;
+color: white;
+continues
+406 ❘ CHAPTER 18 React PoRtals
+LISTING 18-4 (continued)
+}
+.modalContent {
+background: white;
+text- align: center;
+}
+4. Create an App component that renders the modal:
+import Modal from './Modal';
+import './styles.css';
+function App() {
+return (
+<div>
+<Modal title="Warning" isOpen={isModalOpen}>
+<p>This Modal is awesome.</p>
+</Modal>
+</div>
+);
+}
+export default App;
+5. Add a stateful variable to App to set whether the modal is open, and create a function, but‑
+tons, and event listener to toggle the open state. Notice that passing an event listener to a
+Portal and handling the events that happen in a Portal works the same as if the Portal were
+any other child element. Everything you learned in Chapter 7 about event listeners and event
+handlers applies to Portals.
+import {useState} from 'react';
+import Modal from './Modal';
+import './styles.css';
+function App() {
+const[isModalOpen,setModalOpen] = useState(false);
+const toggleModal = () => setModalOpen(!isModalOpen);
+return (
+<div>
+<button onClick={toggleModal}>Open the Modal</button>
+<Modal title="Warning" isOpen={isModalOpen}>
+<p>This Modal is awesome.</p>
+<button onClick={toggleModal}>close modal</button>
+</Modal>
+</div>
+);
+}
+export default App;
+Common Use Cases ❘ 407
+The current App component is shown in Listing 18‑5. At this point, we’re just passing a Boolean
+prop named isOpen to the Modal component. In the next steps, we’ll use this value to determine
+whether to display the Portal.
+LISTING 18- 5: The App component
+import {useState} from 'react';
+import Modal from './Modal';
+import './styles.css';
+function App() {
+const[isModalOpen,setModalOpen] = useState(false);
+const toggleModal = () => setModalOpen(!isModalOpen);
+return (
+<div>
+<button onClick={toggleModal}>Open the Modal</button>
+<Modal title="Warning" isOpen={isModalOpen}>
+<p>This Modal is awesome.</p>
+<button onClick={toggleModal}>close modal</button>
+</Modal>
+</div>
+);
+}
+export default App;
+6. Import ReactDOM and wrap the child element in the Modal component with ReactDOM
+.createPortal and pass a pointer to the DOM node where it should be rendered:
+import ReactDOM from 'react- dom';
+import "./styles.css";
+function Modal(props){
+return (
+ReactDOM.createPortal((
+<div className="modalOverlay">
+<div className="modalContainer">
+<h1 className="modalTitle">{props.title}</h1>
+<div className="modalContent">
+{props.children}
+</div>
+</div>
+</div>)
+,document.getElementById('modal'))
+)
+}
+export default Modal;
+408 ❘ CHAPTER 18 React PoRtals
+7. Use the Boolean prop passed from the App component to conditionally render the Portal:
+import ReactDOM from 'react- dom';
+import "./styles.css";
+function Modal(props){
+return (
+<>
+{props.isOpen &&
+ReactDOM.createPortal((
+<div className="modalOverlay">
+<div className="modalContainer">
+<h1 className="modalTitle">{props.title}</h1>
+<div className="modalContent">
+{props.children}
+</div>
+</div>
+</div>)
+,document.getElementById('modal'))}
+</>
+)
+}
+export default Modal;
+The finished Modal component is shown in Listing 18‑6.
+Listing 18- 6: The finished Modal component
+import ReactDOM from 'react- dom';
+import "./styles.css";
+function Modal(props){
+return (
+<>
+{props.isOpen &&
+ReactDOM.createPortal((
+<div className="modalOverlay">
+<div className="modalContainer">
+<h1 className="modalTitle">{props.title}</h1>
+<div className="modalContent">
+{props.children}
+</div>
+</div>
+</div>)
+,document.getElementById('modal'))}
+</>
+)
+}
+export default Modal;
+Figure 18‑6 shows the UI with the isOpen variable set to true.
+Common Use Cases ❘ 409
+FIGURE 18- 6: The opened modal
+Managing Keyboard Focus with Modals
+Modal dialogs, such as tooltips, help dialogs, and modal forms, can make a user interface more
+usable. They also have the potential to confuse users if they aren’t implemented correctly. One par‑
+ticularly important consideration with modal dialogs is to properly manage keyboard focus when
+closing a modal.
+For example, a long signup or application form may make use of modal windows for entering
+detailed information and viewing help content, as shown in Figure 18‑7.
+When a user clicks a link to open a modal and interacts with the content of that modal (even just to
+click a “close” button), focus leaves the main content of the form. When the modal closes, the user
+will be forced to click in or tab to the next form field again to fill it out. At the least, this is inconven‑
+ient. At worst, it’s an accessibility issue for users who rely on screen readers.
+To properly set focus when returning from a modal, use the useEffect hook along with a ref to
+check whether the value of isModalOpen has changed to false and set the focus, as shown in
+Listing 18‑7.
+410 ❘ CHAPTER 18 React PoRtals
+FIGURE 18- 7: A checkout form with help links
+Listing 18- 7: Using a ref to set keyboard focus
+import {useState,useRef,useEffect} from 'react';
+import Modal from './Modal';
+import './styles.css';
+function App() {
+const CSCRef = useRef()
+const[isModalOpen,setModalOpen] = useState(false);
+const toggleModal = () => {
+setModalOpen(()=>!isModalOpen);
+}
+useEffect(() => {
+setTimeout(()=>{!isModalOpen && CSCRef.current.focus()},1000)
+}, [isModalOpen]);
+return (
+<>
+<div style={{padding:"60px"}}>
+<label>Card Security Code:<input ref={CSCRef} /></label>
+<button onClick={toggleModal}>What's This?</button>
+Summary ❘ 411
+<Modal title="What is the CSC Code?" isOpen={isModalOpen}>
+<p>A credit card security code is the 3-4 digit number that
+is printed, not embossed, on all credit cards. The length
+and location of a credit card's security code depend on
+what network the card is on. </p>
+<button onClick={toggleModal}>close modal</button>
+</Modal>
+</div>
+</>
+);
+}
+export default App;
+In Listing 18‑7, I used a setTimeout function to make the setting of the focus take 1,000 milli‑
+seconds (1 second) so that it will be obvious when you test it out. In an actual application you can
+eliminate the setTimeout function so that the focus gets set as quickly as possible when the modal
+dialog is closed.
+SUMMARY
+Occasionally, it’s helpful to be able to break out of the root node and render React components in
+a different DOM node. React Portals, which is enabled by ReactDOM.createPortal, is the way
+to do this.
+In this chapter, you learned:
+➤➤ What a React Portal is.
+➤➤ When Portals are useful.
+➤➤ How to create a Portal.
+➤➤ How to interact with a Portal.
+➤➤ How to manage keyboard focus when closing a Portal.
+In the next chapter, you’ll learn about accessibility concerns when programming React user interfaces.
+
+19
+Accessibility in React
+Accessibility (also known as a11y, because all those letters between the a and the y are too hard
+to type) means that websites and web applications are designed and built in such a way so that
+people with disabilities can use them. The qualities that make a user interface built with React
+accessible are no different from those that make any web user interface accessible, but the way
+in which accessibility is implemented differs in some instances.
+In this chapter, you’ll learn:
+➤➤ What makes a web application accessible.
+➤➤ Special considerations for making single page applications accessible.
+➤➤ What ARIA is.
+➤➤ How and why to use semantic HTML.
+➤➤ The importance of proper labeling of form elements.
+➤➤ How to use media queries in React components.
+WHY IS ACCESSIBILITY IMPORTANT?
+According to the World Health Organization, about 15 percent of the global population has
+some form of disability. Accessibility studies have found that between 6 and 10 percent of
+people over 15 years old have a sight or hearing impairment. For people over 65, that number
+is over 20 percent. Eight percent of people over 65 have difficulty grasping objects— including a
+computer mouse.
+With the average age increasing worldwide, the number of people who require some sort of
+alternative device or assistive technology to use the web is in the tens of millions, even by
+conservative estimates.
+414 ❘ CHAPTER 19 Accessibility in ReAct
+Implementing web accessibility is not just the right thing to do or good for business, it’s increasingly
+required by law. Public sector websites in many countries (including the U.S., Canada, and the E.U.)
+have been required to meet certain accessibility standards for years, and private- sector websites in
+many countries will be required by law to meet accessibility standards in the coming years.
+ACCESSIBILITY BASICS
+Most of the techniques you’ll use for making web applications accessible are just good practices in
+general, and they make your application better and easier to use for all users, not just those with
+disabilities.
+A short list of the considerations to keep in mind when designing your app for accessibility includes:
+➤➤ Use valid HTML.
+➤➤ Make sure all images have alt attributes.
+➤➤ Add alternative content for all audio and video content.
+➤➤ Your app should be navigable without a mouse.
+➤➤ Form elements should be properly labeled.
+➤➤ The application should be usable by people with color blindness.
+Web Content Accessibility Guidelines (WCAG)
+The World Wide Web Consortium (W3C) has developed and maintains a collection of documents
+that explain how to make websites accessible, which are collectively known as the Web Content
+Accessibility Guidelines, or WCAG. WCAG is the standard used by governments for laws that require
+accessibility.
+The WCAG has four main principles:
+➤➤ Perceivable. All user interface elements must be presentable to users in a way that they can
+receive it. For example, images must have text alternatives that can be read by screen readers
+for the blind. Perceivability also encompasses techniques such as responsive design, which
+ensures that content can be presented in different ways without losing information or struc-
+ture. For example, a user interface should respond to changes in orientation of a mobile
+device (from portrait to landscape) and to different sized screens.
+➤➤ Operable. Users should be able to operate the user interface. For example, it should be
+possible for all content and navigation and components to be used with a keyboard instead
+of a mouse.
+➤➤ Understandable. How the user interface works must be understandable. This principle
+includes making sure the language of the content is specified in the code, providing proper
+labels to user interface controls, and providing help to the user.
+Implementing Accessibility in React Components ❘ 415
+➤➤ Robust. Content must be usable by a wide variety of devices and user agents, including assis-
+tive technologies. The most important factor in determining whether web content is robust
+is whether it complies with the HTML standard. For example, while a visual web browser
+may be able to render something that works just fine from faulty markup, it’s much more dif-
+ficult, or impossible, for an assistive device such as a screen reader to parse HTML that has
+duplicate attributes or missing end tags.
+A complete guide to implementing WCAG is beyond the scope of this book, but you can find the
+complete document, as well as a quick reference guide to the latest version of the standard, at
+https://www.w3.org/WAI/.
+Web Accessibility Initiative - Accessible Rich Internet
+Applications (WAI- ARIA)
+The Web Accessibility Initiative - Accessible Rich Internet Applications (WAI-A RIA) document,
+published by the W3C, defines techniques for making web applications accessible to people who use
+assistive technologies, including people who use screen readers and people who cannot use a mouse.
+ARIA provides standard HTML attributes that can be used to identify user interaction features and
+specify how they relate to each other as well as their current state:
+➤➤ ARIA’s role attribute can be added to elements to point out landmarks such as nav, search,
+tab, and so forth to screen readers.
+➤➤ The aria- live attribute can be used to tell screen readers that particular content is updated.
+This is particularly important in dynamic single page applications.
+➤➤ The tabindex attribute allows you to make the order of tabbing between user interface ele-
+ments explicit. This is useful when the position of the elements in the document and the order
+in which you want them to be accessed are different.
+➤➤ Attributes such as aria- label and aria- required can be used to give more information
+about form controls to screen readers.
+To find out more about ARIA, visit the WAI-A RIA overview at https://www.w3.org/WAI/
+standards- guidelines/aria/.
+IMPLEMENTING ACCESSIBILITY IN REACT COMPONENTS
+Because the result of compiling a React application is a standard HTML, CSS, and JavaScript web
+page, implementing accessibility in user interfaces built with React is largely done using the same
+standards and techniques that you use with a static HTML document.
+However, because you write the output of React components using JavaScript and JSX rather than
+HTML, there are some differences that you should be aware of.
+The main things to consider when implementing accessibility with React are:
+➤➤ ARIA attributes.
+➤➤ Semantic HTML.
+416 ❘ CHAPTER 19 Accessibility in ReAct
+➤➤ Form accessibility.
+➤➤ Managing focus.
+➤➤ How to use media queries.
+ARIA Attributes in React
+JSX supports all the ARIA attributes. Unlike most other attributes that you write in JSX, ARIA attrib-
+utes with multiple words, such as aria- label, are written the same as in HTML, using a hyphen
+between words rather than camelCase.
+For example, the following JSX code tells a screen reader that an input is required and specifies the
+control’s label:
+<input
+type="text"
+aria- label={labelText}
+aria- required="true"
+onChange={onchangeHandler}
+value={inputValue}
+name="name"
+/>
+Semantic HTML
+Semantic HTML refers to using HTML elements that indicate the purpose, or role, of an element
+in the document. For example, a page’s navigation should be written using the nav element, and the
+address element should be used to mark up contact information.
+When you use semantic HTML elements, the ARIA role of the element is implied, meaning there’s
+no need to explicitly define the ARIA role attribute. Writing semantic and valid HTML is the most
+important thing you can do to make a page or application usable by assistive technologies.
+Because each React component must return a single element, there’s a tendency when writing React
+to wrap the return value of a component in an unnecessary div element, such as in the component
+shown in Listing 19-1.
+LISTING 19- 1: Using unnecessary elements to group elements
+function ListItem({ item }) {
+return (
+<div>
+<dt>{item.term}</dt>
+<dd>{item.description}</dd>
+</div>
+);
+}
+These unnecessary elements can confuse screen readers, especially when they’re used inside lists. For
+example, the component shown in Listing 19-2 makes use of the ListItem component to generate a
+definition list.
+Implementing Accessibility in React Components ❘ 417
+LISTING 19- 2: Using unnecessary grouping elements can result in invalid HTML
+function Glossary(props) {
+return (
+<dl>
+{props.items.map(item => (
+<ListItem item={item} key={item.id} />
+))}
+</dl>
+);
+}
+The returned HTML from Listing 19-2 will have a div element around each group of terms and
+descriptions. The result is a definition list that doesn’t comply with the HTML standard way to make
+definition lists.
+The solution to this problem is to use React.Fragment (or its shorthand element) to group elements
+in cases where there shouldn’t be a resulting HTML element from the necessary JSX grouping, as
+shown in Listing 19-3.
+LISTING 19- 3: Using React.Fragment to eliminate unnecessary HTML elements
+function ListItem({ item }) {
+return (
+<>
+<dt>{item.term}</dt>
+<dd>{item.description}</dd>
+</>
+);
+}
+Form Accessibility
+Form inputs need to have labels that are readable by screen readers and that are specifically associ-
+ated with the inputs. It’s not enough, for example, to have a label that visually appears above or next
+to an input, like this:
+<form>
+first name: <input type="text" />
+</form>
+An accessible form is one that uses a label element and/or an aria- label attribute to label each
+input field. The label element in JSX works the same as the HTML label element, except that the
+for attribute in the HTML label element becomes the htmlFor attribute in JSX.
+The value of htmlFor should be the value of the id attribute in the associated form control.
+Listing 19-4 shows an accessible form written in JSX.
+418 ❘ CHAPTER 19 Accessibility in ReAct
+LISTING 19- 4: An accessible form, written using JSX
+<form onSubmit={handleSubmit}>
+<label htmlFor="firstName">First Name</label>
+<input id="firstName" type="text" />
+<label htmlFor="lastName">Last Name</label>
+<input id="lastName" type="text" />
+<label htmlfor="emailAddress">Email Address</label>
+<input id="emailAddress" type="email" />
+<button type="submit">Submit</button>
+</form>
+Focus Control in React
+Your web application should be fully accessible and usable with only the keyboard. One important
+aspect of making an application usable with only the keyboard is to properly manage focus.
+Skip Links
+Users who navigate using the keyboard or voice commands typically must move from one interactive
+element on the page to the next using the Tab key. For applications with a large number of navigation
+elements at the top of the page, this can mean that the user must tab through each element to get to
+the main body of the page. To help keyboard or screen reader users to navigate to the part of the page
+they want to use, you can implement a “Skip Navigation” link.
+Skip Navigation links are links at the top of a page that may be visible, or that are only visible for
+keyboard and screen reader users. The Skip Navigation link uses an HTML anchor to move the focus
+past the navigation and directly to the main content of the page. You can implement Skip Navigation
+links easily yourself with a link and some styling, or you can use a pre-b uilt component that makes
+it easier. Listing 19-5 shows a React component that implements a Skip Navigation link using the
+react- skip- nav component, which is available at npmjs.com/package/react- skip- nav or by
+running npm install react- skip- nav.
+LISTING 19- 5: Implementing Skip Navigation links with react- skip- nav
+import React from 'react';
+import SkipNav from 'react- skip- nav';
+import "react- skip- nav/lib/style.css";
+const MyComponent = (props) => {
+return (
+<>
+<SkipNav
+id='main- content'
+text='skip to main content'
+Implementing Accessibility in React Components ❘ 419
+targetDomId='main- content'
+/>
+<Header/>
+<div id="main- content">
+<MainContent />
+</div>
+</>
+)
+}
+export default MyComponent;
+Managing Focus Programmatically
+When the browser’s focus is taken away from the normal flow of a page and then returned to it (such
+as what happens when a modal dialog is opened and closed), even users with a mouse must manu-
+ally return the focus to the form field or interactive element they were using prior to the opening of
+the modal dialog. Without proper focus management, users of keyboard navigation or screen read-
+ers must start again at the top of the page and move through each element until they get to the spot
+where they were when focus moved to the modal.
+You can use a ref and the window.focus method to return focus to the correct place when a modal
+dialog is closed. Listing 19-6 shows how to open a modal and return the focus to the appropriate ele-
+ment when the modal is closed.
+LISTING 19- 6: Managing focus upon closing a modal
+import ReactDOM from 'react- dom';
+import {useState,useRef,useEffect} from 'react';
+import './styles.css';
+function Modal(props){
+return (
+<>
+{props.isOpen &&
+ReactDOM.createPortal((
+<div className="modalOverlay">
+<div className="modalContainer">
+<div className="modalContent">
+{props.children}
+</div>
+</div>
+</div>)
+,document.getElementById('modal'))}
+</>
+)
+}
+function App() {
+const PasswordRef = useRef()
+continues
+420 ❘ CHAPTER 19 Accessibility in ReAct
+LISTING 19-6 (continued)
+const[isModalOpen,setModalOpen] = useState(false);
+const toggleModal = () => {
+setModalOpen(()=>!isModalOpen);
+}
+useEffect(() => {
+!isModalOpen && PasswordRef.current.focus()
+}, [isModalOpen]);
+return (
+<>
+<div style={{padding:"60px"}}>
+<label>Choose a Password:<input ref={PasswordRef} /></label>
+<button onClick={toggleModal}>?</button>
+<Modal title="Password Requirements" isOpen={isModalOpen}>
+<p>Your password must contain at least 8 characters, an uppercase letter,
+the name of your pet, your birthday, your child's birthday, the word
+"password" and several sequential numbers.</p>
+<button onClick={toggleModal}>close modal</button>
+</Modal>
+</div>
+</>
+);
+}
+export default App;
+Media Queries in React
+Media queries provide different CSS to a page or application based on the properties of the browser.
+The most common use for media queries is for implementing responsive design.
+Responsive design is the technique used to make web pages and web applications adapt to different-
+sized devices. Besides making your application more usable for visual web browsers, responsive
+design also makes it possible for users with low vision to resize the user interface without needing to
+scroll horizontally. Media queries can also be used to detect non- visual browsers and customize the
+CSS for these devices.
+Because inline styles in React components are actually JavaScript, rather than CSS, it’s not easily pos-
+sible to write media queries as style modules or using inline styles. Two common ways to use media
+queries in React components are by including a CSS stylesheet into the component or by using a
+custom hook.
+Implementing Accessibility in React Components ❘ 421
+Media Queries in Included CSS
+If your React toolchain is configured to allow the importing of CSS files (as is the case if you use
+Create React App), you can use media queries in React the same way that you’d use them in any web
+application.
+Listing 19-7 shows how to use media queries in CSS to format a web application differently at
+different viewport widths. Each width at which the styles change in responsive design is called a
+“breakpoint.”
+HOW MANY BREAKPOINTS SHOULD YOU HAVE?
+At the very least, a responsive web application should have a separate design for
+mobile devices and desktop devices. While a mobile layout may work fine on a desk-
+top device, mobile- specific user interface controls (especially those involving touch
+events) may not work correctly on desktop computers.
+The breakpoints specified in the sample CSS shown in Listing 19-7 are much more
+granular, and you can even refine your breakpoints further to customize the CSS for
+devices that may fall in between these standard ones.
+Many websites and organizations have created sample media queries that you can
+copy and paste into your applications. The ones in Listing 19-7 come from https://
+responsivedesign.is.
+LISTING 19- 7: Responsive media queries in a CSS file
+/* Smartphones (portrait and landscape) - - - - - - - - - - - */
+@media only screen and (min-d evice-w idth : 320px) and (max-d evice-w idth : 480px) {
+/* Styles */
+}
+/* iPads (portrait and landscape) - - - - - - - - - - - */
+@media only screen and (min-d evice-w idth : 768px) and (max-d evice-w idth : 1024px) {
+/* Styles */
+}
+/* Desktops and laptops - - - - - - - - - - - */
+@media only screen and (min- width : 1224px) {
+/* Styles */
+}
+/* Large screens - - - - - - - - - - - */
+@media only screen and (min- width : 1824px) {
+/* Styles */
+}
+422 ❘ CHAPTER 19 Accessibility in ReAct
+Using useMediaQuery
+The useMediaQuery hook is part of the react- responsive library. To use it, you first need to install
+it using npm install react- responsive and then import it into your component. Once you’ve
+imported it, you can use either the MediaQuery component or the useMediaQuery hook.
+To use the useMediaQuery hook, pass a query to it as a parameter. The result will be a Boolean
+value that you can use to conditionally render JSX. Listing 19-8 shows an example of using
+useMediaQuery to conditionally render one of four different components based on the size of
+the viewport.
+LISTING 19- 8: Conditionally rendering children based on a media query
+import { useMediaQuery } from 'react-r esponsive'
+const Desktop = ({ children }) => {
+const isDesktop = useMediaQuery({ minWidth: 992 })
+return isDesktop ? children : null
+}
+const Tablet = ({ children }) => {
+const isTablet = useMediaQuery({ minWidth: 768, maxWidth: 991 })
+return isTablet ? children : null
+}
+const Mobile = ({ children }) => {
+const isMobile = useMediaQuery({ maxWidth: 767 })
+return isMobile ? children : null
+}
+const Default = ({ children }) => {
+const isNotMobile = useMediaQuery({ minWidth: 768 })
+return isNotMobile ? children : null
+}
+const Example = () => (
+<div>
+<Desktop>Desktop or laptop</Desktop>
+<Tablet>Tablet</Tablet>
+<Mobile>Mobile</Mobile>
+<Default>Not mobile (desktop or laptop or tablet)</Default>
+</div>
+)
+export default Example;
+SUMMARY
+Accessibility is an essential element in the design and implementation of any user interface. It helps to
+ensure that the largest possible number of users will be able to access and make use of your applica-
+tion. The techniques for implementing accessibility with React are largely the same as with any web
+UI, but with some important technical differences.
+Summary ❘ 423
+In this chapter, you learned:
+➤➤ Why accessibility is important.
+➤➤ What the main accessibility standards are.
+➤➤ How ARIA attributes help to identify user interface components.
+➤➤ The importance of semantic and valid HTML.
+➤➤ How to make forms accessible.
+➤➤ How to control focus in a React component.
+➤➤ How to implement media queries in React.
+In the next chapter, you’ll be introduced to some additional tools and resources that will help you to
+continue to become a better React programmer long beyond the limits of this book.
+
+20
+Going Further
+I’ve covered a lot of material in this book, but your React learning journey is just beginning.
+The React ecosystem is giant, active, and growing. What this means is that developers are con-
+stantly creating new tools to use with React and improving existing ones.
+With all the activity, having a guide to the next steps can be invaluable. In this chapter, I’ll give
+you a head start on where to go from here by discussing or expanding on some of the topics
+that I didn’t have room for earlier in the book.
+In this chapter, you’ll learn:
+➤➤ About testing and popular testing libraries.
+➤➤ What server- side rendering is.
+➤➤ How GraphQL works.
+➤➤ How to use GraphQL with Apollo.
+➤➤ What Flux and Redux are.
+➤➤ What Next.js and Gatsby are and how they’re used.
+➤➤ What organizations and people to follow to keep up to date on React.
+TESTING
+The process of testing React components and user interfaces is similar to the process for test-
+ing any JavaScript application, and there are many automated testing tools to choose from. If
+you’re using Create React App, the most straightforward choice is simple—C reate React App
+installs and configures Facebook’s Jest testing framework for you.
+Although Jest is popular and quite good, other tools and libraries may offer features or a way
+of working that you prefer. You might choose to use some of these tools together with Jest or in
+place of similar functionality that’s provided by Jest. Here are a few of the most popular testing
+tools for React besides Jest.
+426 ❘ CHAPTER 20 GoinG Further
+Mocha
+Mocha, like Jest, is an automated testing framework. Mocha is more configurable than Jest, and as a
+result, it may require more initial configuration. Mocha tests run sequentially, unlike Jest, which runs
+tests in parallel. Also unlike Jest, Mocha doesn’t include its own assertion library. Instead, it’s com-
+monly used along with the Chai assertion library, which you’ll learn about in the next section.
+Test suites created with Mocha look very similar to those created with Jest. They use a function
+named describe() to create a test suite, and a function named it to define assertions (aka tests).
+Listing 20-1 shows a simple test suite created with Mocha and the Assert assertion library.
+LISTING 20- 1: A test suite created with Mocha
+const assert = require('assert');
+describe('Array', function() {
+describe('#indexOf()', function() {
+it('should return - 1 when the value is not present', function() {
+assert.equal([1, 2, 3].indexOf(4), -1 );
+});
+});
+});
+Enzyme
+Enzyme is a testing utility for React that was developed by AirBnB. It can be used in place of React’s
+built- in testing library (which you saw in Chapter 15). Enzyme’s interface for selecting and work-
+ing with nodes in the output of components is similar to how jQuery works with the DOM. With
+Enzyme, you can use familiar CSS- style selectors to locate nodes that you want to test. Enzyme makes
+it easier to traverse and inspect the elements output from your application’s React components, which
+is an essential part of unit testing a React application.
+To use Enzyme, you first render a component using one of its three render methods:
+➤➤ shallow: Renders a single component. The shallow method is most often used for unit test-
+ing, in which it’s important to be sure that you’re not indirectly testing the behavior of child
+components.
+➤➤ mount: Renders a component and mounts it in the DOM. The mount method is typically used
+with a browser simulator such as jsdom. Jsdom is a “headless” browser that runs completely
+in JavaScript. Use mount for testing higher-o rder components and components that interact
+with the DOM.
+➤➤ render: Renders static HTML from your component. You can use the render method to test
+the structure of the HTML returned by a component.
+Among the functions included with Enzyme is the find method, which is a simple way to locate
+and select elements in a component. The find method takes the place of several functions that are
+included with ReactDOM’s testing utilities, including findRenderedDOMComponentWithClass,
+findRenderedDOMComponentWithTag, and findRenderedComponentWithType.
+Testing ❘ 427
+Listing 20-2 shows how to use the shallow method to render a component and the find method to
+locate a node within it. Once you’ve rendered the component and made a selection with find, you
+can test the selected node using an assertion library (such as Chai, in this example).
+LISTING 20- 2: Rendering and finding a node with Enzyme
+import React from 'react';
+import { expect } from 'chai';
+import { shallow } from 'enzyme';
+import MyComponent from './MyComponent';
+import Foo from './Foo';
+describe('<MyComponent />', () => {
+it('renders three <Foo/> components', () => {
+const wrapper = shallow(<MyComponent />);
+expect(wrapper.find(Foo)).to.have.lengthOf(3);
+});
+});
+Chai
+Chai is an assertion library. Assertion libraries are used with testing frameworks and testing librar-
+ies to provide functions for declaring what result you expect in a test. Chai is often used along with
+Mocha and Enzyme, but it can also be used with Jest.
+Chai has three different ways that you can write assertions:
+➤➤ Assert
+➤➤ Expect
+➤➤ Should
+Assert
+The assert style is similar to the assert function that comes with Node.js. It uses the assert function,
+followed by a matcher function, as shown in Listing 20-3.
+LISTING 20- 3: Using Chai’s assert method
+const assert = require('chai').assert;
+let foo = 'bar';
+const beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
+assert.typeOf(foo, 'string'); // without optional message
+assert.typeOf(foo, 'string', 'foo is a string'); // with optional message
+assert.equal(foo, 'bar', 'foo equal `bar`');
+assert.lengthOf(foo, 3, 'foo`s value has a length of 3');
+assert.lengthOf(beverages.tea, 3, 'beverages has 3 types of tea');
+428 ❘ CHAPTER 20 GoinG Further
+Expect
+Expect is commonly used for Behavior Driven Development (BDD). It uses a chain of functions to
+produce an assertion that resembles how you would describe a test in English. An example of using
+expect is shown in Listing 20-4.
+LISTING 20- 4: Using Chai’s expect method
+const assert = require('chai').assert;
+let foo = 'bar';
+const beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
+expect(foo).to.be.a('string');
+expect(foo).to.equal('bar');
+expect(foo).to.have.lengthOf(3);
+expect(beverages).to.have.property('tea').with.lengthOf(3);
+Should
+The should method extends each object with a should property that starts a chain similar to the
+chains used by expect. Listing 20-5 shows examples of assertions written with should.
+LISTING 20- 5: Using Chai’s should method
+const should = require('chai').should(); //actually call the function
+let foo = 'bar';
+const beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
+foo.should.be.a('string');
+foo.should.equal('bar');
+foo.should.have.lengthOf(3);
+beverages.should.have.property('tea').with.lengthOf(3);
+Karma
+Jest and Mocha both run in Node.js and can test your code using a simulated web browser. Even
+the best simulated web browser isn’t the same as a real one, however, and there’s a possibility
+that your React code may not run exactly the same in Firefox as it does in Chrome running on an
+Android device.
+Karma is a tool for testing JavaScript code in real browsers. It works by launching an HTTP server
+and then loading your tests (written with whichever tools you prefer) into each of a list of browsers
+that you specify. Karma then reports the result of running each test in each browser.
+Nightwatch.js
+Nightwatch is an end- to- end testing tool. The idea of end-t o- end testing is to test scenarios as if from
+the eyes of the user. Nightwatch controls web browsers to simulate user actions.
+Server- Side Rendering ❘ 429
+Listing 20-6 shows an example test suite (from the nightwatchjs.org website) that opens
+the Ecosia search engine, searches for “nightwatch,” and checks that the first result is the
+nightwatchjs.org website.
+LISTING 20- 6: A Nightwatch test suite
+module.exports = {
+'Demo test ecosia.org' : function(browser) {
+browser
+.url('https://www.ecosia.org/')
+.waitForElementVisible('body')
+.assert.titleContains('Ecosia')
+.assert.visible('input[type=search]')
+.setValue('input[type=search]', 'nightwatch')
+.assert.visible('button[type=submit]')
+.click('button[type=submit]')
+.assert.containsText('.mainline-r esults', 'Nightwatch.js')
+.end();
+}
+};
+SERVER- SIDE RENDERING
+Most of the time, React runs in a web browser and manages rendering and updating of components
+by manipulating the DOM. However, because React components are just JavaScript functions, they
+can also run inside of any other JavaScript engine. Server- side React runs React components to
+generate static files that can be sent to a web browser when a React user interface is first requested.
+The result is that the initial rendering of the page is faster, because it doesn’t have to happen in the
+user’s browser.
+Server- side rendering works by having an instance of the ReactDOMServer library on the server (typi-
+cally in a Node.js server) and using one of its render methods to generate static HTML. ReactDOM-
+Server has four render methods you can choose from, depending on your needs:
+➤➤ renderToString: Renders the app to a static HTML string. Inside the browser,
+this HTML string can be turned into a functioning React user interface using the
+ReactDOM.hydrate method.
+➤➤ renderToStaticMarkup: Renders the app to static HTML, without the attributes that React
+normally adds to HTML. The result is a smaller file, but one that can’t be made interactive
+using ReactDOM.hydrate. You can use renderToStaticMarkup to create a static file server.
+➤➤ renderToNodeStream: Returns the same HTML as renderToString but encoded as a Node
+Stream rather than as a string.
+➤➤ renderToStaticNodeStream: Returns the same HTML as renderToStaticMarkup, but for-
+matted as a Node Stream.
+430 ❘ CHAPTER 20 GoinG Further
+Flux
+Flux is a pattern for how to manage data within an application. With the Flux pattern, data is kept
+in stores that can be subscribed to by user interface components. When a store that a component is
+subscribed to changes, the user interface component (also known as the view) fetches the new data
+and uses it to update.
+Changing the data in a store is done using actions, which are dispatched in response to events in
+the view. All data in a Flux application flows in a single direction. Figure 20-1 shows the basic
+Flux pattern.
+Action Dispatcher Store View
+FIGURE 20- 1: The Flux pattern
+Redux
+As your user interface gets larger, it can be helpful to centralize some or all of the data used in it,
+rather than having stateful variables spread throughout your components.
+Redux is a library for managing state in a React application that implements the Flux pattern.
+Redux centralizes the state data in an application into a single state tree. This state tree is modi-
+fied from within components by dispatching “actions.” These actions, in turn, trigger pure functions
+called reducers, which update the Redux state tree. Figure 20-2 shows how data flows in a Redux
+application.
+Actions Reducers Store
+React
+Components
+FIGURE 20- 2: Data flow in a Redux application
+A React application that uses Redux has a single object that contains all of its data. This object is
+called the Redux store. A store is created using the createStore method. The createStore method
+takes a function parameter, called a reducer, as its argument. The reducer contains all the methods
+that can be used to work with the data in the store.
+The following is an example of a reducer function for a simple counter application:
+const counterReducer = (state = 0, action) => {
+switch (action.type) {
+Server- Side Rendering ❘ 431
+case 'INCREMENT':
+return state + 1
+case 'DECREMENT':
+return state - 1
+default:
+return state
+}
+}
+To create a store, pass the reducer function into Redux’s createStore function, like this:
+import { createStore } from 'redux';
+const store = createStore(counterReducer)
+Each possible case in the reducer’s switch statement corresponds to an action that can be dispatched
+in response to an event in the user interface.
+An action in Redux is a JavaScript object that has a type and an optional payload. For example, in a
+Redux counter app, clicking an “Increment” button doesn’t call a setState function. Rather, it trig-
+gers the Redux dispatcher (which is a method of the store object) and passes it an action object:
+<button onClick={() => store.dispatch({ type: 'INCREMENT' })}>
++
+</button>
+<button onClick={() => store.dispatch({ type: 'DECREMENT' })}>
+-
+</button>
+The store’s reducer function receives the action and uses its type property to decide how to change
+the store. Changing the store causes the application to re-r ender.
+Putting it all together, Listing 20-7 shows a complete Redux counter example.
+LISTING 20- 7: A Redux counter
+import React from 'react'
+import ReactDOM from 'react- dom'
+import { createStore } from 'redux'
+const counterReducer = (state = 0, action) => {
+switch (action.type) {
+case 'INCREMENT':
+return state + 1
+case 'DECREMENT':
+return state - 1
+default:
+return state
+}
+}
+const store = createStore(counterReducer)
+const rootEl = document.getElementById('root')
+continues
+432 ❘ CHAPTER 20 GoinG Further
+LISTING 20-7 (continued)
+const Counter = (props)=>{
+return (
+<p>
+Clicked: {props.value} times
+<button onClick={props.onIncrement}>
++
+</button>
+<button onClick={props.onDecrement}>
+-
+</button>
+</p>
+)
+}
+const render = () => ReactDOM.render(
+<Counter
+value={store.getState()}
+onIncrement={() => store.dispatch({ type: 'INCREMENT' })}
+onDecrement={() => store.dispatch({ type: 'DECREMENT' })}
+/>,
+rootEl
+)
+render()
+store.subscribe(render)
+If this example looks complicated to you, that’s because it is. Redux is not meant to be used for such
+simple applications. However, even for larger applications, Redux often involves more complexity
+than is necessary.
+GraphQL
+GraphQL is a query language for APIs. GraphQL services are created by defining types and fields on
+those types. For example, you might have a type named User that might look like this:
+type User {
+id: ID
+fname: String
+lname: String
+}
+A GraphQL server accepts requests and returns JSON data to the client application. Here’s an exam-
+ple of a GraphQL query:
+{
+user(id:"1") {
+fname
+lname
+}
+}
+Server- Side Rendering ❘ 433
+The response from the preceding query might look something like the following:
+{
+"data": {
+"user": {
+"fname": "Chris",
+"lname": "Minnick"
+}
+}
+}
+Because a GraphQL query has the same shape as the returned data, GraphQL is a more declarative
+way to fetch remote data than using REST.
+Apollo
+Like Redux, Apollo is a state management library. Unlike Redux, Apollo lets you manage both
+your local and remote data. Apollo has a client component that interacts with a remote GraphQL
+server to fetch data, and a provider component that makes the data available to components in your
+React app.
+The first step in using Apollo is to have a GraphQL server to connect to. This is the most involved
+part of the process of using GraphQL and Apollo. You can create your own GraphQL server by
+following the instructions from the “How to Create a GraphQL Server” tutorial on Apollo’s web-
+site at https://www.apollographql.com/blog/tutorial- building- a- graphql- server-
+cddaa023c035/.
+Once you have a GraphQL server, you can connect to it with the Apollo client. Listing 20-8 shows
+how to create an Apollo client.
+LISTING 20- 8: Creating an Apollo client
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+const client = new ApolloClient({
+uri: 'https://my.graphql.server',
+cache: new InMemoryCache()
+});
+To connect an Apollo client to your React app, you can use the ApolloProvider component, as
+shown in Listing 20-9.
+LISTING 20- 9: Using an Apollo provider
+import React from 'react';
+import { render } from 'react- dom';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client/react';
+continues
+434 ❘ CHAPTER 20 GoinG Further
+LISTING 20-9 (continued)
+const client = new ApolloClient({
+uri: 'https://my.graphql.server',
+cache: new InMemoryCache()
+});
+function App() {
+return (
+<div>
+<h2>My first Apollo app</h2>
+</div>
+);
+}
+render(
+<ApolloProvider client={client}>
+<App/>
+</ApolloProvider>,
+document.getElementById('root'),
+);
+React Native
+React Native is a framework for creating native mobile apps using React. React Native works the
+same way as React: components are JavaScript functions or classes that return JSX. The difference
+between React and React Native is that React Native doesn’t manipulate the HTML DOM. Instead,
+React Native components return JSX elements that map to mobile user interface building blocks such
+as Text, View, and Image. React Native was explored further in Chapter 4.
+Next.js
+Next.js is a React development web framework, similar to Create React App. Like Create React
+App, Next.js helps you to get started with your React app quickly and provides tools that you’ll use
+throughout the development and building of your application.
+In terms of features, the two main differences between Next.js and Create React App are:
+➤➤ Next.js is more configurable than Create React App.
+➤➤ Next.js supports server- side rendering. Create React App can be configured to support server-
+side rendering, but it doesn’t support it by default.
+Gatsby
+Gatsby is a static site generator. It pre-r enders React user interfaces and pre-f etches data on the server,
+which makes rendering of the site happen faster on the client. Besides speed, another benefit to serv-
+ing static pages to browsers is that static pages may be more easily accessible by search engines, which
+can mean that static sites will receive higher search engine placement. Since static sites don’t interact
+with the server or a database from the browser, they are also often more secure and provide less
+opportunity for a malicious script or user to access or modify data they’re not authorized to access.
+Useful Links and Resources ❘ 435
+PEOPLE TO FOLLOW
+Given how active the React developer community is and how popular React is, it’s important to stay
+on top of the latest developments. A great place to find out about the latest React news and trends
+in the React community is on Twitter. The following is a list of React and JavaScript developers and
+organizations you may want to follow:
+➤➤ React News (@ReactExpo): ReactJS and React Native news, templates, and jobs.
+➤➤ Rectiflux (@reactiflux): A chat community of over 147,000 React and React Native
+developers.
+➤➤ Andrew Clark (@acdlite): ReactJS developer at Facebook. Co- creator of Redux.
+➤➤ ReactJS News (@ReactJSNews): The latest ReactJS news and articles.
+➤➤ React (@reactjs): The official ReactJS Twitter account.
+➤➤ React Newsletter (@reactnewsletter): The free, weekly newsletter of the latest React news,
+tutorials, resources, and more.
+➤➤ Becca Bailey (@beccaliz): Engineering manager at Formidable labs.
+➤➤ MadeWithReactJS (@madewith_react): A collection of projects made with ReactJS.
+➤➤ Jessica Carter (@jesss_codes): Freelance software engineer who frequently tweets
+about React.
+➤➤ Dan Abramov (@dan_abramov): Software engineer at Facebook. Co- creator of Redux and
+Create React App.
+➤➤ Mark Dalgleish (@markdalgleish): React developer and co- creator of CSS Modules.
+➤➤ John- David Dalton (@jdalton): JavaScript developer and creator of the Lodash library.
+➤➤ Sean Larkin (@TheLarkinn): Webpack developer.
+USEFUL LINKS AND RESOURCES
+When you need help or have questions about how to do something in React, chances are good that
+someone else has had a similar problem and the solution can be found with a quick search. If you run
+into a new problem, finding help is usually not a problem and your question may help others who are
+having the same issue. The open source community thrives because of users helping each other out,
+and as you gain more experience, you may be able to solve others’ problems as well. Here are some of
+the best places to give and find help with React programming:
+➤➤ Stack Overflow: Stack Overflow is the first place to check, and the place where you’re most
+likely to find an answer. You can find questions tagged with reactjs at https://stack-
+overflow.com/questions/tagged/reactjs.
+➤➤ Reddit’s React community: Although you’re less likely to find answers to specific questions
+on Reddit, you can often find interesting discussions or projects posted at https://www
+.reddit.com/r/reactjs/.
+436 ❘ CHAPTER 20 GoinG Further
+➤➤ Dev.to: The react tag on Dev.to is an active place to find links to articles and tutorials about
+React and React- related topics. https://dev.to/t/react
+➤➤ React Community on Facebook: React was created by Facebook, and so it’s logical that there
+would be an active React Facebook community. In reality, this isn’t really the case, but fol-
+lowing the React Facebook community is a good way to stay on top of announcements from
+Facebook related to React.
+➤➤ Reactiflux: The Reactiflux website and the online chat at https://discord.gg/reactiflux
+are both great resources for learning about React and for getting and giving help.
+➤➤ Hashnode: Hashnode is another site with an active React community. Check it out at
+https://hashnode.com/n/reactjs.
+SUMMARY
+You’ve come to the end of this book, and hopefully you’ve gained a good understanding of the foun-
+dations of ReactJS. There’s always more to learn, and the brief summaries in this chapter should give
+you some good jumping off points.
+In this chapter, you learned:
+➤➤ Several popular testing libraries and frameworks.
+➤➤ What server- side rendering is.
+➤➤ What GraphQL and Apollo are.
+➤➤ About Next.js and how it compares to Create React App.
+➤➤ About using Gatsby for static site generation.
+➤➤ Who to follow on Twitter.
+➤➤ Resources to use for getting help with React.
+Every React developer benefits from the amazing React community. Now that you have a solid foun-
+dation of React knowledge, one of the best ways to continue to learn and to ensure that React will
+continue to thrive is by giving back. Ways to give back include answering React questions on Stack
+Overflow and elsewhere, contributing to an open source project, or teaching React to someone else or
+writing a book. Best wishes!
+INDEX
+A working React app, 357
+ARIA attributes, 416
+Abramov, Dan (React developer community), 435
+array
+accessibility
+changing of with spread, 158
+also known as a 1 1 y, 413
+copying of with spread, 158–159
+basics of, 414–415
+passing an empty array to only run
+form accessibility, 417–418 useEffect on mount, 268
+implementing of in React components, 415–422 array.map function, 53
+why is it important, 413–414 arrow functions, 39, 216–217
+addEventListener, 200 assertions, writing of with Chai, 427–428
+AJAX (Asynchronous JavaScript and XML), 290 asset- manifest- json, 342–343
+AMD (Asynchronous Module Definition), 25 async, 372
+Angular (angular.io), 18 asynchronous code
+animation events, 211 described, 369–370
+Apollo, 433–434 where to run in React, 374–377
+App component Asynchronous JavaScript and XML (AJAX), 290
+adding methods and binding them to, 191–192 Asynchronous Module Definition (AMD), 25
+converted App component, 193–195 asynchronous tasks, 371
+copying and modifying of JSX in, 191 attributes
+initializing state in, 190 ARIA attributes, 416
+listing for, 407 component attribute, 305–306
+rendering NavBar inside of, 87 custom attributes, 56
+static version of, 163 exact attribute, 301–303, 304
+apply function, 67 non- standard attributes, 56
+apps vs. props, 52–56
+building of, 339–343 React as supporting many HTML attributes, 55
+Clicker app, 381, 383, 384 renaming of, 54
+example of, 396–398 render attribute, 306–307
+inspecting of with Portal in Chrome Developer some as behaving differently, 55
+Tools, 402 standard HTML attributes, 54–56
+inspecting of with Portal in React Developer as using camelCase, 54
+Tool, 403 using event listener attributes, 202
+putting it on the web, 344–349 await, 372
+running built app from filesystem, 342 Axios, getting data with, 377–379
+what’s in a name, 343 axios- hooks, 286
+437
+Babel – commits
+B CDN links, 3
+Chai, testing with, 427–428
+Babel, 31–32
+Change Detection, 19
+backend as a service (BaaS), 345
+checkout form, with help links, 410
+back- end environment, 20
+children
+Bailey, Becca (React developer community), 435
+accessing of imperatively with useRef,
+bidirectional data flow, 125
+279–280
+bind function, 67, 215–216
+cloning of in NavBar.js, 88
+breakpoints, 421
+conditionally rendering children based on media
+browser incompatibilities, elimination of, 33
+query, 422
+BrowseRouter, 294
+creating new CartItem children, 110
+build directory, examining of, 340
+defined, 84, 104
+build script, running of, 340
+an HTML textarea's value as, 230
+build toolchain, React without, 1–7
+making us of props in, 88–89
+built app, running of from filesystem, 342
+manipulating, 86–88
+built- in components, 47–56
+rendering of using props.children, 87–88
+built- in hooks
+CJS (CommonJS), 26–27
+accessing children imperatively with useRef,
+Clark, Andrew (React developer community), 435
+279–280
+class, basing new class on external style, 253
+caching computer values with useMemo, 278–279
+class body, and constructor method, 62–63
+combining logic and state with useReducer,
+class components
+273–274
+consuming a Context in, 390
+customizing exposed values with
+controlling of inputs in, 224–225
+useImperativeHandle, 280–281
+converting to, 190–197
+hooking into lifecycle with useEffect, 264–272
+creating ref in, 234
+list of, 259
+defined, 103
+managing state with useState, 260–264
+differences between function and class
+memoized callbacks with useCallback, 275–278
+components, 84
+subscribing to global data with useContext,
+initializing state in, 146–147
+272–273
+introduction to, 57–68
+updating DOM synchronously with
+loading initial data in, 374–375
+useLayoutEffect, 281
+managing state in, 71–72
+bytecode, 31
+updating state with setState, 150
+using Context in, 390
+C using state and setState in, 72
+writing event handlers in, 213–214
+call function, 67 class composition, use of, 252–253
+callback function, 67 class declarations, 60–61
+callback refs, creating of, 236–238 class expression, 61–62
+callbacks class property, initializing state in, 147
+within callbacks, 372 Clicker app, 381, 383, 384
+memoized callbacks with useCallback, 275 clipboard events, 206
+camelCase, 33, 54, 201, 248, 252, 416 cloneElement, 87
+caption, rendering of, 74 command- line interface (CLI), 101–102
+Carter, Jessica (React developer community), 435 commit phase, of component lifecycle, 89, 327
+cascading styles, in components, 245–246 commits, 327
+438
+CommonJS (CJS) – const keyword
+CommonJS (CJS), 26–27 passing children into, 85–86
+component attribute, use of, 305–306 presentational components, 79
+component data, editing of in React DevTools, Provider component, 389–390
+114–117 pure component, 96, 103
+component tree, 108–110, 113 putting everything in one, 46–47
+componentDidCatch(), 92, 327–328 React component, 23–24
+componentDidMount method, 90 React.Component, 68–76
+componentDidUpdate, 92 rendering of, 98–103
+components root component, 43, 103, 353–354
+as able to be imported into other components, 45 route component, 294
+App component. See App component router component, 294
+attributes vs. props, 52–56 SalesChart component, 401, 402
+built- in components, 47–56 SearchBox component, 227
+cascading styles in, 245–246 searching for, 110–112
+changing state data in, 4–5 SearchInput component, 227
+class components, 57–68, 103, 213–214, SearchResults component, 227–228
+224–225, 234, 374–375, 390 selecting, 114–117
+as compared to elements, 44–47 setting an event listener in, 201
+Context.Consumer component, 390–391 shell components, 163–164
+Counter component, 94 SidebarHelp component, 401
+creating component using a class, 58 simple routing component, 291–292
+creating component with React stateful component, 103
+.createClass, 57 stateless component, 103, 147
+creating configurable ones, 15 stateless functional components, 79
+custom components, 30, 56 terminology of, 103–104
+defined, 15, 43 TextReader component, 236
+as defining elements, 44–45 types of, 56–84
+dumb components, 79 use of to reduce complexity, 45–46
+elements as invoking, 45 user- defined components, 30, 56
+with errors, 326 without default props, 142
+FigureList component, 74–76 Components window, 108–109, 114, 115
+filtering of, 112–114 componentWillUnmount, 92
+function components, 76–84, 103, 212–213, 224, composing, defined, 15
+375, 391 composition
+higher- order components, 114, 311–312 as alternative to Context, 392–396
+HTML element components, 47–51 defined, 15
+improving performance and avoiding errors, vs. inheritance, 15–16
+92–98 use of instead of Context, 395–396
+including CSS in, 245 using, 16
+inspecting, 107–114 composition events, 206
+lifecycle of, 89–98 conditional rendering
+lifecyle of, 104 with && operator, 37–38
+linking component, 294 with conditional operator, 38
+Logger component, 329 defined, 36
+made up of three child components, 85 with if/else and element variables, 36–37
+Modal component, 408 const keyword, 82, 156
+439
+constant – defaults
+constant, defined, 82 using plain old CSS in components, 245–247
+constructor CSS- in- JS, and styled components, 253–254
+binding function in, 215–216 curly braces
+class body and constructor method, 62–63 putting comments in, 35–36
+in mounting stage, 90 use of double curly braces with objects, 35
+Context use of to include literal JavaScript, 35
+common use cases for, 391–392 custom attributes
+composition as alternative to, 392–396 prefacing of in DOM elements with data-, 34
+consuming a Context in a function component, written using only lower- case letters, 56
+391 custom components, 30, 56
+consuming of, 390–391, 397–398 custom domains, enabling of and HTTPS, 348
+creating Provider, 389 custom hooks
+eliminating prop drilling with, 393–394 finding and using, 286–288
+use of composition instead of, 395–396 inspecting of, 283
+use of with useContext hook, 272 labeling of with useDebugValue, 283–285
+for user preferences, 389 other fun hooks, 288
+user preferences component with, 396 viewing debug value of, 285
+using a component outside of a required Context, writing of, 281–283
+394–395
+using in function component, 391
+D
+when not to use, 392
+Context API, as solving the problem, 388–391 Dalgleish, Mark (React developer community), 435
+Context object, creating of, 388–389 Dalton, John- David (React developer community),
+Context.Consumer component, use of, 390–391 435
+controlled inputs data
+adding value attribute as creating, 223 fetching and caching of, 369–385
+simplifying of in a class, 225–226 getting data to a deeply nested component with
+vs. uncontrolled inputs, 221–226 prop drilling, 392–393
+updating of with function components, 223–224 getting of with Axios, 377–379
+Counter, with useReducer, 273–274 getting of with fetch, 377
+Counter component, toggling render of, 94 reading of from localStorage, 382–385
+CounterClass button, result of clicking, 153 removing of from localStorage, 383–384
+Create React App data flow
+Babel as integrated into, 31 bidirectional data flow, 125
+interactive “Hello, World” with, 7–8 one- way data flow, 123–126, 224
+use of to build boilerplate user interface, 1–7 two- way data flow, 125
+CSS unidirectional data flow, 123–126
+advanced CSS Modules functionality, 252–253 data type, validation of, 133–134
+CSS rule- sets vs. JavaScript style objects, 248 declarative programming, 16–17
+importing of into HTML file, 243–245 default actions, preventing of, 231–232
+media queries in included CSS, 421 default exports, 28–29
+modules of, 250–253 default values, adding of to InputForm, 174–175
+naming CSS Module files, 251–252 defaultProps object, 143, 178
+responsive media queries in CSS file, 421 defaults
+440
+deployment – errors
+destructuring props and setting of, 143 using unnecessary grouping elements can result in
+setting defaultProps as static property, invalid HTML, 417
+143–144 elementType validator, 137
+setting defaultProps for function component, Enzyme, testing with, 426–427
+145 error boundaries
+setting defaultProps outside of component best laid plans, 319–320
+body, 144–145 building your own ErrorBoundary component,
+setting of with OR operator, 142 323–334
+deployment crashed React app, 320
+defined, 339 defined, 320–323
+a deployed React app, 348 ErrorBoundary component, 324
+how is a deployed app different? 343 getDerivedStateFromErrors as static method,
+with Netlify, 345–349 324
+destructuring assignment syntax, 81, 83 handling an error with, 323
+Developer Tools, 344. See also React DevTools implementing of, 323–338
+development environment, 20, 21 providing reset option in, 335
+development mode, vs. production, testing of, 326–327
+343–344 what it can’t catch, 336–337
+development server, and hot reloading, error handling, as stage of component’s life, 89, 92
+360 error message
+Dev.to, 436 cannot read property, 173
+Document Object Model (DOM) cannot read property ‘map’ of undefined, 175
+defined, 13 not- renderable error message, 135
+role of, 13 ErrorBoundary component
+DOM method building your own, 323–334
+calling of on child using a ref, 235 exporting with, 326
+updating of synchronously with installing a pre- built one, 334–336
+useLayoutEffect, 281 listing for, 324
+dumb components, 79 providing reset link in, 334
+updated of with remote logging, 331–332
+errors
+E
+automatically fixable errors or warnings, 362
+ECMAScript Modules (ESM), 27 catching ones in error boundaries with
+effects try/catch, 336–337
+cleaning up after, 265–266 catching ones in event handlers with
+running of only after mounting, 268 react- error- boundary, 337–338
+element tree component that sometimes errors, 333
+after user clicks a link, 100 component with, 326
+initial element tree, 100 how to fix, 362
+element validator, 137 logging of and the info object to console, 328
+elements logging of with ComponentDidCatch(),
+components as defining, 44–45 327–328
+as invoking components, 45 uncaught error, 322
+using unnecessary elements to group elements, viewing caught ones in Loggly, 332
+416 viewing of and info parameters in console, 329
+441
+ES205 module rules – fecthing
+ES205 module rules, 28–29 events
+ESLint animation events, 211
+configuration of, 361 clipboard events, 206
+how to fix errors, 362 composition events, 206
+installing and configuring of, 360–361 event bubbling, 202
+ESM (ECMAScript Modules), 27 Event object, 203–204
+Event API documentation, 205 focus events, 206
+event bubbling, 202 form events, 206–207
+event handler generic events, 207
+binding event handler functions, 214–216 how they work in React, 199–201
+binding of, 70–71 image events, 210
+binding of inline, 216 keyboard events, 206
+catching errors in with react- error- boundary, media events, 209–210
+337–338 mouse events, 207–208
+defining state using class property, 217–218 other events, 211
+FilterSelect with, 187–188 pointer events, 208–209
+functions of, 211–219 selection events, 209
+InputForm component with event handlers and setting an event listener in a React component,
+event listeners, 181–182 201
+passing data to, 218–219 supported events, 204–211
+passing Event object to, 219 SyntheticEvent, 201–202
+use of arrow function as, 39, 216–217 touch events, 209
+using inline event handler to call setState, transition events, 211
+212 UI events, 209
+using inline event handler to show an alert, 211 using addEventListener, 200
+writing and binding an event handler method in a using an event attribute in HTML, 200
+class, 213–214 using event listener attributes, 202
+writing inline event handlers, 211–212 wheel events, 209
+writing of in function components, 212–213 writing of in class components, 213–214
+event handler function, 211–219 Event.target, 203
+event listeners Event.type, 203
+FilterSelect with, 187–188 exact attribute
+InputForm component with event handlers and adding of to Routes to restrict matching, 304
+event listeners, 181–182 use of on NavLink components, 301–303
+setting of in React component, 201 export statement, 27–29
+using event listener attributes, 202 exporting, with ErrorBoundary, 326–327
+Event object expressions, 38–39
+adding properties to, 205
+base Event properties, 203
+F
+passing of automatically, 218
+passing of to event handler, 219 Facebook
+viewing properties of, 203 React as created by, 11
+Event.cancelable, 203 React Community on, 436
+Event.preventDefault, 203 fecthing, ways to, 376
+442
+fetch – global data
+fetch, getting data with, 377 optimizations and shortcuts with, 80
+figure, rendering of, 74 setting defaultProps for, 145
+FigureList component, 74–76 as simpler than class components, 76–79
+filteredReminders, creating new one, 184–185 updating state with, 154–155
+filtering use of PropTypes with, 133
+of components, 112–114 writing event handlers in, 212–213
+reminders, 183–190 function constructors, 58
+reminders list, 185 function declarations, 61
+filterList function, implementing of, 186–187 function dependencies
+FilterSelect as causing unnecessary renders, 275–277
+with an event handler and event listener, 187–188 unnecessary renders warning due to, 276
+filtering reminders, 183–190 function hoisting, 61
+pure FilterSelect, 172 function scope, 81
+round two of, 166 functional programming, 64
+shell component for, 163 functions
+validating and setting defaults for, 177–178 apply function, 67
+fixed counter class, 155 array.map function, 53
+Flamegraph chart, 119 arrow functions, 39, 216–217
+Flux, use of, 430 binding of in the constructor, 215–216
+focus call function, 67
+managing of, 239 callback function, 67
+managing of programmatically, 419 higher- order functions, 311–312
+focus control (in React), 418–420 immediately invoking of in JSX, 39
+focus events, 206 passing of to a setter, 263
+form events, 206–207 setter function, 262–264
+forms
+controlled inputs vs. uncontrolled inputs,
+G
+221–226
+as having state, 221–222 Gatsby, use of, 434
+lifting up input state, 226–228 generic events, 207
+preventing default actions, 231–232 getDerivedStateFromErrors
+using different form elements, 229–231 receives error as parameter, 325
+using uncontrolled inputs, 228–229 as running during render phase, 325
+front- end environment, 20 should return an object for updating state,
+function binding, 67 325–326
+function components as static method, 324
+consuming a Context in, 391 getDerivedStateFromProps, 90, 91, 92
+controlling of input in, 224 getElementById function, 13
+creating ref in, 234 getSnapshotBeforeUpdate, 91–92
+defined, 79, 103 Git button, clicking New site from, 346
+how to write them, 79–80 Git provider, choosing of, 346
+initializing state in, 147–149 global data
+loading initial data in, 375 defined, 272
+managing state in, 83–85 subscribing to with useContext, 272
+443
+global scope – InputForm
+global scope, 82 standard HTML attributes, 54–56
+Google, Angular (angular.io), 18 using an event attribute in, 200
+GraphQL, use of, 432–433 using unnecessary grouping elements can result in
+invalid HTML, 417
+HTTPS, enabling custom domains and, 348
+H
+hash string, defined, 343
+I
+Hashnode, 436
+HashRouter, 294, 295 image events, 210
+Hello, World immutabilty, 156
+interactive Hello, World component, 7 imperative programming, 16
+running in browser, 5 implicit globals, 82
+Hello React Learner, 8 import statement, 27–29
+higher- order components, 114, 257, 311–312 index.html
+higher- order functions, 114, 311–312 the built index.html, 341
+history object, 309, 310, 312 creating React App’s, 99
+hoisting, 61, 81 finished one, 352–353
+hooks importing index.js into, 354
+built- in hooks, 259–281 index.js
+custom hooks, 281–288 attempt to load without compiling, 355
+defined, 257 finished index.js, 353
+importing of, 260 importing of into index.html, 354
+React Router hooks, 317–318 initial element tree, 100
+resources on, 288 initializing state, 146–149
+role of, 79, 147 inline event handlers, 211–212
+rules of, 259 inline styles
+and state, 116 importing multiple styles, 250
+why they were introduced, 257–259 improvement of with style modules, 249
+hot reloading, 8, 360 using of in React, 247–248
+HTML using variables to hold style objects, 249
+adding HTML link to HTML file, 244 why not to use, 249
+adding React to page, 1–7 why to use, 249
+custom attributes in, 34 innerHTML function, 13
+element components, 47–51 input elements
+file for using React without toolchain, 4 controlling of, 230
+HTML document, 352–353 list of, 229–230
+HTML document with multiple nodes in the InputForm
+body, 400 adding PropTypes and default values to,
+importing CSS into, 243–245 174–175
+input elements, 229–230 converted InputForm component, 196–197
+making HTML template, 359–360 with event handlers and event listeners, 181–182
+React as supporting many HTML attributes, 55 pure InputForm, 172
+select element in, 231 round two of, 165–166
+semantic HTML, 416 shell component for, 163
+444
+inputs – list virtualization
+inputs. See also controlled inputs; uncontrolled Jest, testing with, 363, 425
+inputs JSX
+controlling of in class component, 224–225 accessible form, writing using, 418
+controlling of in function component, 224 Babel, 31–32
+lifting up input state, 226–228 Boolean attributes, 34–35
+updating input element with one- way data flow, conditionals in, 36
+224 copying and modifying of in App, 191
+isComplete, implementing isComplete changing defined, 30
+functionality, 188–190 expressions in, 38–39
+Isomorphic React, 103 how it works, 30–31
+isRequired validator, 134 JSX Transform, 31, 32
+isValidElement, 87 as not HTML, 23, 33
+as requiring loader, 356
+as supporting all ARIA attributes, 416
+J
+syntax basics of, 33–41
+JavaScript transpilation, 31–33
+array.map function, 53 use of curly braces to include literal JavaScript, 35
+class body and constructor method, 62–63 as using camelCase, 33
+class declarations, 60–61 using children in, 40
+class expression, 61–62 when to use JavaScript in, 36
+class validation, 138 as XML, 33
+classes in, 58–68
+CSS rule- sets vs. JavaScript style objects, 248
+K
+equality operators, 261
+executing asynchronous JavaScript, 371 Karma, testing with, 428
+function (or method) invocation in, 64–66 key prop, 177–183
+as functional programming language, 64 keyboard events, 206
+history of modules in, 25–29 keyboard focus, use of ref to set, 410–411
+main JavaScript file, 353
+method definition syntax, 214
+L
+method syntax, 65
+as never sleeping, 370–374 Larkin, Sean (React developer community), 435
+promises and async/await, 372–374 let keyword, 82
+REST (Representational State Transfer), 376 lexical variable scoping, 82
+routing, 291 lifting state up, 170–176
+shallow copies and spread operator, 157–160 Link, internal linking with, 296–297
+side effects, 264 linking
+static methods, 324–325 automatic linking with Redirect, 302
+in strict mode, 65 with object, 297
+style syntax, 248 to routes, 296–302
+subclasses with extends keyword, 63–64 with string, 297
+tagged template literals, 254–255 linking component, 294
+variables in, 81–83 linting, defined, 360
+when to use it in JSX, 36 list virtualization, 120
+445
+literal JavaScript – oneOfType validator
+literal JavaScript, using of inside JSX, 35 modal
+loader managing keyboard focus with, 409–410
+JSX as requiring, 356 one way to style, 405–406
+role of, 358 opened modal, 409
+localStorage Modal component, finished Modal component, 408
+clearing of in the Clicker, 384–385 modal dialog, rendering and interacting with,
+reading data from, 382 404–409
+reading of in Clicker, 383–384 model, managing focus upon closing of, 419–420
+removing of data from, 383–384 Model- View- Controller (MVC) pattern, 12
+storing data with, 381–382 modularization, 24–29
+viewing of in Chrome Developer Tools, 383 mounting, as stage of component’s life, 89, 90
+working with, 381 mouse events, 207–208
+writing to when state changes, 382 mouse position, component to track, 354
+location object, 309, 313, 314 mouse tracker, testing of, 363
+log source, adding of, 330 multiple component trees, why not just render? 403
+Logger component, 329
+logging service, use of, 328–329
+N
+Loggly, 329–330, 331, 332
+NativeEvent, 204, 205
+NativeRouter, 294, 295
+M
+NavBar, 87
+MadeWithReactJS, 435 NavBar.js, cloning children in, 88
+Martin, Robert C. (“Uncle Bob”), 15 navigation menu with sub- items, 299
+match object, 309, 313–314, 316 NavLink
+media events, 209–210 internal navigation with, 298–302
+media playback, controlling of, 241 list of NavLinks with sub- items, 299–300
+media queries (in React) using exact attribute on NavLink components,
+overview, 420 301
+conditionally rendering children based on, 422 Netlify
+in included CSS, 421 deployment with, 345–349
+responsive media queries in CSS file, 421 domain management in, 349
+using useMediaQuery, 422 enabling routing with, 347–348
+memoization, 121 new operator, 59
+memory leaks Next.js, use of, 434
+avoiding, 93–98 Nightwatch.js, testing with, 428–429
+fixing, 96 node hosting, 345
+React component with potential one, 93 nodes, validation of, 134–137
+MemoryRouter, 294, 295 npm scripts, creating of, 364–365
+method definition syntax, 214
+methods
+O
+as properties too, 60
+this keyword in, 65–66 object, copying of with spread, 159–160
+Microsoft, TypeScript, 19 object- oriented programming (OOP), 15
+Mocha, testing with, 426 oneOfType validator, 139
+446
+one-w ay data flow – PropTypes
+one- way data flow running in the browser, 354–357
+defined, 123 structuring your source directory, 365–367
+reason for, 125 prop drilling
+understanding, 124–125 defined, 387–388
+updating input element with, 224 elimination of with Context, 393–394
+operators, equality operators, 261 getting data to a deeply nested component with,
+optimization, 120–121 392–393
+use of, 388
+props (properties)
+P
+accessing props, 52–54
+parameters additional Link props, 296–297
+using URL parameters, 304–305 attributes vs., 52–56
+using useParams hook, 305 as being any data type, 126–127
+parent component Prop, 305–306
+defined, 84, 104 component that uses string prop, 130
+passing onClick into, 88 components as receiving, 126
+path matching, restricting of, 304 creating, 126
+payload, passing of to reducer, 274 creating and using, 74–76
+performance, solving performance problems, 279 default props, 141–145, 175–176
+plugins, role of, 358 defined, 103, 126
+plugins object, creating of, 359 difference between state and, 149
+pointer events, 208–209 key prop, 177–183
+Portals limiting of to certain values or types, 139
+common use cases for, 403–411 local variable and props confusion, 129
+creating of, 401 methods as, 60
+defined, 399 passing props, 52
+as enabling modal dialogs, 400 passing setter function as, 263
+how to make, 399–403 passing the wrong prop type, 131
+inspecting an app with Portal in Chrome as read- only, 127
+Developer Tools, 402 render props, 257, 306–307
+inspecting an app with Portal in React Developer rendering render prop, 307
+Tools, 403 as storing data, 69
+pre- commit phase, of component lifecycle, 89 string prop, 130
+presentational components, 79 validating incoming ones with PropTypes,
+preventDefault, use of, 232 129–130
+production, development mode vs., 343–344 validating that a prop is a string, 130–131
+Profiler tab, 119 validation of required props, 134
+project props.children, 87
+automating build process, 358–365 PropTypes
+HTML document, 352–353 adding of and default values to InputForm,
+initializing a React project from scratch, 351–367 174–175
+initializing yours, 352 appending the isRequired validator, 134
+main JavaScript file, 353 creating custom ones, 140–141
+root component, 353–354 defined, 130
+447
+PropTypes.arrayOf – React.Component
+PropTypes (continued) philosophy of, 14–21
+displaying a warning, 132 and ReactDOM, 12
+failing PropTypes.element validation, 138 reason for name, 11–13
+getting started with, 131–133 reason to learn, 17
+inside component’s body, 132 Twitter account, 435
+putting propTypes outside the class body, 133 useful links and resources, 435–436
+Reminder with and defaultProps, 178 what it is not, 19–21
+as telling which attribute caused the error, 136 React audio player, 241
+trying to render non-n ode value, 135 React Bookstore, 105–107, 108
+use of with function component, 133 React component tree, 43, 44
+using PropTypes.node, 136 React DevTools
+using PropTypes.oneOf, 139 additional functionality of, 118–119
+validating incoming props with, 129–131 editing component data in, 114–117
+validation with, 133 Flamegraph chart, 119
+PropTypes.arrayOf, 139 getting started with, 105–107
+PropTypes.exact, 140 for inspecting components, 107–114
+PropTypes.objectOf, 139 installation of, 105–107
+PropTypes.shape, 140 logging component data to console, 118
+prototypal inheritance, 58–60 profiling, 119–121
+prototypes Ranked chart after optimizing, 121
+JavaScript as having, 58 role of, 107
+modifying and using of, 59 Select tool, 115
+Provider component View Settings, 113
+making of, 396 viewing Ranked chart, 120
+use of, 389–390 React element type, validation of, 137
+public field, 147 React elements, validation of, 137
+public instance field, 147 React Konsul, 103
+pure component, 96, 103 React Native
+pure function, 96 React Native CLI, 101–102
+as rendering engine, 101
+use of, 434
+R
+your first React Native component, 101
+Ranked chart, 120, 121 React News, 435
+React React Newsletter, 435
+as compared to Angular (angular.io), 18–19 React UI
+as compared to Vue.js (vujs.org), 19 as having many components nested within other
+as compared to what you already know, 18–19 components, 84
+as declarative, 16–17 rendering of, 100
+developer community, 435 React.Children, 86
+events supported by, 206 React.Component
+foundation of, 11–22 class header, 69
+as front-e nd library, 19 constructor function, 69
+as idiomatic, 17 defined, 68
+origins of, 11 importing of, 68–69
+448
+React.createClass – rendering
+initializing local state, 69 creating callback ref, 236–237
+managing state in, 71 creating of in class component, 234
+React.createClass, 57 creating of in function component, 234
+React.createElement(), 32 customizing value exposed by, 280–281
+React.createElement method, 31 defined, 233
+react.development.js, 2 examples of, 239–242
+ReactDOM, 12–14, 101 passing ref callback as inline functions, 237–238
+react- dom.development.js, 2 use of, 234–236
+ReactDOM.render(), 6, 13, 98–99 use of to set keyboard focus, 410–411
+ReactDOMServer, 102–103 when not to use, 238–239
+react- error- boundary, specifying fallback when to use, 238
+component with, 335–336 regular expressions
+react- fetch- hook, 286 defined, 110
+React.Fragment use of, 110–112
+use of short syntax of, 40–41 @rehooks/local- storage, 287
+use of to eliminate unnecessary HTML elements, Reminder
+417 with PropTypes and defaultProps, 178
+react- hook- form, 286 round two of, 167
+Reactiflux, 435, 436 shell component for, 164
+reactive programming, defined, 12 reminders
+ReactJS News, 435 adding of to list, 183
+React.memo(), 97–98 filtering of, 183–190
+react.pdf, 103 filtering of reminders list, 185
+React.PureComponent, 96, 97 Reminders App
+React.render(), 6 building, 161–168
+react- router- dom initial render of, 179
+installing and importing of, 293–294 static version of, 167–168
+as one version of React Router, 293 RemindersList
+react- router- native, as one version of React with default props and PropTypes,
+Router, 293 175–176
+react- skip- nav, implementing Skip Navigation pure RemindersList, 172–173
+links with, 418–419 with Reminder imported, 164
+React.StrictMode, 98 round two of, 166
+reconciliation, 14, 100 shell component for, 164
+Reddit’s React community, 435 render(), 6
+Redirect render attribute, 306–307
+automatic linking with, 302 render function, 73–74
+routing with, 308–309 render method, 90, 91
+reducer, 274, 430 render phase, of component lifecycle, 89
+Redux, use of, 430–432 render props, 257, 306–307
+reference values, 157 rendering
+referential equality, testing of, 278 of caption, 74
+refs of children using props.children, 87–88
+calling a DOM method on a child using, 235 of components, 98–103
+449
+renders – setState function
+rendering (continued) routes
+conditional rendering, 36–38 creating of, 302–309
+conditionally rendering children based on media dynamic links and routes in nested routes,
+query, 422 314–316
+default route, 308 linking to, 296–302
+a fallback UI, 327 multiple ones in component may have matches,
+of figure, 74 302–303
+and finding node with Enzyme, 427 multiple routes can match the URL, 303
+and interacting with a modal dialog, rendering default route, 308
+404–409 switching of, 307–308
+modal without React Portals can have unexpected routing
+results, 404 behind the scenes, 309–316
+of NavBar inside of App, 87 changing routes and viewing the window
+other rendering engines, 101 .location.href property, 293
+of React UI, 100 defined, 289–290
+ReactDOM as most commonly used rendering enabling routing with Netlify, 347–348
+engine, 101 how it works in React, 291–293
+of render props, 307 linking to routes, 296–302
+of SalesChart component, 402 purposes of, 291
+server- side rendering, 429–434 React Router hooks, 317–318
+of uncontrolled input, 223 with Redirect, 308–309
+renders redirecting from one location to another, 309
+function dependencies as causing unnecessary simple routing component, 291–292
+ones, 275–276 using React router, 293–316
+solving unnecessary ones, 278–279
+unnecessary renders warning due to function
+S
+dependence, 276
+repository, choosing of, 347 SalesChart component, 401, 402
+RequireJS, 25–26 scroll position
+reserved words, cautions with, 33 scrolling to element with a ref, 242
+rest parameters, 160 setting of, 241–242
+return statement, 40 Search input box, 110
+root component, 43, 103, 353–354 SearchBox component, 227
+route component, 294 SearchInput component, 227
+router SearchResults component, 227–228
+components of, 294, 295–296 select elements, controlling of, 231
+installing and importing react- router- dom, select inputs, use of in React, 231
+293–294 selection events, 209
+linking component, 294 setState function
+route component, 294 as asynchronous, 72–73
+router component, 294 calls to as asynchronous, 152–153
+selecting of, 294–295 managing of in class components, 71
+using React router, 293–316 merging object into state with, 151–152
+router component, 294, 295–296 as not setState, 149
+450
+setState method – textarea
+passing a function info, 153–154 stateless functional components, 79
+using updater function with, 154 static directory, 342
+setState method, 150–151 static method, getDerivedStateFromErrors
+setter as, 324
+passing function to, 263–264 StaticRouter, 294, 295
+passing value to, 263 store (in Redux), 430
+setter function string
+as bound to their creator components, 262 hash string, 343
+passing one as a prop, 263 linking with, 297
+use of, 262 validating that a prop is one, 130–131
+value comparison, 264 string prop, 130
+shallow copy, 157, 158 style objects
+shallowCompare function, 96, 97 importing multiple styles, 250
+shell components, 163–164 style object library, 250
+shouldComponentUpdate, 91, 96, 97 using variables to hold, 249
+side effects, 264 styled components, use of, 253–254
+SidebarHelp component, use of, 401 styles
+single page application (SPA), 290 CSS Modules, 250–253
+single responsibility principle, 15 CSS- in- JS and styled components, 253–254
+Skip Navigation links, 418–419 importance of, 243–244
+source directory importing CSS into HTML file, 243–245
+grouping by features, 367 using plain old CSS in components, 245–247
+grouping by file type, 366 writing inline styles, 247–250
+structuring yours, 365–367 subclasses with extends keyword, 63–64
+spread operator, 157–160 syntactic sugar, use of term, 58
+Stack Overflow, 435 SyntheticBaseEvent object, 203–204
+state SyntheticEvent, 201–202, 204
+App with lifted state, 171–172
+defined, 103
+T
+defining of using class property, 217–218
+difference between props and, 149 tagged template literals, 254–255
+hooks and, 116 templates, making HTML template,
+initializing state in App, 190 359–360
+lifting it up, 170–176 test- driven development, 363
+lifting up input state, 226–228 testing tools, 360–364, 425
+resetting of, 333 text
+setter function as replacing, 156 automatic selection of, 239
+updating, 149–150 selecting and copying of with ref, 239–240
+updating of with function components, 154–155 selecting of and displaying temporary message,
+what not to put in, 168 240
+what to put in state, 161 textarea
+where to put it, 168–170 controlling of, 230
+state object, 69–70, 71, 145–149 getting value of and counting its words, 279–280
+stateful component, 103 an HTML textarea's value as, 230
+stateless component, 103, 147 use of in React, 230
+451
+TextReader component – useReducer
+TextReader component, 236 useContext
+ThingsLike, 86 subscribing to global data with, 272–273
+ThingsThatAreFunny, 85 using Context with, 272–273
+this keyword, 64–66 useDebugValue
+this.props.children, 85 labeling of custom hooks with, 283–285
+timer use of, 284
+creating new timer with each render, 266–267 useEffect
+starting of with each render, 266 asynchronous requests with, 270–271
+toolchain, building your own, 351–357 cleaning up after effects, 265–266
+touch events, 209 creating new timer with each render, 266–267
+transition events, 211 customizing of, 266–270
+transpilation, 31–33 hooking into lifecycle with, 264–272
+try/catch, catching errors in error boundaries most basic form of, 265
+with, 336–337 passing an empty array to only run useEffect
+two- way data flow, 125 on mount, 268
+TypeScript (Microsoft), 19 running asynchronous code with, 270–272
+specifying useEffect’s dependencies, 269
+starting timer with each render, 266
+U
+using default useEffect behavior, 265
+UI useErrorHandler(), use of, 337–338
+diagram of typical one, 321 useForm, use of, 287
+rendering a fallback UI, 327 useGeolocation, 288
+UI events, 209 useHistory, 310–311, 317
+UI layer, 12 use- http, 285
+UMD (Universal Module Definition), 3 useImperativeHandle, customizing exposed
+uncontrolled inputs values with, 280–281
+blog comment interface using, 228–229 useKonomiCode, 288
+vs. controlled inputs, 221–226 useLayoutEffect, updating DOM synchronously
+omitting value attribute as creating, 222 with, 281
+rendering of, 223 use- local- storage- state, 287
+use of, 228–229 useLocation, 317
+unidirectional data flow, 123, 124–125 useMediaQuery, use of, 422
+Universal React, 103 useMemo
+unmounting, as stage of component’s life, 89, 92 caching computed values with, 278–279
+updater function, 153–154 solving performance problems with, 279
+updating, as state of component’s life, 89, 90–92 solving unnecessary renders with, 278–279
+URL parameters, use of, 304–305 useNetworkStatus, 288
+useAxios, use of, 286 useParams, 317
+useCallback user preferences (app), 396–398
+function dependences cause unnecessary renders, user- defined components
+275–277 custom components as also known as, 30
+memoized callbacks fix the unnecessary effect as having any attributes, 34
+problem, 277–278 possibilities for, 56
+memoized callbacks with, 275–278 useReducer
+452
+useRef – wrapper hell
+combining logic and state with, 273–274 customizing value exposed by ref, 280–281
+Counter with, 273–274 debug value, 283–285
+passing payload to reducer, 274 getting value of textarea and counting its
+useRef, accessing children imperatively with, words, 279–280
+279–280 passing of to a setter, 263
+useRouteMatch, 317–318 var keyword, 81–82
+useState variables
+calling of hook as returning an array, 155–156 block scope variables with let, 82
+managing state with, 260–264 changing local variables doesn’t update the view,
+number guessing game with, 260–261 127–128
+setting initial state, 262 goodbye to var, 81–82
+setting initial state with, 156 in JavaScript, 81–83
+use of to create and update a counter, 84–85 local variable and props confusion, 129
+why use const with, 156 use of to hold style objects, 249
+useState function, 147, 149 using const, 82
+useZipLookup Virtual DOM, 13–14, 100–101
+defined, 282 Vue.js (vujs.org), 19
+use of, 282–283
+W
+V
+web
+validation how it works, 290
+of data type, 133–134 putting app on, 344–349
+failing PropTypes.element validation, 138 Web Accessibility Initiative - Accessible Rich
+of incoming props, 129–131 Internet Applications (WAI- ARIA),
+JavaScript class validation, 138 415
+of nodes, 134–137 Web Content Accessibility Guidelines (WCAG),
+with PropTypes, 133 414–415
+of React element type, 137 web server hosting, 344–345
+of React elements, 137 Web Storage
+of required props, 134 remembering user with, 380
+and setting defaults for FilterSelect, 177–178 as synchronous, 380
+that prop is a string, 130–131 types of, 379
+that prop is an instance of a class, 138 use of, 379–385
+validators when not to use, 380
+custom validators, 140–141 when to use, 380
+element validator, 137 Webpack, how it works, 357–358
+elementType validator, 137 Webpack Dev Server, 360
+isRequired validator, 134 wheel events, 209
+values windowing, 120
+customizing exposure values with withRouter, use of, 310
+useImperiatveHandle, 280–281 wrapper hell, 258
+453
+WILEY END USER LICENSE AGREE-
+MENT
+Go to www.wiley.com/go/eula to access Wiley’s ebook EULA.

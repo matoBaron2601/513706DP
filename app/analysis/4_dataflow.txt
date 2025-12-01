@@ -1,0 +1,2597 @@
+6
+React Data Flow
+Data, and moving data between the different parts of an application, is a critical piece of any
+interactive user interface. In this chapter, you’ll learn:
+➤➤ What one- way data flow means.
+➤➤ The benefits of one- way data flow.
+➤➤ How to initialize state in a React user interface.
+➤➤ How to decide where the state should “live.”
+➤➤ How to decide what data should be in state.
+➤➤ Methods for updating state.
+➤➤ How and why to treat state as immutable.
+➤➤ How to pass data between components.
+➤➤ The value of “shallow” copying and merging.
+➤➤ How to validate incoming props with PropTypes.
+➤➤ How and why to provide default props.
+➤➤ New JavaScript syntax for working with props and state.
+➤➤ How to convert between function and class components.
+ONE- WAY DATA FLOW
+One of the defining characteristics of React that distinguishes it from most other front- end UI
+libraries is its use of one-w ay data flow, also known as unidirectional data flow. One- way data
+flow means that all of the data in a React application flows from parent components to child
+components. Another common way to describe the flow of data in React is “Data flows down
+(or downstream), and events flow up (or upstream).”
+124 ❘ CHAPTER 6 React Data Flow
+While one-w ay data flow eliminates a common cause of complexity and errors in user interfaces, it
+can also create confusion and frustration unless you fully understand the ins and outs of using it to
+your advantage. In this chapter, I’ll take a step- by- step and thorough approach, with plenty of exam-
+ple code, to covering everything you need to know about data flow within React, using both class
+components and function components.
+Understanding One- Way Data Flow
+Figure 6-1 illustrates how unidirectional data flow works.
+Component
+Component Component
+Data Events
+Component Component Component Component
+FIGURE 6- 1: Unidirectional data flow
+Unidirectional data flow doesn’t mean that child components can’t send data to parent components.
+Sending data from child components (for example, an input form) to parent components (for exam-
+ple, the form containing the input) is a critical part of interactivity. However, one- way data flow does
+mean that the way you send data from a child component to a parent component or between sibling
+components is different from how you pass data from a parent to a child.
+To understand one-w ay data flow, it’s helpful to look at an example of two-w ay data flow. To use
+two- way binding in Angular, you can use a combination of brackets, like this:
+<search- form [(term)]="searchTerm"></search- form>
+Assuming that the preceding code causes a search form to be rendered, the combination of square
+brackets and parentheses indicate that the searchTerm variable should be passed into the component
+represented by the search- form element (downstream data flow) and that when the value of the
+search term changes within the component represented by the search- form element, the value of the
+searchTerm variable should be updated (upstream data flow).
+In React, passing data downstream is done using props, like this:
+<SearchForm term={searchTerm} />
+However, because of unidirectional data flow, updating the value of the searchTerm variable from
+within the SearchForm component requires an event to be triggered. In function components, the
+event that allows you to pass data upstream is created when you use the useState hook.
+One-W ay Data Flow ❘ 125
+Before we get to how that works, let’s look briefly at why React uses one-w ay data flow and the
+benefits of it.
+Why One- Way Data Flow?
+Two-w ay data flow, also known as bidirectional data flow, where a component’s data can be modified
+by its parent and changes within the component can directly affect data in the parent, is convenient.
+However, it also increases the complexity of a user interface, and this, in turn, increases the potential
+for errors.
+Figure 6-2 shows an example of a user interface that makes use of two- way data flow. Notice that
+there are multiple ways for data in the model to be changed, and the controller is required in order to
+manage changes.
+Controller
+Model View
+FIGURE 6- 2: Bidirectional data flow
+In bidirectional data flow, it’s not possible to tell whether the view was updated by the user interact-
+ing with the view or by the data in the model changing.
+Figure 6-3 shows a diagram of one-w ay data flow in a user interface. The only way that a view
+(what’s displayed in the browser) can be changed is by changing the data in the model (which is the
+state object in React).
+View
+State Action
+FIGURE 6- 3: Data flowing in one direction
+126 ❘ CHAPTER 6 React Data Flow
+A view in unidirectional data flow can be expressed as a simple function:
+V = function(data)
+If you want to test whether a piece of data in unidirectional data flow is being properly updated, or
+test that the change to a variable in unidirectional data flow has the intended consequences, there’s
+only one thing to test: whether changing the state of the application modifies the view as expected.
+PROPS
+Props in React are the primary way that data is shared between parent components and child com-
+ponents. To create a prop, simply give a React custom element an attribute, using the name=value
+format. Inside the component instance created by that element, the attribute will become a property
+of the props object.
+Here are some key points about props:
+➤➤ A component can receive any number of props.
+➤➤ A prop’s value can be of any type of JavaScript data or an expression that evaluates to a
+value or function.
+➤➤ Props are read- only.
+Let’s take a look at each of these points in more detail.
+Components Receive Props
+When you write a JSX element in React, the attributes that you give an element are passed to the
+component as properties in an object. For example, consider this JSX element:
+<Taco meat="chicken" produce={[cabbage,radish,cilantro]} sauce="hot" />
+If Taco is a function component, this element is the same as the following JavaScript function call:
+Taco({meat:"chicken",produce:[cabbage,radish,cilantro],sauce:"hot"});
+Inside the Taco function’s header, the object passed to the function is given the name props, which is
+how you can access it inside of the function:
+function Taco(props){
+return (<p>Your {props.sauce} {props.meat} taco will be ready shortly.</p>
+}
+export default Taco;
+Because props is a JavaScript object, you can have as many or as few properties in the prop object as
+you need, and there’s no requirement that each prop be passed each time you use a component.
+Props Can Be Any Data Type
+The props you pass to a component can be any type of JavaScript data, including any of the six
+primitive data types (undefined, Boolean, Number, String, BigInt, and Symbol) as well as objects,
+functions, arrays, and even null.
+Props ❘ 127
+Because of JSX’s ability to include JavaScript expressions through the use of curly braces, the data
+passed to a component through the props object can be determined through the use of a variable or
+any JavaScript expression or function call.
+Props Are Read- Only
+Once data has been passed to a component using props, that data is treated as immutable. This means
+that although a component receives props, once those props are values inside the component, your
+component can’t change them.
+This is the strictest rule in React: a component must act like a pure function with regard to its props.
+The reason for this rule is that React only re- renders components in response to state changes. Props
+are the mechanism for updating components according to state changes. If you were to change the
+value of a prop inside a component, it would cause the internal data of your component to be out of
+sync with what’s displayed in your browser and the value of the prop would be reset by the parent
+component with the next render. In other words: changing props inside a component won’t have the
+effect that you want.
+If you attempt to change the value of a prop, you’ll get an error. However, the problem with mutating
+props can be illustrated by looking at what happens when you change any variable inside a compo-
+nent without triggering a re-r ender.
+In Listing 6-1, a stateful variable is passed as a prop from a parent component (App) to a child com-
+ponent (PropsMutator). Inside PropsMutator, a local variable is created to hold the value of the
+prop. This local variable is also used inside the return statement.
+A function called changeProp increments the value of the local copy of the prop and then logs it to
+the console.
+LISTING 6- 1: Changing local variables doesn’t update the view
+import {useState} from 'react';
+function App(){
+const [theNumber,setTheNumber] = useState(0);
+return (
+<PropsMutator theNumber = {theNumber} setTheNumber = {setTheNumber} />
+)
+}
+function PropsMutator(props){
+let myNumber = props.theNumber;
+const changeProp = ()=>{
+myNumber = myNumber + 1;
+console.log("my number is: " + myNumber);
+}
+return (
+<>
+continues
+128 ❘ CHAPTER 6 React Data Flow
+LISTING 6-1 (continued)
+<h1>My number is: {myNumber}</h1>
+<h1>props.theNumber is: {props.theNumber}</h1>
+<button onClick = {changeProp}>change myNumber</button><br />
+<button onClick={()=>{props.setTheNumber(props.theNumber + 1)}}>
+use setTheNumber
+</button>
+</>
+)
+}
+export default App;
+Figure 6-4 shows what happens when you run this component and click the change myNumber but-
+ton several times.
+FIGURE 6- 4: Changing local variables doesn’t update the view
+The second button in Listing 6-1 shows the correct way to modify a value that will be used in the
+return method. In this button, we call a state change function, setTheNumber (which is passed to
+the component from its parent) and pass in a new value. The state change function modifies the state
+variable and then re- renders, which causes the new value to be passed into the child component.
+Figure 6-5 shows the result of clicking the change myNumber button several times, followed by click-
+ing the use setTheNumber button, followed by clicking change myNumber again.
+Props ❘ 129
+Make sure that you understand this example before moving on to the next section, because if you see
+what’s happening in Figure 6-5, the distinction between props and state will make perfect sense and
+you’ll have a much better idea of when to use each.
+FIGURE 6- 5: Local variable and props confusion
+Validating Incoming Props with PropTypes
+When you invoke a JavaScript function and pass in arguments, the function doesn’t care what type
+of data the arguments are, whether they’re passed in at all, or whether more or fewer arguments are
+passed in than the function defines. The same things are true with props that you pass from a parent
+component to a child component.
+For programs to operate correctly, however, it often is important that the props that are passed to
+a component are the same type of data that the component is expecting. For example, if your com-
+ponent expects a prop called itemPrice to be a number, an error may occur if a parent component
+passes itemPrice as an object.
+React programmers (and programmers in general) must account for the possibility of incorrect data
+types being passed to any function that receives arguments. But, it’s not always easy to figure out and
+detect possible data type problems with a dynamically typed language such as JavaScript.
+To help with keeping track of a component’s expected input and finding possible problems, we can
+use a tool called PropTypes.
+130 ❘ CHAPTER 6 React Data Flow
+What Is PropTypes?
+PropTypes is a tool for type checking and documenting props in React components. For each prop
+in your component, you can specify rules that the value coming into the prop will be tested against.
+If the prop value doesn’t pass those rules, a message will be displayed in the JavaScript console in
+your browser.
+PropTypes only displays these warning messages when you’re using the development version of React.
+Once your app is deployed and using the production version of React, PropTypes is silent.
+For example, the WelcomeMessage component in Listing 6-2 uses a prop called firstName to display
+a customized header message. You can tell from looking at the code in this component that the value
+of the firstName prop should be a string.
+LISTING 6- 2: A component that uses a string prop
+function WelcomeMessage(props){
+return (<p>Welcome back, {props.firstName}!</p>);
+}
+export default WelcomeMessage;
+By now, you should be able to guess what the output of this component will be when you pass a first
+name into it through an element like the following:
+<WelcomeMessage firstName = "Grover" />
+But, what happens if you pass something that’s not a string into the firstName prop? The following
+element passes an array into the firstName prop:
+<WelcomeMessage firstName = {['Jimmy','Joe']} />
+The result may not be what you’d expect, as shown in Figure 6-6.
+React doesn’t consider this case to be an error, so it may not be obvious at first what the cause of the
+unexpected output is. This is especially true in components that make use of many different props.
+Listing 6-3 shows how you can use PropTypes to validate this prop.
+LISTING 6- 3: Validating that a prop is a string
+import PropTypes from 'prop- types';
+function WelcomeMessage(props){
+return (<p>Welcome back, {props.firstName}!</p>);
+}
+WelcomeMessage.propTypes = {
+firstName:PropTypes.string
+}
+export default WelcomeMessage;
+Props ❘ 131
+FIGURE 6- 6: Passing the wrong prop type
+With the PropType specified for firstName, when WelcomeMessage receives a value of firstName
+that isn’t a string, a warning message will be displayed in the console, as shown in Figure 6-7.
+Use of PropTypes in React is optional, and whether you use it or not, it won’t fix errors by itself. It
+also won’t cause your application to not compile if a prop fails its checks. It’s purely a development
+tool. However, it’s a great way to catch bugs in your components and to document your components.
+Getting into the habit of using PropTypes will improve your React components and make it easier for
+other programmers who may use your component in the future to know what data it requires.
+Getting Started with PropTypes
+PropTypes is not part of the core React library. To use it, you first have to install it. If you boot-
+strapped your app with Create React App, it’s already been installed for you. Otherwise, you can
+install it by running the following command from the root of your project:
+npm install prop- types - - save
+Once PropTypes is installed, you’ll need to include the PropTypes library into each component where
+you use it. At the beginning of the file containing your component, use the following import:
+import PropTypes from 'prop- types;
+Once imported, PropTypes works the same with both function and class components, but where you
+place the PropTypes may differ.
+132 ❘ CHAPTER 6 React Data Flow
+FIGURE 6- 7: PropTypes displaying a warning
+To use PropTypes, you just need to add a property called propTypes to the component. Note that
+the PropTypes library, which contains different ways of validating props, starts with a capital P. The
+property that you add to your component to cause it to do type checking starts with a lowercase p.
+The propTypes property is a static property, meaning it operates at the component level, not the
+component instance. In class components, this means that you can use the static keyword to put your
+propTypes property in the body of your class, as shown in Listing 6-4.
+LISTING 6- 4: PropTypes inside a component’s body
+import PropTypes from 'prop- types';
+import {Component} from 'react';
+class WelcomeMessage extends Component {
+static propTypes = {
+firstName: PropTypes.string
+}
+render(){
+return(<h1>Welcome, {this.props.firstName}!</h1>);
+}
+}
+export default WelcomeMessage;
+Props ❘ 133
+You can also add the propTypes object into your class component by putting it outside of the class
+body, as shown in Listing 6-5.
+LISTING 6- 5: Putting propTypes outside the class body
+import PropTypes from 'prop- types';
+import {Component} from 'react';
+class WelcomeMessage extends Component {
+render(){
+return(<h1>Welcome, {this.props.firstName}!</h1>);
+}
+}
+WelcomeMessage.propTypes = {
+firstName: PropTypes.string
+}
+export default WelcomeMessage;
+In function components, the propTypes object always goes outside of the function body, as shown in
+Listing 6-6.
+LISTING 6- 6: Using propTypes with a function component
+import PropTypes from 'prop- types';
+function MyComponent(props){
+return (<p>The value is {props.itemValue}</p>);
+}
+MyComponent.propTypes = {
+itemValue: PropTypes.number
+}
+export default MyComponent;
+What Can PropTypes Validate?
+PropTypes can perform a wide variety of checks on a component’s props, including the data type
+(as you’ve seen), whether required props are passed, the shape of properties passed as objects, and
+more. In this section, I’ll explain and demonstrate all of the different validation rules contained in
+PropTypes.
+Validating Data Type
+You’ve already seen how to check whether a prop is one of JavaScript’s data types. The validators for
+JavaScript types are:
+➤➤ PropTypes.array
+134 ❘ CHAPTER 6 React Data Flow
+➤➤ PropTypes.bool
+➤➤ PropTypes.func
+➤➤ PropTypes.number
+➤➤ PropTypes.object
+➤➤ PropTypes.string
+➤➤ PropTypes.symbol
+The purpose of each of these should be self- evident, but note that a couple of the validators, bool and
+func, have names that are different from the names of the JavaScript data types.
+When you use one of these data type validators by itself, PropTypes will treat the prop as optional. In
+other words, a missing prop won’t trigger a PropType warning message by default.
+Validating Required Props
+If a component requires a prop to be passed to it, you can indicate to PropTypes that a prop is
+required by appending the isRequired validator to the data type validator, as shown in Listing 6-7.
+LISTING 6- 7: Appending the isRequired validator
+MyComponent.propTypes = {
+firstName: PropTypes.string.isRequired,
+middleName: PropTypes.string,
+lastName: PropTypes.string.isRequired
+}
+Beyond whether a prop exists and is of a particular data type, you can also do checks that are specific
+to how the prop data functions within React.
+Validating Nodes
+The node validator checks whether the prop’s value is something that can be rendered. React calls
+anything that can be rendered in a component a node. The things that can be rendered in a compo-
+nent are numbers, strings, elements, and arrays containing numbers, strings, or elements:
+userMessage: PropTypes.node
+The node validator is useful in cases where you may not care whether the value of the prop is a string
+or number or element, but you do care that it can be rendered.
+If one of your components does try to render a prop that isn’t a node, it will cause your program to
+crash and display an error in the browser as well as in the console even if you’re not using PropTypes.
+You can view this default error message by trying to render a prop value that isn’t a number, string,
+element, or an array of renderable data. For example, the component in Listing 6-8 renders the values
+passed into the url and linkName props.
+Props ❘ 135
+LISTING 6- :8 Trying to render a non- node value
+function SiteLink(props) {
+return (
+<a href={props.url}>{props.linkName}</a>
+);
+}
+export default SiteLink;
+The following element invokes the SiteLink function component, passing in an object as
+the linkName:
+<SiteLink url="http://example.com" linkName={{name:'Example'}} />
+Figure 6-8 shows the error message that displays when you try to render an object. Notice that the
+error message doesn’t specify which prop caused the error, just that there was one and the element in
+which it occurred.
+FIGURE 6- 8: The not- renderable error message
+136 ❘ CHAPTER 6 React Data Flow
+You can use PropTypes.node to find out which prop caused the error.
+Listing 6-9 shows how to use PropTypes.node to validate that props.linkName can be rendered,
+and Figure 6-9 shows that attempting to render an object still causes the same error messages to be
+displayed, but PropTypes displays which prop caused the error.
+LISTING 6- 9: Using PropTypes.node
+import PropTypes from 'prop- types';
+function SiteLink(props) {
+return (
+<a href="{props.url}">{props.linkName}</a>
+);
+}
+SiteLink.propTypes = {
+linkName: PropTypes.node
+}
+export default SiteLink;
+FIGURE 6- 9: PropTypes tell which attribute caused the error
+Props ❘ 137
+In order to properly handle a case where an object value may be passed into a prop that will be ren-
+dered, you can use error boundaries, which you’ll learn about in Chapter 13.
+Validating React Elements
+If you want to make sure that a prop is a React element, you can use PropTypes.element. You
+might use the element validator to test whether the children prop contains an element, as shown in
+Listing 6-10.
+LISTING 6- 10: Validating React elements
+import PropTypes from 'prop- types';
+function BorderBox(props){
+return(
+<div style={{border:"1px solid black"}}>{props.children}</div>
+)
+}
+BorderBox.propTypes = {
+children: PropTypes.element.isRequired
+}
+export default BorderBox;
+Here’s an example of a use of the BorderBox element defined in Listing 6-10 that will cause the
+PropType.element validation to fail:
+<BorderBox>
+<p>The first paragraph</p>
+<p>The second paragraph</p>
+</BorderBox>
+Figure 6-10 shows the warning message that will be displayed in the preceding case.
+Element Type Validation
+If you want to test whether the prop value is a React element type, you can use elementType, as
+shown in Listing 6-11.
+LISTING 6- 11: Using the elementType validator
+FamilyTree.propTypes = {
+pet: PropTypes.elementType
+}
+The difference between the element validator and the elementType validator is that the
+element validator checks for a rendered element (for example, <MyComponent />), while
+the elementType validator checks for an unrendered element (for example, MyComponent).
+138 ❘ CHAPTER 6 React Data Flow
+FIGURE 6- 10: Failing PropTypes.element validation
+JavaScript Class Validation
+PropTypes.instanceOf tests that the supplied prop is an instance of a particular JavaScript class
+(meaning that it has this class in its prototype chain). To use it, you can use the instanceOf validator,
+as shown in Listing 6-12. The instanceOf validator uses the JavaScript instanceOf operator.
+LISTING 6- 12: Validating that a prop is an instance of a class
+import {Component} from 'react';
+import {PropTypes} from 'prop- types';
+import Person from './Person';
+class FamilyTree extends Component {
+render(){
+return(
+<p>{this.props.father.firstName}</p>
+)
+}
+}
+FamilyTree.propTypes = {
+father: PropTypes.instanceOf(Person)
+}
+export default FamilyTree;
+Props ❘ 139
+Limiting Props to Certain Values or Types
+PropTypes.oneOf is a function that tests whether the value of a prop is one of the specific items in a
+list. To use it, pass an array of possible values into the oneOf function, as shown in Listing 6-13.
+LISTING 6- 13: Using PropTypes.oneOf
+import PropTypes from 'prop- types';
+function DisplayPrimaryColor(props){
+return(
+<p>You picked: {props.primaryColor}</p>
+)
+}
+DisplayPrimaryColor.propTypes = {
+primaryColor:PropTypes.oneOf(['red','yellow','blue'])
+}
+export default DisplayPrimaryColor;
+With the oneOfType validator, you can check whether the value of a prop is one of a list of data
+types. To use it, pass an array containing the allowed data types, using names of PropTypes’s data
+type validators:
+Component.propTypes = {
+myProp:PropTypes.oneOfType([
+PropTypes.bool,
+PropTypes.string,
+PropTypes.number
+])
+}
+Additional Validators
+PropTypes.arrayOf tests that the prop is an array in which each of the elements matches a pro-
+vided type:
+MyComponent.propTypes = {
+students: PropType.arrayOf(
+PropTypes.instanceOf(Person)
+)
+}
+PropTypes.objectOf tests that the prop is an object in which each of the properties of the object
+match a provided type:
+MyComponent.propTypes = {
+scores: PropTypes.objectOf(
+PropTypes.number
+)
+}
+140 ❘ CHAPTER 6 React Data Flow
+PropTypes.shape tests whether a prop value is an object containing specific properties:
+MyComponent.propTypes = {
+userData: PropTypes.shape({
+id: PropTypes.number,
+fullname: PropTypes.string,
+birthdate: PropTypes.instanceOf(Date),
+isAdmin: PropTypes.bool
+})
+}
+PropTypes.exact performs a strict object match on the prop, meaning that it must include only the
+specified properties, each of which must pass its validation:
+MyComponent.propTypes = {
+toDoItem: PropTypes.exact({
+description: PropTypes.string,
+isFinished: PropTypes.bool
+})
+}
+Creating Custom PropTypes
+If what you want to validate isn’t covered by any of the built- in validators, you can create your own.
+A custom validator is a function that will automatically receive three arguments when it’s used:
+➤➤ An object containing all of the props received by the component.
+➤➤ The prop being tested.
+➤➤ The name of the component.
+In a custom prop, you can write the Error object that is returned when the validation fails.
+For example, you might write a custom validator to check whether a prop is a 10- digit phone
+number, as shown in Listing 6-14.
+LISTING 6- 14: Using a custom validator to test for a phone number
+import PropTypes from 'prop- types';
+function Contact(props){
+return(
+<li>{props.fullName}: {props.phone}</li>
+)
+}
+const isPhoneNumber = function(props, propName, componentName) {
+const regex = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-] \d{3}[\s.- ]\d{4}$/;
+if (!regex.test(props[propName])) {
+return new Error(`Invalid prop ${propName} passed to ${componentName}.
+Expected a phone number.`);
+}
+Props ❘ 141
+}
+Contact.propTypes = {
+fullName: PropTypes.string,
+phone: isPhoneNumber,
+}
+export default Contact;
+Figure 6-11 shows the browser console returning the custom error message when this PropType fails.
+FIGURE 6- 11: A custom PropType validator failing
+Default Props
+PropTypes can tell you when a component doesn’t receive a prop or when it receives the wrong
+data type, but using PropTypes by itself won’t fix any of the problems it reveals. To solve problems
+revealed by PropTypes, you often need to look at the parent component that’s passing incorrect data
+to the component. But, ideally, each component in a React app should be able to function in some
+capacity without crashing your entire user interface, even if something unexpected happens in a par-
+ent component. This is where setting default values for props comes in.
+For example, the StoresNearYou component in Listing 6-15 renders a Map component and a
+StoreList component based on location data passed into it as props.latitude and props.longi-
+tude. Many things can go wrong with geolocation, however, and it’s possible that the parent com-
+ponent won’t be able to pass this required data. The result is that the values passed to the Map and
+StoreList components would be invalid and could even result in the app crashing.
+142 ❘ CHAPTER 6 React Data Flow
+LISTING 6- 15: A component without default props
+import Map from './Map';
+import StoreList from './StoreList';
+function StoresNearYou(props){
+return(
+<>
+<div id="map- container">
+<Map latitude={props.latitude} longitude={props.longitude} />
+</div>
+<div id="store- list">
+<StoreList latitude={props.latitude} longitude={props.longitude} />
+</div>
+</>
+)
+}
+export default StoresNearYou;
+One way to solve this problem is by using the || (OR) operator to set fallback values for latitude and
+longitude, as shown in Listing 6-16.
+LISTING 6- 16: Setting defaults with the OR operator
+import Map from './Map';
+import StoreList from './StoreList';
+function StoresNearYou(props){
+return(
+<>
+<div id="map- container">
+<Map
+latitude={props.latitude || "37.3230"}
+longitude={props.longitude || "122.0322"}
+/>
+</div>
+<div id="store- list">
+<StoreList
+latitude={props.latitude || "37.3230"}
+longitude={props.longitude || "122.0322"}
+/>
+</div>
+</>
+)
+}
+export default StoresNearYou;
+However, this can quickly get messy and confusing in larger components involving many different
+props, and using inline default values like this creates duplication of effort.
+Props ❘ 143
+The next improvement to this code might be to separate the properties in the props object into vari-
+ables outside of the return statement and set the default values just once, as shown in Listing 6-17.
+LISTING 6- 17: Destructuring props and setting defaults
+import Map from './Map';
+import StoreList from './StoreList';
+function StoresNearYou(props){
+const latitude = props.latitude || "37.3230";
+const longitude = props.longitude || "122.0322";
+return(
+<>
+<div id="map- container">
+<Map
+latitude={latitude}
+longitude={longitude}
+/>
+</div>
+<div id="store- list">
+<StoreList
+latitude={latitude}
+longitude={longitude}
+/>
+</div>
+</>
+)
+}
+export default StoresNearYou;
+This is a great improvement in terms of the cleanliness of the code, but it does introduce additional
+variables, perhaps unnecessarily. We can do better.
+React components have a defaultProps object that can be used to set values for props that aren’t
+passed into a component. Like propTypes, defaultProps is a property of the component, rather
+than of an instance of the component. Therefore, to set defaultProps in a class component, you
+can either define it inside the component by using the static keyword, or set it outside of the
+component.
+Listing 6-18 shows how to set defaultProps as a static property, and Listing 6-19 shows how to set
+it outside of the class definition.
+LISTING 6- 18: Setting defaultProps as a static property
+import {Component} from 'react';
+class StoresNearYou extends Component{
+continues
+144 ❘ CHAPTER 6 React Data Flow
+LISTING 6-18 (continued)
+static defaultProps = {
+latitude: "37.3230",
+longitude: "122.0322"
+}
+render(){
+return(
+<>
+<div id="map- container">
+<Map
+latitude={this.props.latitude}
+longitude={this.props.longitude}
+/>
+</div>
+<div id="store- list">
+<StoreList
+latitude={this.props.latitude}
+longitude={this.props.longitude}
+/>
+</div>
+</>
+)
+}
+}
+export default StoresNearYou;
+LISTING 6- 19: Setting defaultProps outside of the component body
+import {Component} from 'react';
+class StoresNearYou extends Component{
+render(){
+return(
+<>
+<div id="map- container">
+<Map
+latitude={this.props.latitude}
+longitude={this.props.longitude}
+/>
+</div>
+<div id="store- list">
+<StoreList
+latitude={this.props.latitude}
+longitude={this.props.longitude}
+/>
+</div>
+</>
+)
+React State ❘ 145
+}
+}
+StoresNearYou.defaultProps = {
+latitude: "37.3230",
+longitude: "122.0322"
+}
+export default StoresNearYou;
+You can set defaultProps in function components outside of the function body, as shown in
+Listing 6-20.
+LISTING 6- 20: Setting defaultProps for a function component
+function StoresNearYou(props){
+return(
+<>
+<div id="map- container">
+<Map latitude={props.latitude} longitude={props.longitude} />
+</div>
+<div id="store- list">
+<StoreList latitude={props.latitude} longitude={props.longitude} />
+</div>
+</>
+)
+}
+StoresNearYou.defaultProps = {
+latitude: "37.3230",
+longitude: "122.0322"
+}
+export default StoresNearYou;
+With the defaultProps property set, StoresNearYou will use the default values for props.lati-
+tude and props.longitude if it’s invoked without passing props, or if it’s rendered before it receives
+props (which can often happen in cases where a component depends on the result of an asynchronous
+function).
+REACT STATE
+If all you want to do is render a static component that never changes, all you need is props. However,
+the real value of React is in how it enables interactive web applications and manages updates to com-
+ponents in response to input.
+The key to React’s ability to be reactive is the concept and object called state.
+146 ❘ CHAPTER 6 React Data Flow
+What Is state?
+In a React component, state is an object containing a set of properties that may change over the
+lifetime of the component. Changes to the properties in the state object control the behavior and
+updating of the component.
+Initializing state
+Initializing state is the process of defining the properties of the state object and setting their initial
+values. The initial values are the values that will be used for the first rendering of a component.
+Initializing state in Class Components
+Prior to the introduction of React Hooks, class components were the only place where you could use
+state. Hooks made it possible to use state in function components, but if you want to take advantage
+of the full power of React, including all of the lifecycle methods, classes are still the best (and in some
+cases the only) way to go.
+There are a few important rules about initializing the state of a class component:
+1. The state object of a class component can have as many or as few properties as you need.
+2. Not all class components need to have state.
+3. If your component does make use of state, you must initialize it.
+4. The constructor function is the only place where you can change state directly.
+In a class component, the most common way to initialize the state object is in the constructor
+function, as shown in Listing 6-21.
+LISTING 6- 21: Initializing state in a class component
+import {Component} from 'react'
+class NewsFeed extends Component {
+constructor(props){
+super(props);
+this.state = {
+date: new Date(),
+headlines:[]
+}
+}
+render(){
+return(
+<>
+<h1>Headlines for {this.state.date.toLocaleString()}</h1>
+...
+React State ❘ 147
+</>
+)
+}
+}
+export default NewsFeed;
+The reason for initializing the state object in the constructor function is that it’s the first method
+to be called when you create an instance of a component.
+It is possible to initialize the state object without a constructor function by using a class prop-
+erty, which is also known as a public instance field, or a public field. A public field works the
+same as defining a property of the class in the constructor, and the resulting property will exist
+in every instance of the class that’s created. Listing 6-22 shows how to set the initial state with a
+class property.
+LISTING 6- 22: Initializing state using the class property
+import {Component} from 'react'
+class NewsFeed extends Component {
+state = {
+date: new Date(),
+headlines: []
+}
+render(){
+return(
+<>
+<h1>Headlines for {this.state.date.toLocaleString()}</h1>
+...
+</>
+)
+}
+}
+export default NewsFeed;
+Initializing State in Function Components
+In JavaScript functions, data doesn’t persist between invocations of the function. Prior to React
+Hooks, React function components also had no way to preserve data between calls. For this reason,
+function components were previously known as stateless components.
+With React Hooks, function components can hook into functionality of React, including the state
+object. The hook that makes this possible is useState.
+The first time a function component containing the useState function is rendered, useState creates
+a stateful variable and a function for setting that variable. For all subsequent renders of the compo-
+nent, useState makes use of the variable created on that first render.
+148 ❘ CHAPTER 6 React Data Flow
+The first time a function component renders, useState serves the same purpose as initializing the
+state object in the constructor or using a public field in a class component.
+Listing 6-23 shows how to initialize a stateful variable in a function component.
+LISTING 6- 23: Initializing state in a function component
+import {useState} from 'react'
+function NewsFeed(props) {
+const [date,setDate] = useState(new Date());
+const [headlines,setHeadlines] = useState([]);
+return(
+<>
+<h1>Headlines for {date.toLocaleString()}</h1>
+...
+</>
+)
+}
+export default NewsFeed;
+Notice that Listing 6-23 includes two calls to useState. This is the recommended way to manage
+state with React Hooks— for each stateful variable, you can make a call to useState and return the
+new stateful variable and the function for updating that variable.
+Another way to initialize state in a function component is shown in Listing 6-24.
+LISTING 6- 24: Another approach to initializing state in a function component
+import {useState} from 'react'
+function NewsFeed(props) {
+const [state,setState] = useState({date:new Date(),headlines:[]});
+return(
+<>
+<h1>Headlines for {state.date.toLocaleString()}</h1>
+...
+</>
+)
+}
+export default NewsFeed;
+While the method of managing state shown in Listing 6-24 does have the advantage of more closely
+simulating how class components have just a single state object, having multiple variables gives
+React State ❘ 149
+you more flexibility with regard to splitting your component into smaller components and for
+memoization.
+setSTATE IS NOT setSTATE
+Another important point to keep in mind (which we’ll discuss in more detail shortly)
+is that the function returned by useState (which I named setState in Listing 6-24)
+doesn’t work the same as a class component’s setState function. In short:
+setState in a class component merges objects, while the setState function
+returned by useState replaces the value of the stateful variable.
+The Difference between state and props
+Props and state look similar at first glance:
+➤➤ They’re both JavaScript objects.
+➤➤ Changes to each of them cause components to update.
+➤➤ Both are data that are used by a component to generate the HTML output of the component.
+The differences between props and state are in their roles.
+The basic difference is that the props object is passed to a component by its parent, while state is
+managed within a component.
+To put it another way, props is similar to a function parameter, while state is similar to a local (pri-
+vate) variable defined inside the function. You can pass values from the state of a parent component
+to a child component (where they become part of the props object), but a component cannot modify
+the state of its children.
+Table 6-1 summarizes the similarities and differences between props and state.
+TABLE 6-1 : Comparing props and state
+PROPS STATE
+Is it passed from the parent? Yes No
+Can it change inside a component? No Yes
+Can it be changed by the parent? Yes No
+Can it be passed to child components? Yes Yes
+Updating state
+Once the initial state of a component has been set and the component has been rendered, updates to
+the component (and to its children, if it has any) happen when the state changes.
+150 ❘ CHAPTER 6 React Data Flow
+You might be wondering how React knows that the state object has changed. It actually doesn’t.
+The reason that changes to state update components is that all changes to state must be done using
+a function provided for that purpose. This function updates the state and then triggers a re- render of
+the component.
+The method that you use for updating a component’s state depends on whether you’re using a class
+component or a function component.
+Updating a Class Component’s state with setState
+In class components, the setState method is the only way to modify the state once it’s been ini-
+tialized. You can use the setState method inside any method in a class component except the
+constructor.
+The setState method takes an object or a function as its argument and uses this argument to sched-
+ule an update of the component’s state object.
+Passing an Object to setState
+Listing 6-25 shows a simple example of a class component that initializes a state object and then
+updates it using setState each time a button is clicked.
+LISTING 6- 25: Using setState
+import {Component} from 'react';
+class CounterClass extends Component {
+constructor(props){
+super(props);
+this.state = {count:0};
+this.increment = this.increment.bind(this);
+}
+increment(){
+this.setState({count: this.state.count + 1});
+}
+render(){
+return(
+<button onClick={this.increment}>{this.state.count}</button>
+)
+}
+}
+export default CounterClass;
+This simple counter example demonstrates a basic usage of setState. In the increment function, I
+passed a new object containing a new value for the count property. If you run this component, you’ll
+see that it works as follows:
+➤➤ Clicking the button triggers the increment method in the component.
+➤➤ The increment method calls the setState function, passing in a new value for this
+.state.count.
+React State ❘ 151
+➤➤ Calling setState updates the value of state.count and then causes the component to
+re- render.
+➤➤ The new value of state.count is displayed on the button.
+While this simple example can be fairly easily understood, it doesn’t do much to illuminate how
+setState actually functions. For that, we’ll need a slightly more complex example with multiple
+properties in the state object.
+Merging an Object into state with setState
+Listing 6-26 simply adds another count property to the component, along with another button and
+another increment function.
+LISTING 6- 26: Using setState with multiple state properties
+import {Component} from 'react';
+class CounterClass extends Component {
+constructor(props){
+super(props);
+this.state = {count1:0,count2:0};
+this.incrementCount1 = this.incrementCount1.bind(this);
+this.incrementCount2 = this.incrementCount2.bind(this);
+}
+incrementCount1(){
+this.setState({count1: this.state.count1 + 1});
+}
+incrementCount2(){
+this.setState({count2: this.state.count2 + 1});
+}
+render(){
+return(
+<>
+<button onClick={this.incrementCount1}>Count 1: {this.state.count1}</button>
+<button onClick={this.incrementCount2}>Count 2: {this.state.count2}</button>
+</>
+)
+}
+}
+export default CounterClass;
+If you run the example in Listing 6-26, you’ll see that clicking each of the buttons increments the
+respective property in the state object. Notice, though, that each count’s increment function only
+passes the single property that’s being modified to setState and setState only updates the property
+passed to it.
+152 ❘ CHAPTER 6 React Data Flow
+While the previous example is not particularly thrilling, and the code could be simplified and made
+considerably more flexible, it demonstrates how the first way to use setState works: when you pass
+an object into setState, it merges that object with the existing state object.
+Calls to setState are Asynchronous
+When you call setState, it may not immediately update the state object. Instead, it actually just
+schedules, or enqueues, an update to the component’s state. The reason for this behavior is that
+it reduces the number of unnecessary component re-r enders, which improves performance of the
+React app.
+It’s helpful to think of a call to setState as a request, rather than an immediate operation.
+For example, if a parent and child component both call setState in response to the same click event,
+this would cause two re-r enders of the component if setState were to update state immediately.
+Because calls to setState are asynchronous, however, React will wait until both components have
+called setState before re- rendering.
+Why Should You Care that setState Is Asynchronous?
+The asynchronous nature of setState is a frequent cause of bugs or unexpected behavior in React.
+The problem is that if you try to use the state object immediately after calling setState, you may
+not get the most current state.
+In Listing 6-27, I’ve written a method called incrementTwice that calls setState twice each time
+the button is clicked. To show the difference between what the expected value of this.state
+.count is and the new value, the component also increments and logs the value of a property named
+testCount.
+LISTING 6- 27: Demonstrating setState’s asychronous nature
+import {Component} from 'react';
+class CounterClass extends Component {
+constructor(props){
+super(props);
+this.state = {count:0};
+this.testCount = 0;
+this.incrementTwice = this.incrementTwice.bind(this);
+}
+incrementTwice(){
+this.setState({count: this.state.count + 1});
+this.testCount ++;
+this.setState({count: this.state.count + 1});
+this.testCount ++;
+console.log("Count should be: " + this.testCount);
+}
+render(){
+return(
+React State ❘ 153
+<button onClick={this.incrementTwice}>{this.state.count}</button>
+)
+}
+}
+export default CounterClass;
+If you didn’t know that setState is asynchronous, you would think that each click of the button
+would increase the value of state.count by two. But, if you try out the component, you’ll discover
+that it only increments by one. The reason is that the second call to setState happens before state
+.count has been updated by the first call. It therefore uses the same value of state.count that the
+first call used and the result is that both calls to setState change the value of state.count to the
+same number.
+Figure 6-12 shows the result of clicking the button in the CounterClass component in Listing 6-27.
+FIGURE 6- 12: The result of clicking the CounterClass button
+To solve this problem, you can pass a function into the setState function, rather than an object, to
+ensure that setState uses the most up-t o- date value for the state object.
+Passing a Function into setState
+When you pass a function that returns an object into setState, the inner function receives the cur-
+rent state and props of the component and returns an updated state object. This function is called
+an updater function. The updater function variant of setState takes this form:
+setState((state,props)=>{ return {};}
+154 ❘ CHAPTER 6 React Data Flow
+The updater function is guaranteed to receive the latest state and props. For this reason, you should
+always use an updater function when the new state depends on the current state.
+To make it clear that the state received by the updater function is the most current state, it’s a com-
+mon practice to name this parameter current. In our increment function, we can use an updater
+function to update the value of state.count like this:
+setState((current)=>{
+return {count: current.count + 1};
+});
+Listing 6-28 shows how the updater function solves the problem in the incrementTwice function
+from Listing 6-27.
+LISTING 6- 28: Using the updater function with setState
+import {Component} from 'react';
+class CounterClass extends Component {
+constructor(props){
+super(props);
+this.state = {count:0};
+this.testCount = 0;
+this.incrementTwice = this.incrementTwice.bind(this);
+}
+incrementTwice(){
+this.setState((current)=>{return {count: current.count + 1};});
+this.testCount++;
+this.setState((current)=>{return {count: current.count + 1};});
+this.testCount++;
+console.log("Count should be: " + this.testCount);
+}
+render(){
+return(
+<button onClick={this.incrementTwice}>{this.state.count}</button>
+)
+}
+}
+export default CounterClass;
+Figure 6-13 shows the result of clicking the button in Listing 6-28. Notice that the testCount
+property is now in sync with state.count.
+Updating state with Function Components
+When you call the useState hook, it returns an array. The first element of the array is a stateful vari-
+able. The second element is a setter function.
+React State ❘ 155
+FIGURE 6- 13: The fixed counter class
+To assign the state variable and the function to separate variables, use array deconstruction. For
+example, to create a state variable called counter and a setter function for changing the value of
+counter, use the following statement:
+const [counter,setCounter] = useState(0);
+The variable name can be any valid JavaScript variable name. The function should be the name of the
+state variable prefixed with “set,” although this is just a convention and not enforced by React.
+Initializing and updating state in function components is considerably simpler than doing so with
+class components. Here are a few important things to know about using state in function components
+and the useState hook:
+1. The value you pass into useState will be the initial value for the stateful variable.
+2. Use const rather than let when creating stateful variables and setter functions.
+3. Unlike setState in class components, the setter function returned by useState replaces the
+value of the stateful variable with the new value you pass into it, rather than merging it with
+the current state.
+4. After updating the stateful variable, the setter function causes a re-r ender of the component.
+Each of these four points deserves a bit more explanation, so let’s take a look at them one by one.
+156 ❘ CHAPTER 6 React Data Flow
+Setting Initial State with useState
+The first time a function component calls useState, the returned variable will be assigned the value
+you pass into useState. This parameter is optional. If you call useState without passing an initial
+value, the variable will be assigned a value of undefined.
+The initial state can be of any JavaScript data type, but it should be of the same data type as you will
+be setting the variable to inside your component. For example, if you create a stateful variable called
+products to hold an array of products that will be loaded from an API, the initial value of products
+should be an empty array ([]).
+If you pass a function to the useState hook, the function will be invoked and its return value will be
+used as the initial state.
+Why Use const with useState?
+It may seem wrong to use const for a stateful variable, since the whole purpose of a stateful variable
+is to be changed and the whole purpose of const is to prevent a variable from being changed. Never-
+theless, it is recommended that you use const with useState, and it actually does make sense when
+you think about how functions (and therefore function components) work.
+Consider the example of a stateful variable named counter and a setter function called setCounter.
+Calling setCounter and passing it a new value sets the value of a property in React’s state object
+and then re-r enders the component. Unlike class components, where the render method can be called
+and use the same properties of the class each time, a function starts its life over each time it’s invoked.
+When React re- renders a function component, the function calls useState again, and useState
+returns a new variable with the latest state value. So, the setter function doesn’t actually modify the
+variable in the function at all—t he function gets a new const each time it’s invoked.
+Because the whole point of a stateful variable is to trigger a re- render, the only way a stateful variable
+should be updated is with the setter function returned by useState.
+The Setter Function Replaces the State
+The function returned by the useState hook replaces the current value of the stateful variable with
+the value you pass into it. This makes working with stateful variables in functions simpler, but it also
+introduces some additional complexity, especially when working with more complex state.
+State in function components is immutable. That is, you can’t change it; you can only replace it with
+a new state. If the new state of a function component depends on the previous state, this creates
+some interesting problems and coding patterns—e specially when the stateful variable’s value is an
+object or array.
+To set a stateful variable that’s a primitive data type, simply pass the new value to the function:
+setCounter(4);
+If the new value depends on the previous value, you should use a function to access the previous state
+and return the new value:
+setCounter((prevState)=>{return prevState+1});
+React State ❘ 157
+If your stateful variable contains an object or array, you can replace the value by passing in a new
+object or array. But, if your new state depends on the old state, you’ll need to make a copy of the
+existing array or object, modify it, and then pass the copy of the array into the setter function.
+The copy you make of an object or array can’t be just any copy. It needs to be a shallow copy. One
+of the easiest ways to make a shallow copy, which is widely used in React, is by using the spread
+operator (...).
+JAVASCRIPT LESSON: SHALLOW COPIES AND THE SPREAD OPERATOR
+One of the most useful new tools in JavaScript is the spread operator. The spread
+operator is made up of three periods (...) and its job is to expand (or spread) the
+value of a string, array, or object into separate parts.
+To see how the spread operator works, we’ll start with a very simple example. The
+following function accepts three numbers and returns the sum of the numbers:
+function sum(x,y,z){
+return x+y+z;
+}
+If you have an array of three numbers that you want to find out the sum of, you
+could invoke the sum function and pass in each element of the array separately,
+like this:
+sum(myNumbers[0],myNumbers[1],myNumbers[2]);
+Or you could just spread the array into its component parts, which accomplishes the
+same thing:
+sum(...myNumbers)
+The spread operator is useful in cases where you want to include all of the elements
+of an array or object in a new object or array, such as when you’re creating a new
+array or object that’s partially made up of an existing one.
+In React, the spread operator is commonly used to work with immutable state vari-
+ables, especially in function components.
+When you’re working with mutable data in JavaScript and you have an array and
+you want to add an element to it, you can use the Array.push function, like this:
+let temperatures = [31,29,35];
+temperatures.push[32];
+The result of these statements is that the temperatures array will look like this:
+[31,29,35,32]
+Because React state is immutable and can only be changed using the setState func-
+tion or the function returned by useState, if you want to change the value of an
+array or object inside the state, you need to make a new array or object rather than
+mutating the existing one.
+continues
+158 ❘ CHAPTER 6 React Data Flow
+continued
+Copying an Array with Spread
+JavaScript arrays are reference values. When you use the = operator to make a copy
+of an array, the new array still has a reference to the old one. Follow these steps to
+see the consequences of this:
+1. Open the JavaScript console in Chrome.
+2. Create a new array, such as the following one:
+let arr = ['red','green','blue'];
+3. Use the = operator to make a new array from the original one:
+let newArr = arr;
+4. Add an element to the new array:
+newArr.push('orange');
+5. Write out the value of the original array to the console:
+arr
+The following image shows the result, which is that adding a new element to the
+copy created using the = operator also changes the original array.
+To make a copy of an array that doesn’t reference the original one, you need to copy
+each element in the original array into a new array. The new array created in this
+way is called a shallow copy. As with everything in JavaScript, there are several ways
+to make a shallow copy of an array. One way is by using a loop, like this:
+let numbers = [1, 2, 3];
+let numbersCopy = [];
+for (i = 0; i < numbers.length; i++) {
+numbersCopy[i] = numbers[i];
+}
+Another method is to use the slice function. slice returns a shallow copy of an
+array based on the start and end element indexes you provide. If you call slice
+on an array without passing in any arguments, it returns a shallow copy of the
+whole array:
+numbersCopy = numbers.slice();
+React State ❘ 159
+Using the spread operator makes this same operation even easier. You simply use
+square brackets to create a new array, and then populate it with each element in the
+old array by prefacing the name of the old array with the spread operator:
+numbersCopy = [...numbers];
+Changing an Array with Spread
+JavaScript has several different methods for modifying, adding, and removing ele-
+ments from arrays. For example, if you want to add an element to the end of an
+array, you can use the Array.push method:
+numbersCopy.push(4);
+setNumbers(numbersCopy);
+Other array methods include:
+➤➤ Array.pop: Removes an element from the end of an array.
+➤➤ Array.shift: Adds an element to the beginning of an array.
+➤➤ Array.unshift: Removes an element from the beginning of an array.
+Each of these array methods actually modifies, or mutates, the array, however. To
+work with immutable data, such as React state, the spread operator can be used to
+accomplish each of these tasks. For example, if you want to copy an array and add
+an element to the end of it, you can do that like this:
+numbersCopy = [...numbers,14];
+If you want to change the value of a certain element in an array, you need to know
+the index of that element, then you can use what I refer to as the “sandwich”
+method— two slices and spread:
+const newArray = [ ...oldArray.slice(0, indexToChange),
+updatedValue,
+...oldArray.slice(indexToChange+1) ];
+Although it may look strange and confusing at first, this method of modifying an ele-
+ment in an array is actually quite simple, and it’s widely used in React programming.
+If you know the index of the element in the array you want to modify, you make a
+shallow copy of the original array from the first element in the array (0) up to the
+element you want to change. Then, you insert the new value into the array. Finally,
+you insert the rest of the elements in the array into the new array by passing just the
+number of the next element in the original array into slice.
+Copying an Object with Spread
+The spread operator can also be used to create a shallow copy of an object. A
+shallow copy of an object is a copy that only includes the properties, and not the
+prototype:
+let obj1 = { foo: 'bar', x: 0 };
+let clonedObj = { ...obj1 };
+continues
+160 ❘ CHAPTER 6 React Data Flow
+continued
+Combining two objects with spread is as simple as combining two arrays:
+let obj1 = { foo: 'bar', x: 0 };
+let obj2 = { food: 'taco', y: 1 };
+let mergedObj = { ...obj1, ...obj2 };
+The new object will look like this:
+{foo: 'bar', x: 0, food: 'taco', y: 1}
+Changing a property while cloning or merging objects is also simple with objects.
+Just use the spread operator to expand the object, and then overwrite one or more
+existing properties:
+let newObj = {...obj1, x: 42 };
+The resulting object will now look like this:
+{foo: 'bar', x:42}
+Bonus JavaScript Lesson: Rest Parameters
+Once you’re comfortable with how the spread operator works, understanding its
+twin, rest parameters, is easy. Rest parameters use the same three- period operator
+as spread syntax. What’s different about it is where rest parameters are used. As the
+name implies, rest parameters are parameters that you can define in function defini-
+tions. Here’s an example:
+function(a,b,...c){
+// do something here
+}
+When you use a rest parameter, the function will aggregate the arguments passed
+into the function where the rest parameter is and any following arguments into an
+array inside the function.
+For example, in the following function the first two arguments will become function-
+scoped variables, and an array named toppings will be created with however many
+arguments are passed into the function after the first two:
+function pizza(size,crust,...toppings){
+// do something here
+}
+In the following example, the add function will take any number of arguments and
+return the sum of them, using the Array.reduce function:
+function add(..numbers) {
+return numbers.reduce((sum, next) => sum + next)
+}
+Now that you know about the rest and spread operators, you’ll recognize and be
+able to understand their role in JavaScript code, as well as their special powers when
+used in React and JSX.
+React State ❘ 161
+What to Put in State
+Whether you use class components or function components, changes to state data are what initiate
+changes to your user interface. If you think of the data in your React user interface as a river, state is
+the melting snow in the mountains that sets everything off.
+One of the first steps in designing any React user interface is to figure out what the state of your
+application is. While it may not always be immediately obvious at first, as you become more comfort-
+able with React, you’ll get better at identifying the state.
+As a rule, if a piece of data changes over time in response to data coming in from an external source
+or user input, it is likely state.
+Building the Reminders App
+Let’s take a look at a demo application and determine what its state is, and then implement it.
+Before we can implement state, however, we need to take a brief detour to build the structure of the
+application.
+Figure 6-14 shows a mockup of a user interface for a simple reminders app. The user can enter a task
+into the form and set a due date. The app will show a list of tasks and the user can filter tasks using a
+dropdown menu and mark tasks as completed.
+Typically, once you’ve created a mockup of an app, the next step in the development of a React user
+interface is to figure out what components will make up the app and then make a “static” ver-
+sion of the app. A static version simply passes props from parents to children and doesn’t have any
+interactivity.
+Before I get started with building the app, I’ll set up the development environment using Create React
+App. If you plan to follow along, open your terminal in VS Code and create a new project by entering
+the following command:
+npx create- react- app reminders- app
+After Create React App finishes its work, you’ll see the new project in the file explorer in VS Code.
+Open the src directory inside the reminders- app directory, and delete everything from there except
+for the following files:
+➤➤ index.js
+➤➤ index.css
+➤➤ reportWebVitals.js
+Now we’re ready to get started.
+From my initial evaluation of the mockup in Figure 6-14, I’ve determined that the Reminders app
+should have the following components:
+➤➤ An entry form and submit button component.
+➤➤ A filter select dropdown component.
+162 ❘ CHAPTER 6 React Data Flow
+➤➤ A list of reminders.
+➤➤ An individual reminder component (which will be reused for each reminder in the list).
+What do you want to do?
+When?
+Add Item
+Show Items Due By ...
+Item 1
+Item 2
+Item 3
+Item 4
+FIGURE 6- 14: A reminders app
+In addition to these components, there’s one more component that we need to make this app com-
+plete: a container. The container component will enclose all of the other components in the app and
+will provide an overall structure and style to the app. The container component is frequently named
+App, although, as with most things in React, you’re free to call it whatever you like.
+Now that I’ve figured out what components I’ll need to make, the next step is to think up names for
+the components and then write static versions of them.
+React State ❘ 163
+The first component I’ll make is App, and I’ll include import statements and JSX elements for its sub-
+components (which I have yet to make). Listing 6-29 shows a static version of the App component.
+LISTING 6- 29: The static version of the App component
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+function App(){
+return(
+<div>
+<InputForm />
+<FilterSelect />
+<RemindersList />
+</div>
+);
+}
+export default App;
+Notice that I didn’t pass props into App. Since App is the top- level component, we won’t be passing
+any props to it, so there’s currently no need to specify props in the parameter list.
+Once you’ve created the container component, the next step is to create empty files for each of the
+components that App imports, and to make shell components for each one. Listing 6-30 shows an
+example of the start of the InputForm component.
+LISTING 6- 30: A shell component for InputForm
+function InputForm(props){
+return(
+<div>Input form here</div>
+);
+}
+export default InputForm;
+You can copy and modify this basic shell component for each of the rest of the components. List-
+ing 6-31 shows a shell component for FilterSelect, Listing 6-32 shows one for RemindersList,
+and Listing 6-33 shows the one for the Reminder component.
+LISTING 6- 31: A shell component for FilterSelect
+function FilterSelect(props){
+return(
+<div>Filter the List</div>
+);
+}
+export default FilterSelect;
+164 ❘ CHAPTER 6 React Data Flow
+LISTING 6- 32: A shell component for RemindersList
+function RemindersList(props){
+return(
+<div>Reminders List</div>
+);
+}
+export default RemindersList;
+LISTING 6- 33: A shell component for Reminder
+function Reminder(props){
+return(
+<div>Reminder</div>
+);
+}
+export default Reminder;
+On a simple app such as this, you can now just go through the components and start to make each
+one’s return statement look a little bit more like what you think the final component will need to
+be. Don’t worry about getting everything perfect. Writing React code is usually an iterative process—
+write some code, see what it looks like, improve it, and then write some more.
+The first thing you might want to do to improve on what we have so far is to link in the Reminder
+component. The RemindersList component will contain all of the instances of the Reminder compo-
+nent, so we can import Reminder into it and also put in a couple instances of the Reminder element,
+as shown in Listing 6-34.
+LISTING 6- 34: RemindersList with Reminder imported
+import Reminder from './Reminder';
+function RemindersList(props){
+return(
+<div>
+<Reminder />
+<Reminder />
+<Reminder />
+</div>
+);
+}
+export default RemindersList;
+If you compile and build this app as it is so far (using a Create React App boilerplate application to
+provide the toolchain and basic structure), you’ll see something like what’s shown in Figure 6-15.
+Clearly, this is far from being a full static version of the app, but it’s a great start. Let’s go through
+another round of changes and get this static app to look a bit more like the mockup. We’ll also define
+some props and pass some fake data down to child components.
+React State ❘ 165
+FIGURE 6- 15: The first round static version
+The App component can stay how it is for now. We’ll add functionality and style to it eventually, but
+that can come later.
+The InputForm component should have a text input, a date input, and a button. I’ll also add in a
+couple of attributes for the input element and change the container element for these elements to a
+form element. Listing 6-35 shows the InputForm component with these improvements made.
+LISTING 6- 35: Round two of InputForm
+function InputForm(props){
+return(
+<form>
+<input id="reminderText" type="text" placeholder="What do you want to do?" />
+<input id="dueDate" type="date" />
+<button>Add Item</button>
+</form>
+);
+}
+export default InputForm;
+The FilterSelect component should contain a select input with several options. I’ll define these
+options in my second round of changes, as shown in Listing 6-36. We’ll assume that the filter will
+166 ❘ CHAPTER 6 React Data Flow
+be applied when the selected value changes, so there’s no need to add a button to the FilterSelect
+component. If you recall from Chapter 3, select elements in React JSX have a value attribute that
+determines which option is currently selected.
+LISTING 6- 36: Round two of FilterSelect
+function FilterSelect(props){
+return(
+<label htmlFor="filterReminders">Show tasks due:
+<select id="filterReminders" value="2day">
+<option value="2day">within 2 Days</option>
+<option value="1week">within 1 Week</option>
+<option value="30days">within 30 Days</option>
+<option value="all">any time</option>
+</select>
+</label>
+);
+}
+export default FilterSelect;
+The RemindersList component’s purpose is to contain one Reminder element for each reminder in
+the list. For our static version, we can pass sample text, a due date, and a status from RemindersList
+to each Reminder, as shown in Listing 6-37.
+LISTING 6- 37: Round two of RemindersList
+import Reminder from './Reminder';
+function RemindersList(props){
+return(
+<div>
+<Reminder reminderText="Pick up Wesley" dueDate="2364-0 1- 15"
+isComplete={false} />
+<Reminder reminderText="Meet with Jean-L uc" dueDate="2364- 01- 29"
+isComplete={false} />
+<Reminder reminderText="Holodeck time!" dueDate="2364-0 6- 01"
+isComplete={false} />
+</div>
+);
+}
+export default RemindersList;
+The Reminder component can now accept the props data from RemindersList and display it, as
+shown in Listing 6-38. Because the Boolean value from props.isComplete won’t display in the
+browser, we can convert it to a string in the JSX.
+React State ❘ 167
+LISTING 6- 38: Round two of Reminder
+function Reminder(props){
+return(
+<div>item: {props.reminderText}
+due date: {props.dueDate}
+Completed?: {String(props.isComplete)}
+</div>
+);
+}
+export default Reminder;
+Our Reminders app still isn’t pretty, as you can see in Figure 6-16, but more of the pieces are in place
+now and we have a foundation upon which we can start to implement the dynamic data, or state.
+FIGURE 6- 16: A static version of the Reminders app
+After you’ve made your static version, you can figure out what data in the app causes the app to
+change— what should be in the state of the app, in other words.
+In the case of the Reminders app, it has the following pieces of data:
+➤➤ The user’s current textual input.
+➤➤ The currently selected due date.
+➤➤ The list of reminders.
+➤➤ Individual reminders.
+168 ❘ CHAPTER 6 React Data Flow
+➤➤ The reminder status (completed or not completed).
+➤➤ The selected filter.
+➤➤ The filtered list of tasks.
+Think for a moment about which pieces of data should or should not be state. Here’s what I’ve
+come up with:
+➤➤ The user’s current input is certainly state, since it changes as the user types.
+➤➤ The selected due date, likewise, is state.
+➤➤ The list of reminders changes as new tasks are added, so it is state.
+➤➤ The individual tasks within the list are unchanging, and are not state.
+➤➤ The completed status of each task is state, since the user can change it.
+➤➤ The selected filter is state.
+➤➤ The filtered list is not state.
+In the next section, I’ll explain why some of these items should not be state. Oftentimes, your initial
+judgment about what needs to be state changes as you code your app. It’s important to stay flex-
+ible and look for opportunities to reduce the size of your state object. The more data in your app
+can be moved out of state and into props, the simpler (and perhaps faster and more efficient) your
+app will be.
+What Not to Put in State
+Another way to think about what should be state is to follow a few rules for determining what
+isn’t state:
+➤➤ If it’s passed from a parent component to a child component, it’s not state.
+➤➤ If it remains unchanged throughout its life, it’s not state.
+➤➤ If it can be computed based on other values, it’s not state.
+Generally speaking, individual task items should not be kept in state. My reasoning for this is that
+these tasks, once created, are unchanging. Also, as you’ll learn, the tasks are going to be stored in the
+parent component and passed down to the individual task components using props.
+The filtered list of tasks that displays when you select a time period from the dropdown list also
+should not be stored in state. This is because this list will be computed based on the due dates.
+Because it can be computed and displayed based on other props and state, it’s not state itself.
+Where to Put State
+Once you’ve determined what is and what isn’t state, the next step in the development of a React user
+interface is to figure out where each piece of state should be located. In other words, which com-
+ponent should we initialize the state inside of by either using the class- based component method of
+setting this.state, or by using the useState hook.
+React State ❘ 169
+So, let’s take another look at each piece of state that we identified and decide what component it
+should be declared in. Here’s an outline of our current user interface, taken from the components cre-
+ated during the building of the static version:
+App
+- InputForm
+- Filter
+- RemindersList
+- Reminder
+And here, once again, is the list of state items that we’ve identified in the app so far:
+➤➤ User input.
+➤➤ Selected due date.
+➤➤ Reminder list.
+➤➤ Reminder status.
+➤➤ Selected filter.
+Now, I’ll go through each of these candidates for state and figure out where to put them in the com-
+ponent hierarchy:
+➤➤ The current user input seems like it should be stored in the component that contains the
+form, so we’ll put that in the InputForm component.
+➤➤ The currently selected due date seems like it should be stored with the user input. So, we’ll
+put that in the InputForm component as well.
+➤➤ The list of reminders, logically, would seem to go into the RemindersList component.
+➤➤ The isComplete status of each reminder item probably belongs inside of each Reminder
+component.
+➤➤ The filter that is currently selected can go with the Filter component.
+Now that we’ve put each piece of state into a component, let’s look at the outline of components
+again, with the state values that each one contains:
+<App>
+- <InputForm>
+- currentInput
+- selectedDate
+- <Filter>
+- selectedFilter
+- <RemindersList>
+170 ❘ CHAPTER 6 React Data Flow
+- reminders
+- <Reminder>
+- isComplete
+Although it seems logical, the organization of the state in our app has some serious problems that
+become apparent as you think about how it will actually function. Here are a few of the bigger issues:
+1. In the preceding outline, each reminder keeps track of its own completed status. If we wanted
+the RemindersList component to only list the completed tasks, or only list the uncompleted
+ones, RemindersList would first need to query each Reminder and find out its status.
+2. The Filter and RemindersList components are siblings. If you recall that data always
+flows down in a React app, you’ll see a problem here. If Filter maintains its own state
+about which filter is currently selected, there’s no way to get that information to the
+RemindersList component so that the correct Reminder components can be displayed.
+3. InputForm is also a sibling of RemindersList. Since the goal of the user input form is to add
+a new item to the list of reminders, we need the current user input to be able to be passed to
+the RemindersList component. With these components being siblings, there’s no easy way
+to do this.
+It seems that our little Reminders app is getting pretty complicated. We’ll need to figure out how the
+RemindersList component will query all of the Reminders for their status, we’ll need to figure out
+how to get around this problem with passing data between sibling components, and we have all this
+state data spread throughout our app that we’re going to need to remember and keep track of. There
+must be a simpler way, you say.
+There is, and it’s called lifting state up.
+Lifting State Up
+Having a lot of components that each independently maintain their own state can very quickly
+increase the complexity of your app, and therefore the chances of something breaking. A good rule of
+thumb, therefore, is that the majority of your components should be stateless pure functions.
+A pure function, as you’ll recall from Chapter 4, is one in which the output of the function is solely
+a result of the input to it. In other words, a pure function will always produce the same output when
+given the same input.
+To turn stateful components into stateless components, React developers use a technique called “lift-
+ing state up.” This means that, instead of a component controlling its own state, you can have a com-
+ponent at a higher level in the hierarchy of your user interface control the state. This state can then be
+passed down as props to the components that need it.
+Lifting state up gives you the benefit of having fewer components that can possibly cause your user
+interface to change, it makes your components more easily reusable, and it makes your app eas-
+ier to test.
+To determine where to lift your state up to, think about where each piece of state in your application
+is needed, and then find a parent common to all of the components that use each piece of state.
+React State ❘ 171
+For example, in our Reminders app, the list of reminders is used by the InputForm, Filter, Remind-
+ersList, and Reminder components. The only component in our application that’s a common parent
+to all of these is the App component. So, that’s where that piece of stateful data should live.
+In fact, if you look through the list of stateful variables we identified for the Reminders app, you’ll
+discover that each one of them actually should belong to the App component, and also that some of
+them can be combined.
+The reminders and isComplete values, for example, can be combined into a single array of objects,
+with each object having a reminderText property, an isComplete property, and a dueDate property:
+[
+{reminderText:"do laundry",dueDate:"2022-0 1- 01",isComplete:false},
+{reminderText:"finish chapter",dueDate: "2022-0 2- 01",isComplete:false},
+{reminderText:"make Pizza",dueDate: "2022-0 3- 01",isComplete:false}
+]
+Likewise, the currentInput and selectedDate can also be combined into an object. This has the
+benefit of creating exactly the right data structure for insertion into the reminder list.
+Since the useState hook not only creates the stateful variable, but also creates the function for set-
+ting that variable, you can pass both of these down to the proper components as props.
+With those changes done, our App component with the lifted-u p state is shown in Listing 6-39.
+LISTING 6- 39: App with lifted state
+import {useState} from 'react';
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+function App(){
+const [reminders,setReminders] = useState();
+const [userInput,setUserInput] = useState();
+const [selectedFilter,setSelectedFilter] = useState("all");
+return(
+<div>
+<InputForm userInput={userInput}
+setUserInput={setUserInput} />
+<FilterSelect selectedFilter={selectedFilter}
+setSelectedFilter={setSelectedFilter} />
+<RemindersList reminders={reminders} />
+</div>
+);
+}
+export default App;
+Next, I’ll receive and make use of the stateful data, which I’ve passed down to the subcomponents
+as props, and write all of the subcomponents of App as pure functions. Listing 6-40 shows the
+172 ❘ CHAPTER 6 React Data Flow
+InputForm component, Listing 6-41 shows the FilterSelect component, and Listing 6-42 shows
+the RemindersList component.
+LISTING 6- 40: Pure InputForm
+function InputForm(props){
+return(
+<form>
+<input value={props.userInput.reminderText}
+id="reminderText"
+type="text"
+placeholder="What do you want to do?" />
+<input value={props.userInput.dueDate}
+id="dueDate"
+type="date" />
+<button>Add Item</button>
+</form>
+);
+}
+export default InputForm;
+LISTING 6- 41: Pure FilterSelect
+function FilterSelect(props){
+return(
+<label htmlFor="filterReminders">Show tasks due:
+<select id="filterReminders" value={props.selectedFilter}>
+<option value="2day">within 2 Days</option>
+<option value="1week">within 1 Week</option>
+<option value="30days">within 30 Days</option>
+<option value="all">any time</option>
+</select>
+</label>
+);
+}
+export default FilterSelect;
+LISTING 6- 42: Pure RemindersList
+import Reminder from './Reminder';
+function RemindersList(props){
+const reminders = props.reminders.map((reminder,index)=>{
+return (<Reminder reminderText={reminder.reminderText}
+dueDate={reminder.dueDate}
+isComplete={reminder.isComplete}
+id={index}
+key={index} />);
+});
+React State ❘ 173
+return(
+<div>
+{reminders}
+</div>
+);
+}
+export default RemindersList;
+Figure 6-17 shows what happens when you try to run the app at this point.
+FIGURE 6- 17: Cannot read property
+The reason we get this error is that we’re trying to read a property of an object (userInput) that
+doesn’t yet exist.
+The solution to this problem, and to many other problems in React, is to make use of PropTypes for
+validating props, and defaultProps to set initial values for the props. I’ll start again with the child
+components and work through each one and make some necessary improvements.
+The InputForm component receives two props: userInput and setUserInput. The userInput prop
+is an object with two properties. We can use propTypes.shape to validate that the object the compo-
+nent receives has the correct properties and that those properties are the correct type of data. I’ll also
+set default values that will be used for each property of userInput in case the prop is not received, as
+shown in Listing 6-43.
+174 ❘ CHAPTER 6 React Data Flow
+LISTING 6- 43: Adding PropTypes and default values to InputForm
+import PropTypes from 'prop- types';
+function InputForm(props){
+return(
+<form>
+<input value={props.userInput.reminderText}
+id="reminderText"
+type="text"
+placeholder="What do you want to do?" />
+<input value={props.userInput.dueDate}
+id="dueDate"
+type="date" />
+<button>Add Item</button>
+</form>
+);
+}
+InputForm.propTypes = {
+userInput: PropTypes.shape({
+reminderText: PropTypes.string,
+dueDate: PropTypes.string
+}),
+setUserInput: PropTypes.func
+}
+const date = new Date();
+const formattedDate = date.toISOString().substr(0,10);
+InputForm.defaultProps = {
+userInput: {
+reminderText:"",
+dueDate:formattedDate
+}
+}
+export default InputForm;
+You may have a question about how the default value for the date picker is being set. The HTML
+date picker control accepts a string in the format 'YYYY- MM- DD'. To set its default value, I’ll get the
+current date (by creating a new Date object) and then I’ll use the JavaScript toISOString func-
+tion to convert the current date to a string containing the date and time, in the format 'YYYY- MM-
+DDTHH:mm:ss.sssZ'. Since I only care about the date portion of this string, I’ll use the substr
+function to get the first 10 characters of the result of the toISOString function.
+Because the actual value used by the date input is a string, the correct PropType to validate it against
+is string rather than date.
+If you run the app now (or just refresh the browser window if the development server is still running),
+you’ll see that the reminderText error is gone, but we have a new one, as shown in Figure 6-18.
+This isn’t the last time you’ll see this error in your dealings with React. In plain English, it’s telling us
+that we’re trying to run the Array.map function on something that’s not an array.
+React State ❘ 175
+FIGURE 6- 18: Cannot read property ‘map’ of undefined
+RemindersList receives the reminders variable as a prop and uses Array.map to create an array of
+Reminder elements from it. Any time you use Array.map in a component, you have to be certain that
+the component won’t try to render before the array that Array.map is used on is populated. If it does
+try to render before the array is received, the render will fail with an error, as you saw in Figure 6-18.
+Using a default prop value is one way to eliminate the possibility of this type of failure. Listing 6-44
+shows the RemindersList component with default props and propTypes defined.
+LISTING 6- 44: RemindersList with default props and PropTypes
+import PropTypes from 'prop- types';
+import Reminder from './Reminder';
+function RemindersList(props){
+const reminders = props.reminders.map((reminder,index)=>{
+return (<Reminder reminderText={reminder.reminderText}
+dueDate={reminder.dueDate}
+isComplete={reminder.isComplete}
+id={index}
+key={index} />);
+});
+return(
+<div>
+{reminders}
+</div>
+);
+continues
+176 ❘ CHAPTER 6 React Data Flow
+LISTING 6-44 (continued)
+}
+RemindersList.propTypes = {
+reminders: PropTypes.array
+}
+const date = new Date();
+const formattedDate = date.toISOString().substr(0,10);
+RemindersList.defaultProps = {
+reminders: [{
+reminderText:"No Reminders Yet",
+dueDate:formattedDate,
+isComplete: false
+}]
+}
+export default RemindersList;
+Another way to prevent map from trying to run on a prop that’s not yet an array is to set the initial
+value of the stateful variable in App to an empty array, like this:
+const [reminders,setReminders] = useState([]);
+However, if you set the initial value of reminders to an empty array, the default "No Reminders Yet"
+reminder doesn’t show up. If you remove the empty square brackets passed into the useState func-
+tion that creates the reminders variable, the default props defined in RemindersList will render, as
+shown in Figure 6-19.
+FIGURE 6- 19: Displaying the default prop
+React State ❘ 177
+About the key Prop
+Any time you make a list of components, as we do in the RemindersList component, each element
+in the list must have a prop named key. The value of key must be unique to each item in the list.
+Since the index position of an element in an array is a unique value, this makes a convenient value for
+the key prop.
+The key prop is used by React to help facilitate updating of items in the list. The value of key is not
+available as part of the props object inside the component. You’ll notice that RemindersList passes
+the same value (the index position of the reminder in the array) to both the key prop and to a prop
+called id. This is necessary so we can make use of this value to update the reminders list, as you’ll see
+when we start coding the functionality of the app.
+NOTE In this example, I used the index of the reminders array as the key. In a
+real- world application, it would be a better practice to have a separate, unique
+ID property for each reminder and to use that as the key. The reason is that
+the key is used by React to identify elements in the array. If your application
+changes the order of elements in the array or adds or removes elements from
+inside the array (none of which ours currently does), React will assume that the
+same keys represent the same DOM elements. The result can be that wrong
+data will be displayed or your app will break. For a more detailed explanation
+of the problems with using the index as the key, see Robin Pokorny’s blog post
+at https://robinpokorny.medium.com/index- as- a- key- is- an- anti- pattern-
+e0349aece318.
+Now let’s look at the FilterSelect component. FilterSelect also receives two props: selected-
+Filter and setSelectedFilter. I’ll set selectedFilter to all by default and validate the types
+for both, as shown in Listing 6-45.
+LISTING 6- 45: Validating and setting defaults for FilterSelect
+import PropTypes from 'prop- types';
+function FilterSelect(props){
+return(
+<label htmlFor="filterReminders">Show tasks due:
+<select id="filterReminders" value={props.selectedFilter}>
+<option value="2day">within 2 Days</option>
+<option value="1week">within 1 Week</option>
+<option value="30days">within 30 days</option>
+<option value="all">any time</option>
+</select>
+</label>
+);
+}
+continues
+178 ❘ CHAPTER 6 React Data Flow
+LISTING 6-45 (continued)
+FilterSelect.propTypes = {
+selectedFilter: PropTypes.string,
+setSelectedFilter: PropTypes.func
+}
+FilterSelect.defaultProps = {
+selectedFilter:'all'
+}
+export default FilterSelect;
+The Reminder component receives three props: reminderText, dueDate, and isComplete.
+There shouldn’t be a possibility of Reminder not receiving props, because its parent component,
+RemindersList, has default props set. But, it’s always a good idea to set defaults and validate your
+props using PropTypes, because it makes your component more reusable and independent. List-
+ing 6-46 shows the Reminder component with propTypes and default props set.
+LISTING 6- 46: Reminder with PropTypes and defaultProps
+import PropTypes from 'prop- types';
+function Reminder(props){
+return(
+<div>item: {props.reminderText}
+due date: {props.dueDate}
+Completed?: {String(props.isComplete)}</div>
+);
+}
+Reminder.propTypes = {
+reminderText: PropTypes.string,
+dueDate: PropTypes.string,
+isComplete: PropTypes.bool
+}
+const date = new Date();
+const formattedDate = date.toISOString().substr(0,10);
+Reminder.defaultProps = {
+reminderText:"No Reminder Set",
+dueDate:formattedDate,
+isComplete: false
+}
+export default Reminder;
+Now that we have state and props being passed down through the components and default values
+set for the props, the initial render of the app is starting to take shape and there shouldn’t be any
+PropType warnings in the JavaScript console (although you will see a couple of other warnings), as
+you can see in Figure 6-20.
+React State ❘ 179
+FIGURE 6- 20: The initial render of the Reminders app
+The warnings that you see in the console now are expected, and they point to the one big thing left
+to do before this is a somewhat functional app: we need to implement event listeners that will trigger
+state changes.
+Since we’re building this app entirely with function components, we already created the functions that
+will set the state variables. All we need to do now is pass those functions down to the correct compo-
+nent and then set up event listeners to call the functions.
+I’ll start with the userInput object and its setter function, setUserInput. The setUserInput
+function is already passed to the InputForm component. What we want to happen is for it to be
+called and to store the reminder text and date when the text field and date field change.
+It’s common to define an intermediary function between the event handler and the setter function.
+Often, this function will take the name of the event that triggers it, prefaced by handle. In the
+InputForm component, we’ll define a function called handleTextChange, one called
+handleDateChange, and one called handleClick. The purpose of handleTextChange and
+handleDateChange is to get the data from the field’s change event into the correct form to be stored
+in state and then to call the setUserInput function. The purpose of handleClick will be to use the
+current values from the userInput object to add a new element to the reminders array each time
+the button is clicked.
+Recall that the setter functions created by the useState hook replace the value of the stateful vari-
+able, rather than updating it like setState does. As a result, each time we call setUserInput, we
+180 ❘ CHAPTER 6 React Data Flow
+need to re- create the userInput object, but with the new value. This is easily done by using the
+spread operator. The handleTextChange function in InputForm looks like this:
+const handleTextChange = (e)=>{
+const newUserInput = {...props.userInput,reminderText:e.target.value}
+props.setUserInput(newUserInput);
+}
+The handleDateChange function is very similar, but it requires the date to be massaged into the cor-
+rect format:
+const handleDateChange = (e)=>{
+const date = new Date(e.target.value);
+const formattedDate = date.toISOString().substr(0,10);
+const newUserInput = {...props.userInput,dueDate:formattedDate};
+props.setUserInput(newUserInput);
+}
+Because we’ve done all of the hard work of creating the userInput object as the user was typing it,
+adding a new reminder to the reminders array when the button is clicked is just a matter of adding
+the new object along with an isComplete property.
+We’ll write a function to update the reminders list. To avoid having to pass the reminders array
+down to the InputForm component unnecessarily, we’ll instead define a function in App and then
+pass that down to InputForm.
+Here’s the addNewReminder function to add to App:
+const addNewReminder = (itemToAdd) => {
+setReminders([...reminders,itemToAdd]);
+}
+Add a new attribute to the InputForm element to pass addNewReminder down to the InputForm
+component:
+<InputForm userInput={userInput}
+setUserInput={setUserInput}
+addNewReminder={addNewReminder} />
+And, of course, don’t forget to validate the PropType for setUserInput inside InputForm:
+InputForm.propTypes = {
+userInput: PropTypes.shape({
+reminderText: PropTypes.string,
+dueDate: PropTypes.string
+}),
+setUserInput: PropTypes.func,
+addNewReminder: PropTypes.func
+}
+Now, inside of InputForm, we can define a handleClick function that will call the addNewReminder
+function when the button is clicked. HTML buttons have a default action, which is to submit a form
+and reload the page. We need to prevent this default action so that we don’t reload the page (and
+React) every time the button is clicked (thus losing the state):
+const handleClick = (e)=>{
+e.preventDefault();
+React State ❘ 181
+const itemToAdd = {...props.userInput,isComplete:false};
+props.addNewReminder(itemToAdd);
+};
+To invoke these new functions, add event listener attributes to the form elements. Event listener
+attributes in React work like HTML event listener attributes. When the specified event happens on
+the element containing the attribute, the function specified will be run.
+NOTE I’ll cover events and event handling in React in more detail in Chapter 7.
+The value of an event listener attribute can be the name of a function (or a prop with a function
+value), or an arrow function definition. Here’s the reminderText input element with the event lis-
+tener function specified:
+<input value={props.userInput.reminderText}
+id="reminderText"
+type="text"
+placeholder="What do you want to do?"
+onChange={handleTextChange} />
+Here’s the dueDate input with its event listener attribute:
+<input value={props.userInput.dueDate}
+id="dueDate"
+type="date"
+onChange={handleDateChange} />
+And here’s the button with its event listener attribute:
+<button onClick={handleClick}>Add Item</button>
+At this point, the code for the InputForm component should look like Listing 6-47.
+LISTING 6- 47: The InputForm component with event handlers and event listeners
+import PropTypes from 'prop- types';
+function InputForm(props){
+const handleTextChange = (e)=>{
+const newUserInput = {...props.userInput,reminderText:e.target.value}
+props.setUserInput(newUserInput);
+}
+const handleDateChange = (e)=>{
+const date = new Date(e.target.value);
+const formattedDate = date.toISOString().substr(0,10);
+const newUserInput = {...props.userInput,dueDate:formattedDate};
+props.setUserInput(newUserInput);
+}
+continues
+182 ❘ CHAPTER 6 React Data Flow
+LISTING 6-47 (continued)
+const handleClick = (e)=>{
+e.preventDefault();
+const itemToAdd = {...props.userInput,status:false};
+props.addNewReminder(itemToAdd);
+};
+return(
+<form>
+<input value={props.userInput.reminderText}
+id="reminderText"
+type="text"
+placeholder="What do you want to do?"
+onChange={handleTextChange} />
+<input value={props.userInput.dueDate}
+id="dueDate"
+type="date"
+onChange={handleDateChange} />
+<button onClick={handleClick}>Add Item</button>
+</form>
+);
+}
+InputForm.propTypes = {
+userInput: PropTypes.shape({
+reminderText: PropTypes.string,
+dueDate: PropTypes.string
+}),
+setUserInput: PropTypes.func,
+addNewReminder: PropTypes.func
+}
+const date = new Date();
+const formattedDate = date.toISOString().substr(0,10);
+InputForm.defaultProps = {
+userInput: {
+reminderText:"",
+dueDate:formattedDate
+}
+}
+export default InputForm;
+With these three event listeners set to trigger our event handler functions, you should be able to start
+up Create React App’s development server (using npm start). When you try to add a new reminder,
+however, you’ll get a new error: TypeError: reminders is not iterable. This indicates that
+we’re trying to use the spread operator on reminders before it’s an array. And, in fact, that’s what’s
+happening in the addNewReminder function.
+React State ❘ 183
+As with the solution to the error we got when we tried to use the Array.map function on
+reminders before it was populated, the solution here is to add a default value. You could set the
+initial value of reminders to an empty array, or you could use a third method and test the value of
+reminders inside of addNewReminders and take the appropriate action. Here’s what that looks like:
+const addNewReminder = (itemToAdd) => {
+if (reminders===undefined){
+setReminders([itemToAdd]);
+} else {
+setReminders([...reminders,itemToAdd]);
+}
+}
+With that done, now you’ll be able to add new reminders to the list, as shown in Figure 6-21.
+FIGURE 6- 21: Adding Reminders to the list
+Filtering the Reminders
+The FilterSelect component uses a dropdown menu containing various time frames to calculate a
+filtered list of the reminders. To figure out how to code the functionality of this component, let’s step
+through the basic process of filtering the list:
+1. The user changes the selected item in the select input.
+2. The change to the select input causes a function to be called.
+3. The called function receives the full list of reminders and the selected filter.
+184 ❘ CHAPTER 6 React Data Flow
+4. A subset of the full reminders list is created.
+5. The subset of the list is displayed.
+The default filter in our app is "all", which displays all of the reminders. Since there’s no way to
+shut off the filter selector, what is displayed in the app should always be a filtered list (even if the
+filtered list contains all of the reminders). So, the first step in programming the filter functionality is
+to create a new variable for the filtered list and pass that down to the RemindersList component
+instead of the full list of reminders.
+For now, I’ll do this by just copying the reminders list into a new array called filteredReminders
+in App (using the spread operator) and then passing down this new filteredReminders array as the
+value of the reminders attribute in RemindersList, as shown in Listing 6-48.
+Once again, the spread operator will produce an error unless you give reminders a default
+value or do a test before trying to use Array.map on reminders. I’ll use the ternary operator this
+time to check whether reminders is defined. If it is, I’ll copy the elements from reminders into
+filteredList. If it isn’t, I’ll set filteredList to undefined.
+Remember, because the filteredList is calculated, it doesn’t need to be state. The selectedFilter,
+on the other hand, is changed as a result of a user interaction, so it does need to be state.
+LISTING 6- 48: Creating a new filteredReminders array
+import {useState} from 'react';
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+function App(){
+const [reminders,setReminders] = useState();
+const [userInput,setUserInput] = useState();
+const [selectedFilter,setSelectedFilter] = useState("all");
+const addNewReminder = (itemToAdd) => {
+if (reminders===undefined){
+setReminders([itemToAdd]);
+} else {
+setReminders([...reminders,itemToAdd]);
+}
+}
+const filteredList = reminders?[...reminders]:undefined;
+return(
+<div>
+<InputForm userInput={userInput}
+setUserInput={setUserInput}
+addNewReminder={addNewReminder} />
+<FilterSelect selectedFilter={selectedFilter}
+setSelectedFilter={setSelectedFilter} />
+<RemindersList reminders={filteredList} />
+React State ❘ 185
+</div>
+);
+}
+export default App;
+At this point, the app will function exactly the same as before, but the groundwork is properly laid to
+be able to filter the list. The next step is to write a function that will filter the reminders list based on
+the date. For that, we can use Array.filter. Array.filter takes a function as its argument, and
+creates a new array containing all of the elements that pass a test in the function.
+Listing 6-49 shows the function that I came up with for filtering the list.
+LISTING 6- 49: Filtering the reminders list
+function filterList(reminders,selectedFilter){
+if (selectedFilter === "all"){
+return reminders;
+} else {
+let numberOfDays;
+switch(selectedFilter){
+case "2day":
+numberOfDays = 2;
+break;
+case "1week":
+numberOfDays = 7;
+break;
+case "30days":
+numberOfDays = 30;
+break;
+default:
+numberOfDays = 0;
+break;
+}
+const result = reminders.filter(reminder=>{
+const todaysDate = new Date().toISOString().substr(0,10);
+const todayTime = new Date(todaysDate).getTime();
+const dueTime = new Date(reminder.dueDate).getTime();
+return dueTime < (todayTime + (numberOfDays * 86400000));
+});
+return result;
+}
+}
+If you examine this function, you’ll see that it first checks whether the selected filter is "all", and just
+exits out of the rest of the function if so. If the selected filter isn’t "all", it converts the selected filter
+into a number of days. Then it uses Array.filter to go through each element in the reminders
+array and make a list of the reminders that have a due date earlier than the current time (which is in
+186 ❘ CHAPTER 6 React Data Flow
+the number of milliseconds since the beginning of UNIX time) plus the number of milliseconds in the
+selected filter.
+To implement this function, place it outside of the return statement in the App component, and then
+call it, passing in reminders and selectedFilter, as shown in Listing 6-50.
+LISTING 6- 50: Implementing the filterList function
+import {useState} from 'react';
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+function App(){
+const [reminders,setReminders] = useState();
+const [userInput,setUserInput] = useState();
+const [selectedFilter,setSelectedFilter] = useState("all");
+const addNewReminder = (itemToAdd) => {
+if (reminders===undefined){
+setReminders([itemToAdd]);
+} else {
+setReminders([...reminders,itemToAdd]);
+}
+}
+const filteredList = filterList(reminders,selectedFilter);
+function filterList(reminders,selectedFilter){
+if (selectedFilter === "all"){
+return reminders;
+} else {
+let numberOfDays;
+switch(selectedFilter){
+case "2day":
+numberOfDays = 2;
+break;
+case "1week":
+numberOfDays = 7;
+break;
+case "30days":
+numberOfDays = 30;
+break;
+default:
+numberOfDays = 0;
+break;
+}
+const result = reminders.filter(reminder=>{
+const todaysDate = new Date().toISOString().substr(0,10);
+const todayTime = new Date(todaysDate).getTime();
+React State ❘ 187
+const dueTime = new Date(reminder.dueDate).getTime();
+return dueTime < (todayTime + (numberOfDays * 86400000));
+});
+return result;
+}
+}
+return(
+<div>
+<InputForm userInput={userInput}
+setUserInput={setUserInput}
+addNewReminder={addNewReminder} />
+<FilterSelect selectedFilter={selectedFilter}
+setSelectedFilter={setSelectedFilter} />
+<RemindersList reminders={filteredList} />
+</div>
+);
+}
+export default App;
+The next thing we need to do is to add the event listener and handler to the FilterSelect compo-
+nent so that selecting a filter from the dropdown will update the selectedFilter state variable.
+In the FilterSelect component, I’ll define a new function called handleChange, which will pass the
+value of the select input to the setSelectedFilter component. Then, I’ll set an onChange event
+handler on the select input to call handleChange. The FilterSelect component, with this event
+listener and event handler specified, is shown in Listing 6-51.
+LISTING 6- 51: FilterSelect with an event handler and event listener
+import PropTypes from 'prop- types';
+function FilterSelect(props){
+function handleChange(e){
+props.setSelectedFilter(e.target.value);
+}
+return(
+<label htmlFor="filterReminders">Show tasks due:
+<select id="filterReminders" value={props.selectedFilter}
+onChange={handleChange}>
+<option value="2day">within 2 Days</option>
+<option value="1week">within 1 Week</option>
+<option value="30days">within 30 days</option>
+<option value="all">any time</option>
+</select>
+</label>
+);
+}
+FilterSelect.propTypes = {
+continues
+188 ❘ CHAPTER 6 React Data Flow
+LISTING 6-51 (continued)
+selectedFilter: PropTypes.string,
+setSelectedFilter: PropTypes.func
+}
+FilterSelect.defaultProps = {
+selectedFilter:'all'
+}
+export default FilterSelect;
+Implementing the isComplete Changing Functionality
+The last thing left to do for now is to implement the isComplete status changing functionality. This
+should just be a checkbox to the right of each reminder that, when clicked, will indicate that the item
+is complete.
+The first thing to do is to implement the checkbox in the Reminder component. Checkboxes don’t
+have a value property. Instead, they have a property called checked which is either true or false.
+Our checkbox in the Reminder component should look like this:
+<input type="checkbox" checked={props.isComplete} onChange={handleChange} />
+The full Reminder component should now look like Listing 6-52.
+LISTING 6- 52: Reminder with the checkbox
+import PropTypes from 'prop- types';
+function Reminder(props){
+function handleChange(){
+props.setIsComplete(!props.isComplete,props.id);
+}
+return(
+<div className="item">item: {props.reminderText}
+<span className="due- date">due date: {props.dueDate}</span>
+<span className="is- complete">
+Completed?: <input type="checkbox"
+checked={props.isComplete}
+onChange={handleChange} /></span>
+</div>
+);
+}
+Reminder.propTypes = {
+reminderText: PropTypes.string,
+dueDate: PropTypes.string,
+isComplete: PropTypes.bool
+}
+React State ❘ 189
+const date = new Date();
+const formattedDate = date.toISOString().substr(0,10);
+Reminder.defaultProps = {
+reminderText:"No Reminder Set",
+dueDate:formattedDate,
+isComplete: false
+}
+export default Reminder;
+Next, we can define the handleChange function, which will call a function called setIsComplete
+that we’ll pass down via props. The handleChange function will pass the index of the current
+reminder in the array (which we’re passing down as the id prop) and the opposite of the current
+isComplete (so, if isComplete is true, false will be passed to the setIsComplete function):
+function handleChange(){
+props.setIsComplete(!props.isComplete,props.id);
+}
+Next, we have to define the setIsComplete function. Remember that isComplete is a property
+inside the reminders array. Since the reminders array lives in the App component, we’ll define the
+setIsComplete function there as well. This function will simply change the isComplete property
+of the element in the array matching the index passed to it. Here’s how that’s done, using the “sand-
+wich” method (two slices and spread):
+function setIsComplete(isComplete,index){
+const newReminders = [ ...reminders.slice(0, index),
+{...reminders[index],isComplete},
+...reminders.slice(index+1) ];
+setReminders(newReminders);
+}
+To get the setStatus function down to the Reminders component, you’ll need to pass it first to the
+RemindersList component, like this:
+<RemindersList reminders={filteredList} setIsComplete={setIsComplete}/>
+And then you’ll need to pass it from the RemindersList component down to the Reminder compo-
+nent, like this:
+<Reminder reminderText={reminder.reminderText}
+dueDate={reminder.dueDate}
+isComplete={reminder.isComplete}
+setIsComplete={props.setIsComplete}
+id={index}
+key={index} />
+When you run the app and add a couple of reminders, you can now check and uncheck each one’s
+status checkbox independently of the others, as shown in Figure 6-22.
+190 ❘ CHAPTER 6 React Data Flow
+FIGURE 6- 22: Checking and unchecking isComplete checkboxes
+CONVERTING TO CLASS COMPONENTS
+Now that we’ve gone through how to write this app the easy way, let’s look at how to write this
+application using class components. The functionality of the app will remain the same, but the class
+method of writing components is commonly used, even since the introduction of React Hooks, and so
+understanding how to switch between the two methods is important:
+1. Start with the root component, App. All of our state variables will still be defined in this
+component, but in a class component, this is done inside the constructor. Import Component
+instead of useState from the react library, then create the render method and initialize the
+properties of this.state as shown in Listing 6-53.
+LISTING 6- 53: Initializing state in App
+import {Component} from 'react';
+class App extends Component{
+constructor(props){
+super(props);
+this.state = {
+reminders:undefined,
+userInput:undefined,
+selectedFilter:"all"
+}
+}
+render(){
+return();
+}
+}
+export default App;
+2. Copy the JSX from the function version of App to the class version, import the child compo-
+nents, and update the names of the state properties to reference this.state and update the
+names of functions to methods of the class, as shown in Listing 6-54.
+Converting to Class Components ❘ 191
+LISTING 6- 54: Copying and modifying JSX in App
+import {Component} from 'react';
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+class App extends Component{
+constructor(props){
+super(props);
+this.state = {
+reminders:undefined,
+userInput:undefined,
+selectedFilter:"all"
+}
+}
+render(){
+return(
+<div>
+<InputForm userInput={this.state.userInput}
+setUserInput={this.setUserInput}
+addNewReminder={this.addNewReminder} />
+<FilterSelect selectedFilter={this.state.selectedFilter}
+setSelectedFilter={this.setSelectedFilter} />
+<RemindersList reminders={filteredList} setIsComplete={this.setIsComplete} />
+</div>
+);
+}
+}
+export default App;
+3. Create methods for setUserInput, setSelectedFilter, addNewReminder, and
+setIsComplete. Change references to state properties and methods to refer to properties of
+the class, and bind these methods to the component, as shown in Listing 6-55.
+LISTING 6- 55: Adding methods and binding them to App
+import {Component} from 'react';
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+class App extends Component{
+constructor(props){
+super(props);
+this.state = {
+reminders:undefined,
+userInput:undefined,
+selectedFilter:"all"
+}
+continues
+192 ❘ CHAPTER 6 React Data Flow
+LISTING 6-55 (continued)
+this.setUserInput = this.setUserInput.bind(this);
+this.setSelectedFilter = this.setSelectedFilter.bind(this);
+this.addNewReminder = this.addNewReminder.bind(this);
+this.setIsComplete = this.setIsComplete.bind(this);
+}
+setUserInput(newInput){
+this.setState({userInput:newInput});
+}
+setSelectedFilter(newFilter){
+this.setState({selectedFilter:newFilter});
+}
+addNewReminder(itemToAdd) {
+if (this.state.reminders===undefined){
+this.setState({reminders:[itemToAdd]});
+} else {
+this.setState((current)=>{
+return (
+{
+reminders:[...current.reminders,itemToAdd]
+}
+)
+});
+}
+}
+setIsComplete(isComplete,index){
+const newReminders = [ ... this.state.reminders.slice(0, index),
+{ ... this.state.reminders[index],isComplete},
+... this.state.reminders.slice(index+1) ];
+this.setState({reminders:newReminders});
+}
+render(){
+return(
+<div>
+<InputForm userInput={this.state.userInput}
+setUserInput={this.setUserInput}
+addNewReminder={this.addNewReminder} />
+<FilterSelect selectedFilter={this.state.selectedFilter}
+setSelectedFilter={this.setSelectedFilter} />
+< RemindersList reminders={filteredList} setIsComplete={this.setIsComplete} />
+</div>
+);
+}
+}
+export default App;
+Converting to Class Components ❘ 193
+4. Copy over the filterList function and update its reference to this.state.reminders.
+5. Use a call to filterList inside the render method to create the filteredList, since we
+want it to be recalculated when the component re-r enders.
+With these steps done, the App component should be fully converted to a class, and the Reminders
+app will function the same as it did before. The final code for the converted App component is shown
+in Listing 6-56.
+LISTING 6- 56: The converted App component
+import {Component} from 'react';
+import InputForm from './InputForm';
+import FilterSelect from './FilterSelect';
+import RemindersList from './RemindersList';
+class App extends Component{
+constructor(props){
+super(props);
+this.state = {
+reminders:undefined,
+userInput:undefined,
+selectedFilter:"all"
+}
+this.setUserInput = this.setUserInput.bind(this);
+this.setSelectedFilter = this.setSelectedFilter.bind(this);
+this.addNewReminder = this.addNewReminder.bind(this);
+this.setIsComplete = this.setIsComplete.bind(this);
+}
+setUserInput(newInput){
+this.setState({userInput:newInput});
+}
+setSelectedFilter(newFilter){
+this.setState({selectedFilter:newFilter});
+}
+addNewReminder(itemToAdd) {
+if (this.state.reminders===undefined){
+this.setState({reminders:[itemToAdd]});
+} else {
+this.setState((current)=>{
+return (
+{
+reminders:[...current.reminders,itemToAdd]
+}
+)
+});
+}
+}
+continues
+194 ❘ CHAPTER 6 React Data Flow
+LISTING 6-56 (continued)
+setIsComplete(isComplete,index){
+const newReminders = [ ...this.state.reminders.slice(0, index),
+{...this.state.reminders[index],isComplete},
+...this.state.reminders.slice(index+1) ];
+this.setState({reminders:newReminders});
+}
+filterList(reminders,selectedFilter){
+if (selectedFilter === "all"){
+return reminders;
+} else {
+let numberOfDays;
+switch(selectedFilter){
+case "2day":
+numberOfDays = 2;
+break;
+case "1week":
+numberOfDays = 7;
+break;
+case "30days":
+numberOfDays = 30;
+break;
+default:
+numberOfDays = 0;
+break;
+}
+const result = this.state.reminders.filter(reminder=>{
+const todaysDate = new Date().toISOString().substr(0,10);
+const todayTime = new Date(todaysDate).getTime();
+const dueTime = new Date(reminder.dueDate).getTime();
+return dueTime < (todayTime + (numberOfDays * 86400000));
+});
+return result;
+}
+}
+render(){
+const filteredList =
+this.filterList(this.state.reminders,this.state.selectedFilter);
+return(
+<div>
+<InputForm userInput={this.state.userInput}
+setUserInput={this.setUserInput}
+addNewReminder={this.addNewReminder} />
+<FilterSelect selectedFilter={this.state.selectedFilter}
+setSelectedFilter={this.setSelectedFilter} />
+Converting to Class Components ❘ 195
+<RemindersList reminders={filteredList} setIsComplete={this.setIsComplete} />
+</div>
+);
+}
+}
+export default App;
+Since all of the state of our application lives in the App component, converting the other components
+is straightforward and simple. I’ll show how to convert the first InputForm to a class, and then the
+same steps can be followed to convert the others:
+1. Import Component from react at the very beginning of the file:
+import {Component} from 'react';
+2. Replace the function header with a class header:
+class InputForm extends Component {
+3. Wrap the event handler functions and the return statement with the render method and
+change references to props to references to this.props:
+render(){
+const handleTextChange=(e)=>{
+const newUserInput = {...this.props.userInput,reminderText:e.target.value}
+this.props.setUserInput(newUserInput);
+}
+const handleDateChange=(e)=>{
+const date = new Date(e.target.value);
+const formattedDate = date.toISOString().substr(0,10);
+const newUserInput = {...this.props.userInput,dueDate:formattedDate};
+this.props.setUserInput(newUserInput);
+}
+const handleClick=(e)=>{
+e.preventDefault();
+const itemToAdd = {...this.props.userInput,isComplete:false};
+this.props.addNewReminder(itemToAdd);
+}
+return(
+<form>
+<input value={this.props.userInput.reminderText}
+id="reminderText"
+type="text"
+placeholder="What do you want to do?"
+onChange={handleTextChange} />
+<input value={this.props.userInput.dueDate}
+id="dueDate"
+type="date"
+onChange={handleDateChange} />
+196 ❘ CHAPTER 6 React Data Flow
+<button onClick={handleClick}>Add Item</button>
+</form>
+);
+}
+Once you’ve made these changes, start up the app and test it. If you did everything correctly, it should
+function the same as before. The converted InputForm component is shown in Listing 6-57.
+LISTING 6- 57: The converted InputForm component
+import {Component} from 'react';
+import PropTypes from 'prop- types';
+class InputForm extends Component {
+render(){
+const handleTextChange=(e)=>{
+const newUserInput = {...this.props.userInput,reminderText:e.target.value}
+this.props.setUserInput(newUserInput);
+}
+const handleDateChange=(e)=>{
+const date = new Date(e.target.value);
+const formattedDate = date.toISOString().substr(0,10);
+const newUserInput = {...this.props.userInput,dueDate:formattedDate};
+this.props.setUserInput(newUserInput);
+}
+const handleClick=(e)=>{
+e.preventDefault();
+const itemToAdd = {...this.props.userInput,isComplete:false};
+this.props.addNewReminder(itemToAdd);
+}
+return(
+<form>
+<input value={this.props.userInput.reminderText}
+id="reminderText"
+type="text"
+placeholder="What do you want to do?"
+onChange={handleTextChange} />
+<input value={this.props.userInput.dueDate}
+id="dueDate"
+type="date"
+onChange={handleDateChange} />
+<button onClick={handleClick}>Add Item</button>
+</form>
+);
+Converting to Class Components ❘ 197
+}
+}
+InputForm.propTypes = {
+userInput: PropTypes.shape({
+reminderText: PropTypes.string,
+dueDate: PropTypes.string
+}),
+setUserInput: PropTypes.func,
+addNewReminder: PropTypes.func
+}
+const date = new Date();
+const formattedDate = date.toISOString().substr(0,10);
+InputForm.defaultProps = {
+userInput: {
+reminderText:"",
+dueDate:formattedDate
+}
+}
+export default InputForm;
+This same basic method can be applied to the other components to convert them to class components.
+However, there is one important gotcha to be aware of. In the InputForm and RemindersList func-
+tions, we defined the internal event handler functions using the function keyword. When you define
+functions using the function keyword and then reference this inside of them, this refers to the
+function, not to the object the function is a part of. The result is that the following function will result
+in an error:
+function handleChange(e){
+this.props.setSelectedFilter(e.target.value);
+}
+The easiest solution (but not the only solution) is to simply redefine the function as an arrow func-
+tion. The this keyword inside an arrow function references the object that the function is a part of:
+const handleChange = (e)=> {
+this.props.setSelectedFilter(e.target.value);
+}
+If you’re really set on using the function keyword, another solution is to use the bind function to
+specify that the function should run in the context of the current object. You can bind the function in
+the constructor (as you’ve previously seen) or in the onChange event listener attribute, like this:
+<select id="filterReminders"
+value={this.props.selectedFilter}
+onChange={this.handleChange.bind(this)}>
+198 ❘ CHAPTER 6 React Data Flow
+SUMMARY
+One- way data flow is a large part of what makes React user interfaces able to handle updates effi-
+ciently and reliably. Although some of the patterns and techniques used to implement one-w ay data
+flow may be unfamiliar to many JavaScript programmers, they are just JavaScript, and they become
+second n ature as you work with React more. Especially since the introduction of React Hooks, and
+the useState hook in particular, basic state management in React has become simpler while also
+remaining compatible with previous methods of writing React components.
+In this chapter, you learned:
+➤➤ How one-w ay data flow works.
+➤➤ How to pass data to child components with props.
+➤➤ How to initialize state.
+➤➤ How to change state variables in class components and in function components.
+➤➤ How to work with the asynchronous nature of setState.
+➤➤ What immutability is.
+➤➤ The importance of shallow copies.
+➤➤ How to validate props using PropTypes.
+➤➤ How to set default prop values using defaultProps.
+➤➤ How to use the rest and spread operators.
+➤➤ The steps to build an app from mockup to reactivity.
+➤➤ How to “lift state up.”
+➤➤ How to convert between function components and class components.
+In the next chapter, we’ll go into more depth about how events, event listening, and event handling
+work in React.
