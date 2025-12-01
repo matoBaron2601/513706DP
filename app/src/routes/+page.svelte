@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageWrapper from "$lib/components/PageWrapper.svelte";
+	import PageWrapper from '$lib/components/PageWrapper.svelte';
 
 	const principles = [
 		{
@@ -45,7 +45,7 @@
 			label: 'Initial assessment',
 			title: 'Run the block placement quiz',
 			description:
-				'For every concept in a block, the system generates exactly one question of each type (A1, A2, B1, B2). This placement quiz gives four answers per concept as the starting evidence.'
+				'For every concept in a block, the system generates exactly one question of each type (A1, A2, B1, B2). This placement quiz gives four answers per concept as the starting skill estimate.'
 		},
 		{
 			label: 'Initial skill model',
@@ -84,10 +84,10 @@
 					<p class="text-xs font-semibold uppercase tracking-[0.18em] text-gray-500">Overview</p>
 					<h1 class="text-3xl font-semibold tracking-tight text-gray-900">Application overview</h1>
 					<p class="max-w-2xl text-sm leading-relaxed text-gray-600">
-						The app organises learning into courses, blocks and concepts. For each concept, it
-						estimates the user’s skill with a Bayesian model and generates adaptive quizzes until the
-						concept is mastered. This page summarises how courses are structured and how the quiz
-						logic makes its decisions.
+						The application organises learning into courses, blocks and concepts. For each concept,
+						it estimates the user’s skill and generates adaptive quizzes until the concept is
+						mastered. This page summarises how courses are structured and how the quiz logic makes
+						its decisions.
 					</p>
 				</div>
 			</section>
@@ -96,9 +96,6 @@
 				<header class="flex items-baseline justify-between gap-4">
 					<div>
 						<h2 class="text-lg font-semibold text-gray-900">Core principles</h2>
-						<p class="text-sm text-gray-500">
-							How the system behaves when deciding what to ask, when to repeat and when to stop.
-						</p>
 					</div>
 				</header>
 
@@ -121,7 +118,9 @@
 			<section class="space-y-4">
 				<header>
 					<h2 class="text-lg font-semibold text-gray-900">How the system works</h2>
-					<p class="text-sm text-gray-500">High-level flow from course creation to everyday usage.</p>
+					<p class="text-sm text-gray-500">
+						High-level flow from course creation to everyday usage.
+					</p>
 				</header>
 
 				<div class="rounded-2xl border border-gray-200 bg-white px-6 py-6 shadow-sm">
@@ -152,44 +151,6 @@
 							</li>
 						{/each}
 					</ol>
-				</div>
-			</section>
-
-			<section class="space-y-4">
-				<header>
-					<h2 class="text-lg font-semibold text-gray-900">Decision logic</h2>
-					<p class="text-sm text-gray-500">
-						When and why the app changes concepts, question mix and the number of questions.
-					</p>
-				</header>
-
-				<div class="grid gap-4 md:grid-cols-2">
-					<div class="space-y-2 rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
-						<h3 class="text-sm font-medium text-gray-900">Adaptive difficulty</h3>
-						<p class="text-xs leading-relaxed text-gray-600">
-							For each concept, the app keeps counts of correct and asked questions per type and
-							maintains a Beta(α, β) model. The estimated skill ({'`scoreᵢ = αᵢ / (αᵢ + βᵢ)`'}) and
-							its variance drive difficulty: a large deficit to the mastery threshold (T<sub>master</sub>)
-							produces more follow-up questions for that concept, clamped between K<sub>min</sub> and
-							K<sub>max</sub> and scaled by γ. Within a concept, question types with lower observed
-							success or too few attempts get higher sampling weight (ω<sub>i,t</sub>), so weaker or
-							under-tested formats appear more often. Streak and confidence interval width are used
-							to decide when a concept can safely be considered mastered and taken out of rotation.
-						</p>
-					</div>
-
-					<div class="space-y-2 rounded-2xl border border-gray-200 bg-white px-6 py-5 shadow-sm">
-						<h3 class="text-sm font-medium text-gray-900">Content ordering</h3>
-						<p class="text-xs leading-relaxed text-gray-600">
-							After each quiz, only non-mastered concepts are considered. Each gets a priority value
-							priority<sub>i</sub> = w₁·(1 − score<sub>i</sub>) + w₂·√var<sub>i</sub>, combining low
-							mastery and high uncertainty. The app selects the top three concepts by this score for
-							the next adaptive quiz. Mastered concepts are removed from scheduling, takže sa
-							nebudú ďalej zobrazovať, a slabé alebo málo preskúmané koncepty sa naopak viac
-							prioritizujú. Nič sa nepreskočí natrvalo – kým koncept nesplní všetky kritériá
-							mastery, ostáva v kandidátoch.
-						</p>
-					</div>
 				</div>
 			</section>
 		</main>

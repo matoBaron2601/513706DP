@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createMutation } from '@tanstack/svelte-query';
 	import { type PageData } from '../$types';
-	import createBlock from '../_clientServices.ts/createBlock';
 	import { page } from '$app/state';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
@@ -14,10 +13,11 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import type { Step } from '../+page.svelte';
-	import createPlacementQuiz from '../_clientServices.ts/createPlacementQuiz';
 	import { goto } from '$app/navigation';
 	import { TriangleAlert } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { createPlacementQuiz } from '../_clientServices.ts/createPlacementQuiz';
+	import { createBlock } from '../_clientServices.ts/createBlock';
 
 	const courseId = page.params.id ?? '';
 	let {

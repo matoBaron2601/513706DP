@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createMutation } from '@tanstack/svelte-query';
-	import identifyConcepts from '../_clientServices.ts/identifyConcepts';
 	import { type PageData } from '../$types';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
@@ -12,6 +11,7 @@
 	import type { Step } from '../+page.svelte';
 	import { Upload } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { identifyConcepts } from '../_clientServices.ts/identifyConcepts';
 
 	let {
 		data,

@@ -2,7 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { createMutation } from '@tanstack/svelte-query';
-	import createCourse from './_clientService.ts/createCourse';
 	import { getUserFromPage } from '$lib/utils';
 	import type { UserDto } from '../../../db/schema';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
@@ -15,6 +14,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { toast } from 'svelte-sonner';
+	import { createCourse } from './_clientService.ts/createCourse';
 
 	let { data }: { data: PageData } = $props();
 	const user = getUserFromPage();
@@ -58,12 +58,8 @@
 >
 	<form method="POST" use:enhance onsubmit={handleFormSubmit}>
 		<div class="space-y-4">
-			<h1 class="text-2xl font-semibold tracking-tight text-gray-900">
-				Create new course
-			</h1>
-			<p class="text-sm text-gray-500">
-				Define the basic information for your new course.
-			</p>
+			<h1 class="text-2xl font-semibold tracking-tight text-gray-900">Create new course</h1>
+			<p class="text-sm text-gray-500">Define the basic information for your new course.</p>
 		</div>
 
 		<Card.Card class="mt-6 rounded-2xl border border-gray-200 bg-white shadow-sm">

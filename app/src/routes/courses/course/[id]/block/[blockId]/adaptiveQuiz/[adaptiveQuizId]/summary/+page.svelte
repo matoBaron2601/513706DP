@@ -3,10 +3,10 @@
 	import { page } from '$app/state';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
-	import getBlockById from '../../../../../../../../_clientServices/getBlockById';
-	import getCourseById from '../../../../../../../../_clientServices/getCourseById';
-	import getComplexAdaptiveQuizById from '../_clientServices/getAdaptiveQuizById';
 	import Summary from '../_components/Summary.svelte';
+	import { getComplexAdaptiveQuizById } from '../_clientServices/getAdaptiveQuizById';
+	import { getCourseById } from '../../../../../../../../_clientServices/getCourseById';
+	import { getBlockById } from '../../../../../../../../_clientServices/getBlockById';
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
 	const adaptiveQuizId = page.params.adaptiveQuizId ?? '';

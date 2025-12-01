@@ -5,8 +5,8 @@
 	import { goto } from '$app/navigation';
 	import type { BlockWithConcepts } from '../../../../../schemas/blockSchema';
 	import { createQuery } from '@tanstack/svelte-query';
-	import getUserBlocks from '../_clientServices.ts/getUserBlocks';
 	import { getUserByEmail } from '$lib/utils';
+	import { getUserBlocks } from '../_clientServices.ts/getUserBlocks';
 
 	let { block }: { block: BlockWithConcepts } = $props();
 

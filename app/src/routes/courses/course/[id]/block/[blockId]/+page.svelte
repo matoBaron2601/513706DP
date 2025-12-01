@@ -2,15 +2,16 @@
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import { getUserByEmail } from '$lib/utils';
-	import getUserBlock from './_clientServices/getUserBlock';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import AdaptiveQuizzesList from './_components/AdaptiveQuizzesList.svelte';
 	import BlockConceptsList from './_components/BlockConceptsList.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
-	import getCourseById from '../../../../../_clientServices/getCourseById';
-	import getBlockById from '../../../../../_clientServices/getBlockById';
+
 	import { History, File } from '@lucide/svelte';
+	import { getCourseById } from '../../../../../_clientServices/getCourseById';
+	import { getBlockById } from '../../../../../_clientServices/getBlockById';
+	import { getUserBlock } from './_clientServices/getUserBlock';
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';

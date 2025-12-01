@@ -1,6 +1,6 @@
 import type { SubmitAdaptiveQuizAnswer } from '../../../../../../../../../schemas/adaptiveQuizAnswerSchema';
 
-const submitAdaptiveQuizAnswer = async (adaptiveQuizAnswer: SubmitAdaptiveQuizAnswer) => {
+export const submitAdaptiveQuizAnswer = async (adaptiveQuizAnswer: SubmitAdaptiveQuizAnswer) => {
 	const response = await fetch(`/api/adaptiveQuizAnswer`, {
 		method: 'POST',
 		headers: {
@@ -14,5 +14,3 @@ const submitAdaptiveQuizAnswer = async (adaptiveQuizAnswer: SubmitAdaptiveQuizAn
 	}
 	return await response.json();
 };
-
-export default submitAdaptiveQuizAnswer;

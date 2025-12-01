@@ -1,7 +1,7 @@
 import type { Course } from '../../../schemas/courseSchema';
 import { AppError } from '../../../errors/AppError';
 
-const publishCourse = async (id: string): Promise<Course> => {
+export const publishCourse = async (id: string): Promise<Course> => {
 	const response = await fetch(`/api/course/${id}/publish`, {
 		method: 'PUT'
 	});
@@ -18,5 +18,3 @@ const publishCourse = async (id: string): Promise<Course> => {
 	}
 	return data;
 };
-
-export default publishCourse;

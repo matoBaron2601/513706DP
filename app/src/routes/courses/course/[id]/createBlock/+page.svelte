@@ -6,7 +6,7 @@
 	import ConceptEditor from './_components/ConcepstEditor.svelte';
 	import { page } from '$app/state';
 	import { createQuery } from '@tanstack/svelte-query';
-	import getCourseById from '../../../../_clientServices/getCourseById.js';
+	import { getCourseById } from '../../../../_clientServices/getCourseById.js';
 
 	let { data }: { data: PageData } = $props();
 

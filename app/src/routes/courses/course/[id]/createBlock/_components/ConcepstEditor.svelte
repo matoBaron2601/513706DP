@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { Step } from '../+page.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input';
+	import type { Step } from '../+page.svelte';
 	type Concept = { name: string; difficultyIndex: number };
 
 	let { concepts, handleSetStep }: { concepts: Concept[]; handleSetStep: (newStep: Step) => void } =

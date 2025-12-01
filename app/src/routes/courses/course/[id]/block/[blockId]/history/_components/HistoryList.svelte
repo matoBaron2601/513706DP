@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
-	import getAdaptiveQuizzesByUserBlockId from '../_clientServices/getAdaptiveQuizzesByUserBlockId';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import AdaptiveQuizCard from '../../_components/AdaptiveQuizCard.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import { getAdaptiveQuizzesByUserBlockId } from '../_clientServices/getAdaptiveQuizzesByUserBlockId';
 
 	const { userBlockId }: { userBlockId: string } = $props();
 	const courseId = page.params.id ?? '';

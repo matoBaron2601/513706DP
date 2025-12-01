@@ -1,6 +1,6 @@
 import type { AdaptiveQuiz } from '../../../../../../../../../schemas/adaptiveQuizSchema';
 
-const finishAdaptiveQuiz = async (adaptiveQuizId: string): Promise<AdaptiveQuiz> => {
+export const finishAdaptiveQuiz = async (adaptiveQuizId: string): Promise<AdaptiveQuiz> => {
 	const response = await fetch(`/api/adaptiveQuiz/complete/${adaptiveQuizId}`, {
 		method: 'POST',
 		headers: {
@@ -13,5 +13,3 @@ const finishAdaptiveQuiz = async (adaptiveQuizId: string): Promise<AdaptiveQuiz>
 	}
 	return await response.json();
 };
-
-export default finishAdaptiveQuiz;

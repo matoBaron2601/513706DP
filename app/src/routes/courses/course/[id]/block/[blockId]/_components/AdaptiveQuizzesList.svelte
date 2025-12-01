@@ -5,9 +5,9 @@
 	import queryClient from '../../../../../../queryClient';
 	import { onDestroy } from 'svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import getLastAdaptiveQuizByUserBlockId from '../_clientServices/getLastAdaptiveQuizByUserBlockId';
 	import { Button } from '$lib/components/ui/button';
-	import regenerateAdaptiveQuiz from '../_clientServices/regenerateAdaptiveQuiz';
+	import { regenerateAdaptiveQuiz } from '../_clientServices/regenerateAdaptiveQuiz';
+	import { getLastAdaptiveQuizByUserBlockId } from '../_clientServices/getLastAdaptiveQuizByUserBlockId';
 
 	let { userBlockId }: { userBlockId: string } = $props();
 

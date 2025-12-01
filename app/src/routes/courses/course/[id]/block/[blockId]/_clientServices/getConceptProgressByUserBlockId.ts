@@ -3,7 +3,7 @@ import type {
 	GetConceptProgressByUserBlockIdResponse
 } from '../../../../../../../schemas/conceptSchema';
 
-const getConceptProgressByUserBlockId = async (
+export const getConceptProgressByUserBlockId = async (
 	data: GetConceptProgressByUserBlockIdRequest
 ): Promise<GetConceptProgressByUserBlockIdResponse> => {
 	const response = await fetch(`/api/concept/progress/${data.userBlockId}`);
@@ -14,4 +14,3 @@ const getConceptProgressByUserBlockId = async (
 	return await response.json();
 };
 
-export default getConceptProgressByUserBlockId;

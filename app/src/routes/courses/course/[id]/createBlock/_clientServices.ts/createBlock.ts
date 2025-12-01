@@ -3,7 +3,7 @@ import type {
 	CreateBlockResponse
 } from '../../../../../../schemas/blockSchema';
 
-const createBlock = async (data: CreateBlockRequest): Promise<CreateBlockResponse> => {
+export const createBlock = async (data: CreateBlockRequest): Promise<CreateBlockResponse> => {
 	const response = await fetch('/api/block/createBlock', {
 		method: 'POST',
 		headers: {
@@ -16,5 +16,3 @@ const createBlock = async (data: CreateBlockRequest): Promise<CreateBlockRespons
 	}
 	return await response.json();
 };
-
-export default createBlock;

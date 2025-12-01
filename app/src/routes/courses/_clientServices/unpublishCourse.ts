@@ -1,6 +1,6 @@
 import type { Course } from '../../../schemas/courseSchema';
 
-const unpublishCourse = async (id: string): Promise<Course> => {
+export const unpublishCourse = async (id: string): Promise<Course> => {
 	const response = await fetch(`/api/course/${id}/unpublish`, {
 		method: 'PUT'
 	});
@@ -11,4 +11,3 @@ const unpublishCourse = async (id: string): Promise<Course> => {
 	return data;
 };
 
-export default unpublishCourse;

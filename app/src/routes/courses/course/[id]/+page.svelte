@@ -4,10 +4,10 @@
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
-	import { ArrowBigRight, Upload } from '@lucide/svelte';
+	import { Upload } from '@lucide/svelte';
 	import CourseBlockCard from './_components/BlockCard.svelte';
-	import getBlocks from './_clientServices.ts/getBlocks';
-	import getCourseById from '../../../_clientServices/getCourseById';
+	import { getCourseById } from '../../../_clientServices/getCourseById';
+	import { getBlocks } from './_clientServices.ts/getBlocks';
 	const courseId = page.params.id ?? '';
 
 	const courseQuery = createQuery({

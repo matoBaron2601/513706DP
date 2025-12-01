@@ -4,7 +4,7 @@ import type {
 	Document
 } from '../../../../../../../../schemas/documentSchema';
 
-const deleteDocument = async (deleteDocumentRequest: DeleteDocumentRequest): Promise<Document> => {
+export const deleteDocument = async (deleteDocumentRequest: DeleteDocumentRequest): Promise<Document> => {
 	const response = await fetch(`/api/document`, {
 		method: 'DELETE',
 		body: JSON.stringify(deleteDocumentRequest),
@@ -19,5 +19,3 @@ const deleteDocument = async (deleteDocumentRequest: DeleteDocumentRequest): Pro
 	const data = await response.json();
 	return data;
 };
-
-export default deleteDocument;

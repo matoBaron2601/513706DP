@@ -1,6 +1,6 @@
 import type { IdentifyConceptsRequest, IdentifyConceptsResponse } from '../../../../../../schemas/blockSchema';
 
-const identifyConcepts = async (data: IdentifyConceptsRequest) : Promise<IdentifyConceptsResponse> => {
+export const identifyConcepts = async (data: IdentifyConceptsRequest) : Promise<IdentifyConceptsResponse> => {
 	const formData = new FormData();
 
 	formData.append('document', data.document);
@@ -15,5 +15,3 @@ const identifyConcepts = async (data: IdentifyConceptsRequest) : Promise<Identif
 	}
 	return await response.json();
 };
-
-export default identifyConcepts;

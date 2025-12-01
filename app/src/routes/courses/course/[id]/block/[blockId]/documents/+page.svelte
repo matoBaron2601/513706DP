@@ -2,11 +2,8 @@
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { getUserByEmail } from '$lib/utils';
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
-	import getBlockById from '../../../../../../_clientServices/getBlockById';
-	import getCourseById from '../../../../../../_clientServices/getCourseById';
-	import getUserBlock from '../_clientServices/getUserBlock';
+
 	import { page } from '$app/state';
-	import getDocumentsByBlockId from './_clientServices/getDocumentsByBlockId';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import { type PageData } from './$types';
@@ -15,11 +12,14 @@
 	import { uploadDocumentFormSchema } from './uploadDocumentFormSchema';
 	import { Button } from '$lib/components/ui/button';
 	import { Upload } from '@lucide/svelte';
-	import uploadDocument from './_clientServices/uploadDocument';
 	import queryClient from '../../../../../../queryClient';
 	import { Trash } from '@lucide/svelte';
-	import deleteDocument from './_clientServices/deleteDocument';
 	import { toast } from 'svelte-sonner';
+	import { getDocumentsByBlockId } from './_clientServices/getDocumentsByBlockId';
+	import { getBlockById } from '../../../../../../_clientServices/getBlockById';
+	import { getCourseById } from '../../../../../../_clientServices/getCourseById';
+	import { uploadDocument } from './_clientServices/uploadDocument';
+	import { deleteDocument } from './_clientServices/deleteDocument';
 
 	let { data }: { data: PageData } = $props();
 
@@ -27,13 +27,6 @@
 	const blockId = page.params.blockId ?? '';
 	const userEmail = page.data.session?.user?.email ?? '';
 
-	const userBlockQuery = createQuery({
-		queryKey: ['userBlock', blockId],
-		queryFn: async () => {
-			const { id: userId } = await getUserByEmail(userEmail);
-			return await getUserBlock({ userId, blockId, completed: false });
-		}
-	});
 
 	const courseQuery = createQuery({
 		queryKey: ['course'],

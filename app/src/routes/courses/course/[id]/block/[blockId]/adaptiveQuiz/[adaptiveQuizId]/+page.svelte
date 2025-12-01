@@ -1,19 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
-	import getComplexAdaptiveQuizById from './_clientServices/getAdaptiveQuizById';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import Question from './_components/Question.svelte';
 	import { type PageData } from './$types';
 	import type { SubmitAdaptiveQuizAnswer } from '../../../../../../../../schemas/adaptiveQuizAnswerSchema';
-	import submitAdaptiveQuizAnswer from './_clientServices/submitAdaptiveQuizAnswer';
 	import queryClient from '../../../../../../../queryClient';
 	import Summary from './_components/Summary.svelte';
-	import finishAdaptiveQuiz from './_clientServices/finishAdaptiveQuiz';
-	import getCourseById from '../../../../../../../_clientServices/getCourseById';
-	import getBlockById from '../../../../../../../_clientServices/getBlockById';
-	import getConceptsByBlockId from './_clientServices/getConceptsByBlockId';
+	import { getBlockById } from '../../../../../../../_clientServices/getBlockById';
+	import { getCourseById } from '../../../../../../../_clientServices/getCourseById';
+	import { finishAdaptiveQuiz } from './_clientServices/finishAdaptiveQuiz';
+	import { getComplexAdaptiveQuizById } from './_clientServices/getAdaptiveQuizById';
+	import { getConceptsByBlockId } from './_clientServices/getConceptsByBlockId';
+	import { submitAdaptiveQuizAnswer } from './_clientServices/submitAdaptiveQuizAnswer';
+
 
 	let { data }: { data: PageData } = $props();
 	const courseId = page.params.id ?? '';

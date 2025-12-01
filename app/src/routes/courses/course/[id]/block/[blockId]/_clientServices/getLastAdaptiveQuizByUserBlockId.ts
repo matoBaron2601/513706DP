@@ -1,6 +1,6 @@
 import type { AdaptiveQuiz } from '../../../../../../../schemas/adaptiveQuizSchema';
 
-const getLastAdaptiveQuizByUserBlockId = async (userBlockId: string): Promise<AdaptiveQuiz> => {
+export const getLastAdaptiveQuizByUserBlockId = async (userBlockId: string): Promise<AdaptiveQuiz> => {
 	const response = await fetch(`/api/adaptiveQuiz/last/${userBlockId}`);
 
 	if (!response.ok) {
@@ -8,5 +8,3 @@ const getLastAdaptiveQuizByUserBlockId = async (userBlockId: string): Promise<Ad
 	}
 	return await response.json();
 };
-
-export default getLastAdaptiveQuizByUserBlockId;

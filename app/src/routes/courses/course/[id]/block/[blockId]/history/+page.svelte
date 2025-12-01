@@ -2,12 +2,13 @@
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { getUserByEmail } from '$lib/utils';
 	import { createQuery } from '@tanstack/svelte-query';
-	import getUserBlock from '../_clientServices/getUserBlock';
 	import { page } from '$app/state';
 	import HistoryList from './_components/HistoryList.svelte';
-	import getCourseById from '../../../../../../_clientServices/getCourseById';
-	import getBlockById from '../../../../../../_clientServices/getBlockById';
+
 	import { Button } from '$lib/components/ui/button'; // adjust path if needed
+	import { getCourseById } from '../../../../../../_clientServices/getCourseById';
+	import { getUserBlock } from '../_clientServices/getUserBlock';
+	import { getBlockById } from '../../../../../../_clientServices/getBlockById';
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';

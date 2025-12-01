@@ -1,6 +1,6 @@
 import type { Block } from '../../schemas/blockSchema';
 
-const getBlockById = async (blockId: string): Promise<Block> => {
+export const getBlockById = async (blockId: string): Promise<Block> => {
 	const response = await fetch(`/api/block/${blockId}`, {});
 
 	if (!response.ok) {
@@ -8,5 +8,3 @@ const getBlockById = async (blockId: string): Promise<Block> => {
 	}
 	return await response.json();
 };
-
-export default getBlockById;

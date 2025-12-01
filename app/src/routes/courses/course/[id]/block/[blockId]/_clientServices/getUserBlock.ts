@@ -1,6 +1,6 @@
 import type { CreateUserBlock, UserBlock } from '../../../../../../../schemas/userBlockSchema';
 
-const getUserBlock = async (createUserBlock: CreateUserBlock): Promise<UserBlock> => {
+export const getUserBlock = async (createUserBlock: CreateUserBlock): Promise<UserBlock> => {
 	const response = await fetch(`/api/userBlock`, {
 		method: 'POST',
 		headers: {
@@ -15,4 +15,3 @@ const getUserBlock = async (createUserBlock: CreateUserBlock): Promise<UserBlock
 	return await response.json();
 };
 
-export default getUserBlock;

@@ -1,6 +1,6 @@
 import type { Course, CreateCourse } from '../../../../schemas/courseSchema';
 
-const createCourse = async (createCourseData: CreateCourse): Promise<Course> => {
+export const createCourse = async (createCourseData: CreateCourse): Promise<Course> => {
 	const response = await fetch(`/api/course`, {
 		method: 'POST',
 		headers: {
@@ -15,4 +15,3 @@ const createCourse = async (createCourseData: CreateCourse): Promise<Course> => 
 	return data;
 };
 
-export default createCourse;

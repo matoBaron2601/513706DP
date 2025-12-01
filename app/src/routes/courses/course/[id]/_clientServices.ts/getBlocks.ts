@@ -1,6 +1,6 @@
 import type { GetManyByCourseIdResponse } from '../../../../../schemas/blockSchema';
 
-const getBlocks = async (courseId: string): Promise<GetManyByCourseIdResponse> => {
+export const getBlocks = async (courseId: string): Promise<GetManyByCourseIdResponse> => {
 	const response = await fetch(`/api/block/courseId/${courseId}`);
 	if (!response.ok) {
 		throw new Error('Failed to get course blocks');
@@ -9,4 +9,3 @@ const getBlocks = async (courseId: string): Promise<GetManyByCourseIdResponse> =
 	return data;
 };
 
-export default getBlocks;

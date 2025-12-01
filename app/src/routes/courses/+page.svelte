@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import getCourses from './_clientServices/getCourses';
 	import CourseCard from './_components/CourseCard.svelte';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { getUserByEmail, getUserFromPage } from '$lib/utils';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
+	import { getCourses } from './_clientServices/getCourses';
 
 	const user = getUserFromPage();
 	const getCoursesQuery = createQuery({

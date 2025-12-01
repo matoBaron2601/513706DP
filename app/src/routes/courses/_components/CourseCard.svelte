@@ -6,23 +6,30 @@
 	import { goto } from '$app/navigation';
 	import type { GetCoursesResponse } from '../../../schemas/courseSchema';
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
-	import getCreatorById from '../_clientServices/getCreatorById';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import deleteCourse from '../_clientServices/deleteCourse';
 	import queryClient from '../../queryClient';
 	import { getUserFromPage } from '$lib/utils';
-	import updateCourse from '../_clientServices/publishCourse';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { toast } from 'svelte-sonner';
-	import unpublishCourse from '../_clientServices/unpublishCourse';
+	import { deleteCourse } from '../_clientServices/deleteCourse';
+	import { getCreatorById } from '../_clientServices/getCreatorById';
+	import { unpublishCourse } from '../_clientServices/unpublishCourse';
+	import { publishCourse } from '../_clientServices/publishCourse';
+
 	let { course }: { course: GetCoursesResponse } = $props();
 	const user = getUserFromPage();
 
 	let published = $state(course.published);
 
-	$effect(() => {
-		published = course.published;
+	const creatorName = $derived.by(() => {
+		return $creatorQuery.data ? $creatorQuery.data.name : 'Unknown Creator';
 	});
+	
+	const isCreator = $derived.by(() => {
+		return $creatorQuery.data?.email === user?.email;
+	});
+
+	let deleteModalOpen = $state(false);
 
 	const creatorQuery = createQuery({
 		queryKey: ['creator', course.creatorId],
@@ -42,9 +49,9 @@
 
 	const updateCourseMutation = createMutation({
 		mutationKey: ['updateCourse', course.id],
-		mutationFn: async (nextPublished: boolean) => {
-			if (nextPublished) {
-				return await updateCourse(course.id);
+		mutationFn: async (checked: boolean) => {
+			if (checked) {
+				return await publishCourse(course.id);
 			}
 			return await unpublishCourse(course.id);
 		},
@@ -58,15 +65,9 @@
 		}
 	});
 
-	const creatorName = $derived.by(() => {
-		return $creatorQuery.data ? $creatorQuery.data.name : 'Unknown Creator';
+	$effect(() => {
+		published = course.published;
 	});
-
-	const isCreator = $derived.by(() => {
-		return $creatorQuery.data?.email === user?.email;
-	});
-
-	let deleteModalOpen = $state(false);
 
 	async function handleSwitchChange(checked: boolean) {
 		published = checked;

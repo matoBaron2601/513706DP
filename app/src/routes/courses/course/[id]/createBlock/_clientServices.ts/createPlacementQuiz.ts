@@ -3,7 +3,7 @@ import type {
 	CreatePlacementQuizResponse
 } from '../../../../../../schemas/placementQuizSchema';
 
-const createPlacementQuiz = async (
+export const createPlacementQuiz = async (
 	data: CreatePlacementQuizRequest
 ): Promise<CreatePlacementQuizResponse> => {
 	const response = await fetch(`/api/placementQuiz`, {
@@ -19,5 +19,3 @@ const createPlacementQuiz = async (
 	}
 	return await response.json();
 };
-
-export default createPlacementQuiz;

@@ -1,6 +1,6 @@
 import type { Course } from '../../../schemas/courseSchema';
 
-const deleteCourse = async (courseId: string): Promise<Course> => {
+export const deleteCourse = async (courseId: string): Promise<Course> => {
 	const response = await fetch(`/api/course/${courseId}`, {
 		method: 'DELETE'
 	});
@@ -11,4 +11,3 @@ const deleteCourse = async (courseId: string): Promise<Course> => {
 	return data;
 };
 
-export default deleteCourse;
