@@ -14,7 +14,7 @@ const typesenseSchema = {
 			embed: {
 				from: ['content'],
 				model_config: {
-					model_name: 'openai/text-embedding-3-small',
+					model_name: 'openai/text-embedding-3-large',
 					api_key: process.env.OPENAI_API_KEY || ''
 				}
 			},
