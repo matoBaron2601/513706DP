@@ -1,19 +1,15 @@
 import { db } from '../db/client';
-import type { block, ConceptDto } from '../db/schema';
 import type {
 	BaseQuizWithQuestionsAndOptions,
 	BaseQuizWithQuestionsAndOptionsBlank
 } from '../schemas/baseQuizSchema';
-import type { Concept } from '../schemas/conceptSchema';
 import type {
 	CreatePlacementQuizRequest,
-	CreatePlacementQuizResponse
 } from '../schemas/placementQuizSchema';
 import { BaseQuizService } from '../services/baseQuizService';
 import { ConceptService } from '../services/conceptService';
 import { OpenAiService } from '../services/openAIService';
 import { PlacementQuizService } from '../services/placementQuizService';
-import type { Transaction } from '../types';
 import { TypesenseService } from '../typesense/typesenseService';
 import { BaseQuizFacade } from './baseQuizFacade';
 
@@ -34,6 +30,7 @@ export class PlacementQuizFacade {
 		this.openAiService = new OpenAiService();
 	}
 
+	// Create a placement quiz for a given block
 	async createPlacementQuiz(
 		data: CreatePlacementQuizRequest
 	): Promise<BaseQuizWithQuestionsAndOptions> {
@@ -46,11 +43,9 @@ export class PlacementQuizFacade {
 			return { baseQuizId, placementQuizId };
 		});
 
-		const generatedQuestions = await this.generatePlacementQuizQuestions(
-			data.blockId
-		);
+		const generatedQuestions = await this.generatePlacementQuizQuestions(data.blockId);
 
-		const questionsIds = await this.baseQuizFacade.createBaseQuestionsAndOptions({
+		await this.baseQuizFacade.createBaseQuestionsAndOptions({
 			data: generatedQuestions,
 			baseQuizId
 		});
@@ -59,6 +54,7 @@ export class PlacementQuizFacade {
 		return placementQuiz;
 	}
 
+	// Generate placement quiz questions for a given block
 	async generatePlacementQuizQuestions(
 		blockId: string
 	): Promise<Map<string, BaseQuizWithQuestionsAndOptionsBlank>> {
@@ -79,7 +75,6 @@ export class PlacementQuizFacade {
 					const chunks = conceptIdChunksMap.get(concept.id) || [];
 					const placementQuestions = await this.openAiService.createPlacementQuestions(
 						concept.name,
-						concepts.map((c) => c.name),
 						chunks
 					);
 

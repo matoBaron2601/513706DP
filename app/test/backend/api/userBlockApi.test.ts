@@ -1,4 +1,3 @@
-// test/api/userBlockApi.test.ts
 import { describe, it, expect } from 'bun:test';
 import type { UserBlock, CreateUserBlock } from '../../../src/schemas/userBlockSchema';
 import type { UserBlockFacade } from '../../../src/facades/userBlockFacade';

@@ -12,7 +12,7 @@
 		queryKey: ['courses'],
 		queryFn: async () => {
 			const { id } = await getUserByEmail(user.email);
-			return await getCourses({ sortBy: 'name', sortDir: 'asc', creatorId: id });
+			return await getCourses({ creatorId: id });
 		}
 	});
 </script>
@@ -24,16 +24,15 @@
 	{#if $getCoursesQuery.isLoading}
 		<p class="text-sm text-gray-500">Loading…</p>
 	{:else if !$getCoursesQuery.data || $getCoursesQuery.data.length === 0}
-		<div class="mx-auto mt-10 max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-			<div class="text-4xl mb-3 select-none">📚</div>
-			<h2 class="text-lg font-semibold text-gray-900 mb-1">No courses to attend yet</h2>
-			<p class="text-sm text-gray-500 mb-6">
+		<div
+			class="mx-auto mt-10 max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm"
+		>
+			<div class="mb-3 select-none text-4xl">📚</div>
+			<h2 class="mb-1 text-lg font-semibold text-gray-900">No courses to attend yet</h2>
+			<p class="mb-6 text-sm text-gray-500">
 				Start by creating your first course. You can add blocks and concepts later.
 			</p>
-			<Button
-				class="cursor-pointer"
-				onclick={() => goto('/courses/create')}
-			>
+			<Button class="cursor-pointer" onclick={() => goto('/courses/create')}>
 				Create new course
 			</Button>
 		</div>
@@ -45,4 +44,3 @@
 		</div>
 	{/if}
 </PageWrapper>
-

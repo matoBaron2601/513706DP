@@ -20,26 +20,24 @@
 	import { toast } from 'svelte-sonner';
 
 	const courseId = page.params.id ?? '';
-	const blockId = page.params.blockId ?? '';
-
 	let {
 		data,
 		documentPath,
 		concepts,
-		handleSetStep,
-		handleSetBlockId
+		handleSetStep
 	}: {
 		data: PageData;
 		documentPath: string;
 		concepts: { name: string; difficultyIndex: number }[];
 		handleSetStep: (newStep: Step) => void;
-		handleSetBlockId: (id: string) => void;
 	} = $props();
+
+	let createdBlockId = $state('');
 
 	const form = superForm(data.createBlockForm, {
 		validators: zodClient(createBlockFormSchema)
 	});
-	const { form: formData, enhance, validateForm } = form;
+	const { form: formData, validateForm } = form;
 
 	const createPlacementQuizMutation = createMutation({
 		mutationKey: ['createPlacementQuiz'],
@@ -48,10 +46,12 @@
 				blockId: blockId
 			});
 		},
-
 		onSuccess: () => {
 			goto(`/courses/course/${page.params.id}`);
 			toast.success('Block and placement quiz created successfully');
+		},
+		onError: () => {
+			toast.error('There was a problem with creating the placement quiz. Please try again.');
 		}
 	});
 
@@ -69,7 +69,12 @@
 			return blockId;
 		},
 		onSuccess: async (blockId: string) => {
-			await $createPlacementQuizMutation.mutateAsync(blockId);
+			createdBlockId = blockId;
+			$createPlacementQuizMutation.mutateAsync(blockId);
+		},
+		onError: () => {
+			toast.error(`There was a problem with creating the block. 
+			If you used the LLM transformation, there might be an issue with the AI service. Please try again.`);
 		}
 	});
 
@@ -78,7 +83,11 @@
 		if (!isValid) {
 			return;
 		}
-		await $createBlockMutation.mutateAsync();
+		if (createdBlockId) {
+			await $createPlacementQuizMutation.mutateAsync(createdBlockId);
+		} else {
+			await $createBlockMutation.mutateAsync();
+		}
 	};
 </script>
 
@@ -111,16 +120,18 @@
 							<Form.Label>Chunking strategy</Form.Label>
 
 							<Tabs.Root value={$formData.chunkingStrategy} {...props} class="w-full">
-								<Tabs.List class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs">
+								<Tabs.List
+									class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 text-xs"
+								>
 									<Tabs.Trigger
-										class="cursor-pointer flex-1 rounded-md px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-500"
+										class="flex-1 cursor-pointer rounded-md px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=inactive]:text-gray-500 data-[state=active]:shadow-sm"
 										onclick={() => ($formData.chunkingStrategy = 'rtc')}
 										value="rtc"
 									>
 										Recursive
 									</Tabs.Trigger>
 									<Tabs.Trigger
-										class="cursor-pointer flex-1 rounded-md px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-sm data-[state=inactive]:text-gray-500"
+										class="flex-1 cursor-pointer rounded-md px-3 py-1.5 data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=inactive]:text-gray-500 data-[state=active]:shadow-sm"
 										onclick={() => ($formData.chunkingStrategy = 'semantic')}
 										value="semantic"
 									>
@@ -194,13 +205,15 @@
 
 				<Button
 					type="submit"
-					class="cursor-pointer text-sm flex items-center"
+					class="flex cursor-pointer items-center text-sm"
 					disabled={$createBlockMutation.isPending || $createPlacementQuizMutation.isPending}
 				>
 					{#if $createBlockMutation.isPending || $createPlacementQuizMutation.isPending}
 						<Spinner />
-					{:else}
+					{:else if !createdBlockId}
 						Submit
+					{:else}
+						Create placement quiz
 					{/if}
 				</Button>
 			</div>

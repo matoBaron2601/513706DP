@@ -52,15 +52,16 @@ export class UserBlockRepository {
 		return result[0];
 	}
 
-	async getByBothIds(
-		newUserBlock: CreateUserBlockDto,
+	async getByUserIdAndBlockId(
+		userId: string,
+		blockId: string,
 		tx?: Transaction
 	): Promise<UserBlockDto | undefined> {
 		const result = await this.getDbClient(tx)
 			.select()
 			.from(userBlock)
 			.where(
-				and(eq(userBlock.userId, newUserBlock.userId), eq(userBlock.blockId, newUserBlock.blockId))
+				and(eq(userBlock.userId, userId), eq(userBlock.blockId, blockId))
 			);
 		return result[0];
 	}

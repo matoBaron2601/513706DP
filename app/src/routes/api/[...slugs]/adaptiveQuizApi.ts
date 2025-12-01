@@ -21,6 +21,9 @@ export const createAdaptiveQuizApi = (deps?: {
 		})
 		.get('/last/:userBlockId', async (req) => {
 			return await adaptiveQuizService.getLastAdaptiveQuizByUserBlockId(req.params.userBlockId);
+		})
+		.post('/regenerate/:adaptiveQuizId', async (req) => {
+			return await adaptiveQuizFacade.regenerateAdaptiveQuiz(req.params.adaptiveQuizId);
 		});
 };
 

@@ -2,6 +2,8 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 
+// BASE
+
 export const baseAdaptiveQuizAnswerSchema = t.Object({
 	adaptiveQuizId: t.String(),
 	baseQuestionId: t.String(),
@@ -21,9 +23,7 @@ export type UpdateAdaptiveQuizAnswer = Static<typeof updateAdaptiveQuizAnswerSch
 
 // EXTENDED
 
-export const submitAdaptiveQuizAnswerSchema = t.Omit(createAdaptiveQuizAnswerSchema, [
-	'isCorrect'
-]);
+export const submitAdaptiveQuizAnswerSchema = t.Omit(createAdaptiveQuizAnswerSchema, ['isCorrect']);
 export type SubmitAdaptiveQuizAnswer = Static<typeof submitAdaptiveQuizAnswerSchema>;
 
 export const GetQuestionHistoryRequestSchema = t.Object({

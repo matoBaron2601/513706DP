@@ -1,0 +1,59 @@
+courseId,userId,questionId,quizVersion,questionText,codeSnippet,questionType,options,isCorrect,time
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,g9rg228d6cmmaeu9dxnbtmkk,0,The Virtual DOM allows React to efficiently update the browser DOM by ____.,,A2,,false,1
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,s9rha7yp7zjrhbrqmjngn2xv,0,"Given the following code snippet, which option correctly identifies how React achieves updates to the user interface?","const updateUI = (newUI) => {
+  const virtualDOM = createVirtualDOM(newUI);
+  reconcileDOM(previousDOM, virtualDOM);
+};",B1,"ictc89c9w2etf15ubil2hyqf|React updates the user interface by refreshing the entire page.|false || atieka8ugzllbafzsgdaw3bn|React uses imperative programming to manually manage state changes.|false || mrqgzbth9xh7bzzkp30wpe2e|React directly manipulates the DOM, which is always efficient.|false || sin3z504wyinbg6gucjgtql2|React compares the new Virtual DOM to the previous one and updates accordingly.|true",false,1
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,rg46l67tqll7559iabvcqo1w,0,"Given the following code snippet, which component will correctly render a user interface that reacts to data changes?","function App() {
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setCount(c => c + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  return <h1>{count}</h1>;
+}",B1,"jkbjlx5cgm2wd8qq75rr23kf|function App() {
+  const count = 0;
+  return <h1>{count}</h1>;
+}|false || g6muijx30hbpz6hx8epqi7tt|function App() {
+  return <h1>Hello</h1>;
+}|false || cn71bgcu4wv71mo1lvyx1njt|function App() {
+  const count = 0;
+  setCount(5);
+  return <h1>{count}</h1>;
+}|false || z53pbeeqf8am6bqy7r3y4o1f|function App() {
+  const [count, setCount] = React.useState(0);
+  return <h1>{count}</h1>;
+}|true",false,0
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,moknm41t8do92bbnahz77r9a,0,"Given the following code snippet, which option correctly completes the functionality of rendering a React component?","import React from 'react';
+import ReactDOM from 'react-dom';
+function Login() {
+  return <h1>Login</h1>;
+}
+",B1,"gaxnt40dbxcj941sebhk63x4|ReactDOM.create(<Login />)|false || ky4rllsb8rsw0v90608uvkzq|React.render(<Login />, '#app')|false || psn2mq1d2u6vzodxwmo25tuj|ReactDOM.render(<Login />, document.getElementById('app'))|true || ggh2yzqos4wnlb0lbo53s6nw|React.renderDOM(<Login />, app)|false",false,0
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,y0dyl7xgaju4wz1hejkhp3l5,0,What is the technique called that allows the creation of specific components by combining more generalized ones?,,A1,o3ea3dvl7eliosskvcgjnzu0|encapsulation|false || mrmvgqgpiiypbydbb1eo0pea|inheritance|false || qlkyzi73mltk41wb09dqvp8n|modularity|false || ffk4y1w3gmca56a6lth02zil|composition|true,false,0
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,stkt1tu6uisyjfjq4q3aah6o,0,Write a React component that updates the displayed message whenever a button is clicked. The initial message should be 'Hello World'.,"function MessageComponent() {
+  const [message, setMessage] = React.useState('Hello World');
+  return (
+    <>
+      <h1>{message}</h1>
+      <button onClick={() => setMessage('Button Clicked!')}>Click Me</button>
+    </>
+  );
+}",B2,,false,0
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,u2f116w93o1cmwbr3lf3feei,0,"Given the following code snippet, which of the following will be the outcome when the button is clicked?","function Button(props) {
+  return (
+    <button onClick={props.handleClick}>{props.label}</button>
+  );
+}
+
+function App() {
+  const handleClick = () => console.log('Button clicked');
+  return <Button label='Click Me' handleClick={handleClick} />;
+}",B1,rtgyseaj2wtd5d7wxjuwj8x9|The console will log 'Button clicked'|true || doebk38xbgwzridg5c7dv4bt|The button label will change|false || ad226qgk54qmn40guotmiydh|Nothing will happen|false || cdazx15qi5e2ra0vdvh1w232|An error will occur|false,true,1
+uvth70x6u5o23twi85mgvs6j,f9oun7usjt1e0sqhs4o168ez,uco0to3k67y82oct917ym51o,0,"Given the following code snippet, which component design follows the single responsibility principle?","function Button(props){
+  return(
+    <button onClick={props.handleClick}>{props.label}</button>
+  );
+}",B1,"tvwxxa0vdto4h0rupf3gppo3|The Button component, as it handles only button rendering.|true || otxql53dxp8m3p926hbkke1x|The WelcomeDialog component incorporates multiple actions.|false || mtpnp93ni462pg61rjnfh7gu|The Dialog component can change its content.|false || rmcjvh58bjfmk11m3zkhd8c6|The Button component handles multiple functionalities.|false",true,1

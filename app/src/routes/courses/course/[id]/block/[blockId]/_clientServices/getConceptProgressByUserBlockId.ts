@@ -1,5 +1,4 @@
 import type {
-	Concept,
 	GetConceptProgressByUserBlockIdRequest,
 	GetConceptProgressByUserBlockIdResponse
 } from '../../../../../../../schemas/conceptSchema';

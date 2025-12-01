@@ -1,10 +1,4 @@
 import type {
-	CreateBaseOptionDto,
-	UpdateBaseOptionDto,
-	BaseOptionDto,
-	AdaptiveQuizDto,
-	CreateAdaptiveQuizDto,
-	UpdateAdaptiveQuizDto,
 	AdaptiveQuizAnswerDto,
 	CreateAdaptiveQuizAnswerDto,
 	UpdateAdaptiveQuizAnswerDto

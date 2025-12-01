@@ -5,7 +5,6 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { goto } from '$app/navigation';
 
-
 	onMount(() => {
 		if (page.data.session) {
 			goto('/');

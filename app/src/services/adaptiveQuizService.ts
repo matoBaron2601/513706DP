@@ -1,11 +1,4 @@
-import type {
-	CreateBaseOptionDto,
-	UpdateBaseOptionDto,
-	BaseOptionDto,
-	AdaptiveQuizDto,
-	CreateAdaptiveQuizDto,
-	UpdateAdaptiveQuizDto
-} from '../db/schema';
+import type { AdaptiveQuizDto, CreateAdaptiveQuizDto, UpdateAdaptiveQuizDto } from '../db/schema';
 import { AdaptiveQuizRepository } from '../repositories/adaptiveQuizRepository';
 import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';

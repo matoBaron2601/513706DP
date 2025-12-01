@@ -1,6 +1,6 @@
-import type { AdaptiveQuiz } from "../../../../../../../../../schemas/adaptiveQuizSchema";
+import type { AdaptiveQuiz } from '../../../../../../../../../schemas/adaptiveQuizSchema';
 
-const finishAdaptiveQuiz = async (adaptiveQuizId: string) : Promise<AdaptiveQuiz> => {
+const finishAdaptiveQuiz = async (adaptiveQuizId: string): Promise<AdaptiveQuiz> => {
 	const response = await fetch(`/api/adaptiveQuiz/complete/${adaptiveQuizId}`, {
 		method: 'POST',
 		headers: {

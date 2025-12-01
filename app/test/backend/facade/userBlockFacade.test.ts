@@ -208,7 +208,7 @@ describe('UserBlockFacade handleUserBlockLogic', () => {
 		} as CreateUserBlock;
 
 		try {
-			const res = await facade.handleUserBlockLogic(createData);
+			const res = await facade.getOrCreateUserBlock(createData);
 
 			expect(res).toEqual(existing);
 			expect(userBlockService.calls.getByBothIdsOrUndefined.length).toBe(1);
@@ -262,7 +262,7 @@ describe('UserBlockFacade handleUserBlockLogic', () => {
 		} as CreateUserBlock;
 
 		try {
-			const res = await facade.handleUserBlockLogic(createData);
+			const res = await facade.getOrCreateUserBlock(createData);
 
 			expect(res).toEqual(createdUb);
 

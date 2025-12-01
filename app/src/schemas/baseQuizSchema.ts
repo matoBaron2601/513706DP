@@ -6,6 +6,8 @@ import {
 	baseQuestionWithOptionsSchema,
 } from './baseQuestionSchema';
 
+// BASE
+
 const baseBaseQuizSchema = t.Object({});
 
 export const baseQuizSchema = t.Intersect([baseSchema, baseBaseQuizSchema]);

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/AppSidebar.svelte';
 	import { QueryClientProvider } from '@tanstack/svelte-query';
@@ -81,7 +80,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" type="image/svg+xml" href={favicon} />
+	<link rel="icon" type="image/svg+xml" href={hed} />
 </svelte:head>
 
 <QueryClientProvider client={queryClient}>

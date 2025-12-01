@@ -5,7 +5,6 @@
 	let { complexAdaptiveQuiz }: { complexAdaptiveQuiz: ComplexAdaptiveQuiz } = $props();
 </script>
 
-
 <div class="flex flex-col gap-10">
 	{#each complexAdaptiveQuiz.questions as question, index}
 		<div>
@@ -28,7 +27,9 @@
 						/>
 					{/each}
 				{:else}
-					<div class={`space-y-2 rounded-xl border border-gray-200  px-4 py-3 text-sm ${question.isCorrect ? 'bg-green-200' : 'bg-red-200'}`}>
+					<div
+						class={`space-y-2 rounded-xl border border-gray-200  px-4 py-3 text-sm ${question.isCorrect ? 'bg-green-200' : 'bg-red-200'}`}
+					>
 						<p class="text-gray-700">
 							<span class="font-medium text-gray-900">Your answer: </span>
 							<span>{question.userAnswerText}</span>

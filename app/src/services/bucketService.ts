@@ -46,9 +46,6 @@ export class BucketService {
 		return Buffer.concat(chunks).toString('utf-8');
 	}
 
-
-	
-
 	async ensureProfilePicBucket() {
 		const profilePicExists = await MinioClient.bucketExists(PROFILEPIC).catch(() => false);
 

@@ -21,6 +21,7 @@ export class DocumentFacade {
 		this.bucketService = new BucketService();
 	}
 
+	// Upload a document and index its content
 	async uploadDocument(newDocument: CreateDocumentDto) {
 		const document = await this.documentService.create(newDocument);
 		const fileText = await this.bucketService.getBlockDataFileString(newDocument.filePath);
@@ -38,7 +39,8 @@ export class DocumentFacade {
 		return document;
 	}
 
-	async deleteDocument(filePath: string) {
+	// Delete a document and remove its indexed content
+	async deleteDocumentByFilePath(filePath: string) {
 		const document = await this.documentService.deleteByFilePath(filePath);
 		await this.typesenseService.deleteByDocumentPath(document.blockId, document.filePath);
 		return document;

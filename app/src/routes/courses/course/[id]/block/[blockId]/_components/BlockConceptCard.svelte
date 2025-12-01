@@ -3,7 +3,6 @@
 	import type { ComplexConcept } from '../../../../../../../schemas/conceptSchema';
 	import { CircleCheckBig } from '@lucide/svelte';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	// @ts-ignore - stdlib types can be wired manually if needed
 	import beta from '@stdlib/stats-base-dists-beta';
 
 	const { concept }: { concept: ComplexConcept } = $props();
@@ -27,13 +26,17 @@
 	);
 
 	const ciWidth = $derived.by(() => {
-		const alfaValue = concept.conceptProgress.alfa ?? 1;
-		const betaValue = concept.conceptProgress.beta ?? 1;
+		const alfaValue = concept.conceptProgress.alfa ?? 0;
+		const betaValue = concept.conceptProgress.beta ?? 0;
 
-		if (alfaValue <= 0 || betaValue <= 0) return NaN;
+		// If parameters are not valid for Beta distribution, return 0 safely
+		if (alfaValue <= 0 || betaValue <= 0) {
+			return 0;
+		}
 
 		const upper = beta.quantile(0.975, alfaValue, betaValue);
 		const lower = beta.quantile(0.025, alfaValue, betaValue);
+
 		return upper - lower;
 	});
 
@@ -41,7 +44,7 @@
 	const streakOk = $derived.by(() => concept.conceptProgress.streak > 3);
 	const scoreOk = $derived.by(() => concept.conceptProgress.score > 0.8);
 	const askedOk = $derived.by(() => asked > 5);
-	const ciOk = $derived.by(() => !Number.isNaN(ciWidth) && ciWidth < 0.15);
+	const ciOk = $derived.by(() => ciWidth < 0.15 && asked > 0);
 
 	const meetsAll = $derived.by(() => streakOk && scoreOk && askedOk && ciOk);
 </script>
@@ -114,8 +117,10 @@
 
 			<p class="flex justify-between font-bold">
 				<span>BetaCI (width):</span>
-				<span class={`text-right font-mono ${ciOk ? 'text-green-700' : 'text-red-700'}`}>
-					{Number.isNaN(ciWidth) ? '- <= 0.15' : `${ciWidth.toFixed(2)} <= 0.15`}
+				<span
+					class={`text-right font-mono ${ciOk  ? 'text-green-700' : 'text-red-700'}`}
+				>
+					{`${ciWidth.toFixed(2)} <= 0.15`}
 				</span>
 			</p>
 

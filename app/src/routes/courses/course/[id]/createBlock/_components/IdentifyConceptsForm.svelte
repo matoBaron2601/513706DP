@@ -11,6 +11,7 @@
 	import Spinner from '$lib/components/Spinner.svelte';
 	import type { Step } from '../+page.svelte';
 	import { Upload } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		data,
@@ -23,7 +24,6 @@
 		handleSetConcepts: (identifiedConcepts: { name: string; difficultyIndex: number }[]) => void;
 		handleSetStep: (newStep: Step) => void;
 	} = $props();
-	
 
 	const identifyConceptsMutation = createMutation({
 		mutationKey: ['identifyConcepts'],
@@ -39,6 +39,10 @@
 				}))
 			);
 			handleSetStep('editConcepts');
+		},
+		onError: () => {
+			toast.error(`There was a problem with the AI service. 
+			Try it again. If the problem persists, please try uploading a shorter document that does not exceed your plan's token limit.`);
 		}
 	});
 
@@ -55,7 +59,6 @@
 	};
 
 	const handleFileUpload = async (event: Event) => {
-
 		const input = event.target as HTMLInputElement;
 		if (input.files && input.files.length > 0) {
 			const file = input.files[0];
@@ -94,7 +97,7 @@
 
 							<button
 								type="button"
-								class="flex w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer transition"
+								class="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-600 transition hover:bg-gray-100"
 								onclick={() => document.getElementById('fileInput')?.click()}
 							>
 								<Upload class="mr-2 inline-block h-4 w-4" />
@@ -110,9 +113,7 @@
 					{/snippet}
 				</Form.Control>
 
-				<p class="mt-1 text-xs text-gray-400">
-					Upload block content as a single .txt file.
-				</p>
+				<p class="mt-1 text-xs text-gray-400">Upload block content as a single .txt file.</p>
 
 				<Form.FieldErrors />
 			</Form.Field>

@@ -276,11 +276,7 @@ describe('UserBlockRepository', () => {
 
 		const repo = new UserBlockRepository(makeFakeDbClient({ selectResult: [row] }).getDbClient);
 
-		const found = await repo.getByBothIds({
-			userId: 'uX',
-			blockId: 'bY',
-			completed: false
-		} as CreateUserBlockDto);
+		const found = await repo.getByUserIdAndBlockId('uX', 'bY');
 
 		expect(found).toEqual(row);
 	});
@@ -288,11 +284,7 @@ describe('UserBlockRepository', () => {
 	it('getByBothIds: returns undefined when no matching row', async () => {
 		const repo = new UserBlockRepository(makeFakeDbClient({ selectResult: [] }).getDbClient);
 
-		const found = await repo.getByBothIds({
-			userId: 'uX',
-			blockId: 'bY',
-			completed: false
-		} as CreateUserBlockDto);
+		const found = await repo.getByUserIdAndBlockId('uX', 'bY');
 
 		expect(found).toBeUndefined();
 	});

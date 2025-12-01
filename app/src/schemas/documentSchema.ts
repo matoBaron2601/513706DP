@@ -2,6 +2,8 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 
+// BASE
+
 const baseDocumentSchema = t.Object({
 	blockId: t.String(),
 	filePath: t.String(),
@@ -16,6 +18,8 @@ export type CreateDocument = Static<typeof createDocumentSchema>;
 
 export const updateDocumentSchema = t.Partial(createDocumentSchema);
 export type UpdateDocument = Static<typeof updateDocumentSchema>;
+
+// EXTENDED
 
 export const createDocumentRequestSchema = t.Object({
 	document: t.File(),

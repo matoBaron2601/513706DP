@@ -1,8 +1,7 @@
 import type { CreateCourseDto, UpdateCourseDto, CourseDto } from '../db/schema';
-import { BadRequestError, ConflictError, UnauthorizedError } from '../errors/AppError';
+import { ConflictError, UnauthorizedError } from '../errors/AppError';
 import { BlockRepository } from '../repositories/blockRepository';
 import { CourseRepository } from '../repositories/courseRepository';
-import type { GetCoursesRequest, GetCoursesResponse } from '../schemas/courseSchema';
 import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';
 import { UserRepository } from '../repositories/userRepository';
@@ -45,8 +44,8 @@ export class CourseService {
 		return await this.repo.getManyByCreatorId(creatorId, tx);
 	}
 
-	async getAll(filter?: GetCoursesRequest, tx?: Transaction): Promise<GetCoursesResponse[]> {
-		return await this.repo.getAll(filter, tx);
+	async getAvailableCourses(creatorId: string, tx?: Transaction): Promise<CourseDto[]> {
+		return await this.repo.getAvailableCourses(creatorId, tx);
 	}
 
 	async checkUserCreatorOfCourse(courseId: string, userEmail: string, tx?: Transaction) {

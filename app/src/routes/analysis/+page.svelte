@@ -4,8 +4,6 @@
 	import getRandomQuestions from './_clientServices/getRandomQuestions';
 	import type { AnalysisDto } from '../../schemas/analysisSchema';
 
-	// --- CSV helpers ---
-
 	const csvEscape = (value: unknown) => {
 		if (value === null || value === undefined) return '';
 		const str = String(value);
@@ -24,19 +22,15 @@
 			'questionText',
 			'codeSnippet',
 			'questionType',
-			'options', // serialized
+			'options',
 			'isCorrect',
 			'time'
 		].join(',');
 
 		const dataRows = rows.map((row) => {
 			const optionsStr = row.options
-				.map(
-					(o) =>
-						// e.g. "id|text|true"
-						`${o.optionId}|${o.optionText}|${o.isCorrect}`
-				)
-				.join(' || '); // separator between options
+				.map((o) => `${o.optionId}|${o.optionText}|${o.isCorrect}`)
+				.join(' || ');
 
 			return [
 				csvEscape(row.courseId),
@@ -62,7 +56,7 @@
 
 		const a = document.createElement('a');
 		a.href = url;
-		a.download = 'analysis.csv'; // filename
+		a.download = 'analysis.csv';
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
@@ -70,21 +64,17 @@
 		URL.revokeObjectURL(url);
 	};
 
-	// --- Mutation ---
-
 	const getRandomQuestionsMutation = createMutation({
-		// Important: return the data
 		mutationFn: async () => {
 			const res = await getRandomQuestions({
-				count: 8,
-				courseId: 'woyaodyuw7zb6w8xj4uoza3f'
+				count: 800,
+				courseId: 'uvth70x6u5o23twi85mgvs6j'
 			});
 
-			// assuming res is AnalysisDto[]
 			return res as unknown as AnalysisDto[];
 		},
 		onSuccess: (data) => {
-			// downloadCsv(data);
+			downloadCsv(data);
 		}
 	});
 </script>

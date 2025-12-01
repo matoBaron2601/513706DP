@@ -1,15 +1,6 @@
-import { check } from 'drizzle-orm/gel-core';
-import type {
-	PlacementQuizDto,
-	CreatePlacementQuizDto,
-	UpdatePlacementQuizDto,
-	CreateUserBlockDto,
-	UpdateUserBlockDto,
-	UserBlockDto
-} from '../db/schema';
+import type { CreateUserBlockDto, UpdateUserBlockDto, UserBlockDto } from '../db/schema';
 import { NotFoundError, UnauthorizedError } from '../errors/AppError';
 
-import { PlacementQuizRepository } from '../repositories/placementQuizRepository';
 import { UserBlockRepository } from '../repositories/userBlockRepository';
 import { UserRepository } from '../repositories/userRepository';
 import type { Transaction } from '../types';
@@ -43,11 +34,11 @@ export class UserBlockService {
 		return item;
 	}
 
-	async getByBothIdsOrUndefined(
+	async getByUserIdAndBlockIdOrUndefined(
 		data: { userId: string; blockId: string },
 		tx?: Transaction
 	): Promise<UserBlockDto | undefined> {
-		const item = await this.repo.getByBothIds(data, tx);
+		const item = await this.repo.getByUserIdAndBlockId(data.userId, data.blockId, tx);
 		if (!item) return undefined;
 		return item;
 	}

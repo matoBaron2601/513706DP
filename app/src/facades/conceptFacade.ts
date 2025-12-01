@@ -19,7 +19,6 @@ export class ConceptFacade {
 	private userBlockService: UserBlockService;
 	private adaptiveQuizAnswerService: AdaptiveQuizAnswerService;
 	private baseQuestionService: BaseQuestionService;
-
 	constructor() {
 		this.conceptService = new ConceptService();
 		this.conceptProgressService = new ConceptProgressService();
@@ -29,6 +28,7 @@ export class ConceptFacade {
 		this.baseQuestionService = new BaseQuestionService();
 	}
 
+	// Get concept progress by user block ID
 	async getConceptProgressByUserBlockId(
 		data: GetConceptProgressByUserBlockIdRequest
 	): Promise<GetConceptProgressByUserBlockIdResponse> {
@@ -54,6 +54,7 @@ export class ConceptFacade {
 		return complexConcepts;
 	}
 
+	// Update concept progress based on user block ID and adaptive quiz ID
 	async updateConceptProgress(userBlockId: string, adaptiveQuizId: string): Promise<boolean> {
 		const conceptsProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
@@ -134,14 +135,14 @@ export class ConceptFacade {
 				}
 			}
 			await this.conceptProgressService.update(conceptProgress.id, {
-				correctA1 : conceptProgress.correctA1 + correctA1,
-				askedA1 : conceptProgress.askedA1 + askedA1,
-				correctA2 : conceptProgress.correctA2 + correctA2,
-				askedA2 : conceptProgress.askedA2 + askedA2,
-				correctB1 : conceptProgress.correctB1 + correctB1,
-				askedB1 : conceptProgress.askedB1 + askedB1,
-				correctB2 : conceptProgress.correctB2 + correctB2,
-				askedB2 : conceptProgress.askedB2 + askedB2,
+				correctA1: conceptProgress.correctA1 + correctA1,
+				askedA1: conceptProgress.askedA1 + askedA1,
+				correctA2: conceptProgress.correctA2 + correctA2,
+				askedA2: conceptProgress.askedA2 + askedA2,
+				correctB1: conceptProgress.correctB1 + correctB1,
+				askedB1: conceptProgress.askedB1 + askedB1,
+				correctB2: conceptProgress.correctB2 + correctB2,
+				askedB2: conceptProgress.askedB2 + askedB2,
 				alfa,
 				beta,
 				score,
@@ -153,6 +154,7 @@ export class ConceptFacade {
 		return await this.checkAllConceptsCompleted(userBlockId);
 	}
 
+	// Check if all concepts in a user block are completed
 	async checkAllConceptsCompleted(userBlockId: string): Promise<boolean> {
 		const conceptsProgressesAfterUpdate: ConceptProgress[] =
 			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
@@ -163,6 +165,7 @@ export class ConceptFacade {
 		return allCompleted;
 	}
 
+	// Update completeness of concepts based on criteria
 	async updateCompleteness(userBlockId: string) {
 		const conceptsProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
@@ -175,7 +178,7 @@ export class ConceptFacade {
 
 		for (const cp of conceptsProgresses) {
 			const criterium1 = cp.score >= 0.8;
-			const criterium2 = cp.streak >= 0;
+			const criterium2 = cp.streak >= 5;
 			const criterium4 = asked >= 5;
 
 			const a = cp.alfa,

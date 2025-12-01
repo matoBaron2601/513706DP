@@ -210,7 +210,7 @@ describe('DocumentFacade deleteDocument', () => {
 			typesenseService
 		});
 
-		const res = await facade.deleteDocument('file1.txt');
+		const res = await facade.deleteDocumentByFilePath('file1.txt');
 
 		expect(documentService.calls.deleteByFilePath.length).toBe(1);
 		expect(documentService.calls.deleteByFilePath[0]).toBe('file1.txt');

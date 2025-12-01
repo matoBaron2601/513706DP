@@ -3,6 +3,8 @@ import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 import { baseConceptSchema } from './conceptSchema';
 
+// BASE
+
 const baseBlockSchema = t.Object({
 	courseId: t.String(),
 	name: t.String(),

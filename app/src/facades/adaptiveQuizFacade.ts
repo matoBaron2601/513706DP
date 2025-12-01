@@ -6,7 +6,6 @@ import type {
 	BaseQuizWithQuestionsAndOptionsBlank
 } from '../schemas/baseQuizSchema';
 
-import type { Concept } from '../schemas/conceptSchema';
 import { AdaptiveQuizAnswerService } from '../services/adaptiveQuizAnswerService';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
 import { BaseQuizService } from '../services/baseQuizService';
@@ -43,6 +42,7 @@ export class AdaptiveQuizFacade {
 		this.userBlockService = new UserBlockService();
 	}
 
+	// Get a complex adaptive quiz by its ID, including user answers and correctness
 	async getComplexAdaptiveQuizById(adaptiveQuizId: string): Promise<ComplexAdaptiveQuiz> {
 		const adaptiveQuiz: AdaptiveQuiz = await this.adaptiveQuizService.getById(adaptiveQuizId);
 		const baseQuiz: BaseQuizWithQuestionsAndOptions =
@@ -64,6 +64,7 @@ export class AdaptiveQuizFacade {
 		};
 	}
 
+	// Finish an adaptive quiz and potentially generate a new one
 	async finishAdaptiveQuiz(adaptiveQuizId: string): Promise<AdaptiveQuiz> {
 		const updatedAdaptiveQuiz = await this.adaptiveQuizService.update(adaptiveQuizId, {
 			isCompleted: true
@@ -100,6 +101,7 @@ export class AdaptiveQuizFacade {
 		return updatedAdaptiveQuiz;
 	}
 
+	// Generate an adaptive quiz based on user performance and concept priorities
 	async generateAdaptiveQuiz(
 		userBlockId: string,
 		baseQuizId: string,
@@ -142,30 +144,47 @@ export class AdaptiveQuizFacade {
 			);
 			const numberOfQuestionsB1 = Math.round(
 				numberOfQuestions * (weightB1 / (weightA1 + weightA2 + weightB1 + weightB2))
-			);	
+			);
 			const numberOfQuestionsB2 =
 				numberOfQuestions - numberOfQuestionsA1 - numberOfQuestionsA2 - numberOfQuestionsB1;
 			const currentConcept = concepts.find((c) => c.id === concept.conceptId);
 
-			const questions = await this.generateAdaptiveQuizQuestions(
-				blockId,
-				currentConcept?.id ?? '',
-				concepts.map((c) => c.name).filter((name) => name !== currentConcept?.name),
-				numberOfQuestionsA1,
-				numberOfQuestionsA2,
-				numberOfQuestionsB1,
-				numberOfQuestionsB2,
-				userBlockId
-			);
-			await this.baseQuizFacade.createBaseQuestionsAndOptions({
-				data: new Map([[concept.conceptId, questions]]),
-				baseQuizId: baseQuizId
-			});
+			let questions: BaseQuizWithQuestionsAndOptionsBlank | undefined; // Initialize to undefined
+
+			try {
+				questions = await this.generateAdaptiveQuizQuestions(
+					blockId,
+					currentConcept?.id ?? '',
+					concepts.map((c) => c.name).filter((name) => name !== currentConcept?.name),
+					numberOfQuestionsA1,
+					numberOfQuestionsA2,
+					numberOfQuestionsB1,
+					numberOfQuestionsB2,
+					userBlockId
+				);
+			} catch (error) {
+				console.error(`Failed to generate questions for concept ${concept.conceptId}:`, error);
+			}
+
+			if (questions) {
+				await this.baseQuizFacade.createBaseQuestionsAndOptions({
+					data: new Map([[concept.conceptId, questions]]),
+					baseQuizId: baseQuizId
+				});
+			} else {
+				console.warn(
+					`Skipping quiz creation for concept ${concept.conceptId} because question generation failed.`
+				);
+				await this.adaptiveQuizService.update(adaptiveQuizId, { version: 9999 });
+
+				return false;
+			}
 		}
 		await this.adaptiveQuizService.update(adaptiveQuizId, { readyForAnswering: true });
 		return true;
 	}
 
+	// Generate adaptive quiz questions for a specific concept
 	private async generateAdaptiveQuizQuestions(
 		blockId: string,
 		conceptId: string,
@@ -179,20 +198,50 @@ export class AdaptiveQuizFacade {
 		const { name: conceptName } = await this.conceptService.getById(conceptId);
 		const questionHistory = await this.getQuestionHistory(userBlockId, conceptId);
 		const chunks = await this.typesenseService.getChunksByConcept(conceptName, blockId);
-		const questions = await this.openAiService.createAdaptiveQuizQuestions(
-			conceptName,
-			conceptNames,
-			chunks,
-			numberOfQuestionsA1,
-			numberOfQuestionsA2,
-			numberOfQuestionsB1,
-			numberOfQuestionsB2,
-			questionHistory
-		);
 
-		return questions;
+		let lastError: unknown;
+
+		for (let attempt = 1; attempt <= 3; attempt++) {
+			try {
+				const questions = await this.openAiService.createAdaptiveQuizQuestions(
+					conceptName,
+					conceptNames,
+					chunks,
+					numberOfQuestionsA1,
+					numberOfQuestionsA2,
+					numberOfQuestionsB1,
+					numberOfQuestionsB2,
+					questionHistory
+				);
+
+				await this.questionsValidations(questions);
+
+				return questions;
+			} catch (error) {
+				lastError = error;
+				console.warn(`Attempt ${attempt} failed for ${conceptName}. Retrying...`, error);
+
+				if (attempt === 3) {
+					console.log(`All attempts failed for ${conceptName}.`);
+				}
+
+				await new Promise((res) => setTimeout(res, 500));
+			}
+		}
+
+		throw new Error(`Unexpected state while generating quiz questions for ${conceptName}.`);
 	}
 
+	async regenerateAdaptiveQuiz(adaptiveQuizId: string): Promise<boolean> {
+		const adaptiveQuiz = await this.adaptiveQuizService.getById(adaptiveQuizId);
+		const baseQuizId = adaptiveQuiz.baseQuizId;
+		const userBlockId = adaptiveQuiz.userBlockId;
+		const adaptiveQuizzes = await this.adaptiveQuizService.getByUserBlockId(userBlockId);
+		await this.adaptiveQuizService.update(adaptiveQuizId, { version: adaptiveQuizzes.length - 1 });
+		return this.generateAdaptiveQuiz(userBlockId, baseQuizId, adaptiveQuizId);
+	}
+
+	// Calculate the priority of concepts based on user progress
 	private async calculateConceptPriority(userBlockId: string): Promise<ConceptProgress[]> {
 		const conceptProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
@@ -210,6 +259,7 @@ export class AdaptiveQuizFacade {
 		return topConceptProgresses;
 	}
 
+	// Get the question history for a user and concept
 	private async getQuestionHistory(userBlockId: string, conceptId: string) {
 		const adaptiveQuizzes = await this.adaptiveQuizService.getByUserBlockId(userBlockId);
 		const questionHistory = await this.adaptiveQuizAnswerService.getQuestionHistory(
@@ -217,5 +267,79 @@ export class AdaptiveQuizFacade {
 			conceptId
 		);
 		return questionHistory;
+	}
+
+	// Validate the questions in a quiz
+	private async questionsValidations(quiz: BaseQuizWithQuestionsAndOptionsBlank): Promise<void> {
+		if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+			throw new Error('Quiz must contain at least one question.');
+		}
+
+		const orderIndexes = new Set<number>();
+
+		quiz.questions.forEach((q, i) => {
+			const questionNumber = i + 1;
+
+			if (!q.questionText?.trim()) {
+				throw new Error(`Question ${questionNumber}: questionText cannot be empty.`);
+			}
+
+			if (!q.correctAnswerText?.trim()) {
+				throw new Error(`Question ${questionNumber}: correctAnswerText cannot be empty.`);
+			}
+
+			if (orderIndexes.has(q.orderIndex)) {
+				throw new Error(`Duplicate orderIndex found for question: ${q.orderIndex}`);
+			}
+			orderIndexes.add(q.orderIndex);
+
+			if (
+				q.questionType !== 'A1' &&
+				q.questionType !== 'A2' &&
+				q.questionType !== 'B1' &&
+				q.questionType !== 'B2'
+			) {
+				throw new Error(`Question ${questionNumber}: Invalid questionType ${q.questionType}.`);
+			}
+
+			if (q.questionType === 'B1' || q.questionType === 'B2') {
+				if (!q.codeSnippet?.trim()) {
+					throw new Error(
+						`Question ${questionNumber}: codeSnippet is required for ${q.questionType} question types.`
+					);
+				}
+			}
+
+			if (q.questionType === 'A1' || q.questionType === 'B1') {
+				let hasCorrectOption = false;
+				let correctOptionMatchesAnswerText = false;
+				const normalizedCorrectAnswerText = q.correctAnswerText.trim();
+
+				q.options.forEach((opt, j) => {
+					if (!opt.optionText?.trim()) {
+						throw new Error(
+							`Question ${questionNumber}, Option ${j + 1}: optionText cannot be empty.`
+						);
+					}
+
+					if (opt.isCorrect) {
+						hasCorrectOption = true;
+						if (opt.optionText.trim() === normalizedCorrectAnswerText) {
+							correctOptionMatchesAnswerText = true;
+						}
+					}
+				});
+
+				if (!hasCorrectOption) {
+					throw new Error(`Question ${questionNumber}: must contain at least one correct option.`);
+				}
+
+				if (!correctOptionMatchesAnswerText) {
+					throw new Error(
+						`Question ${questionNumber}: correctAnswerText (${normalizedCorrectAnswerText}) must match the optionText of at least one correct option for ${q.questionType} types.`
+					);
+				}
+			}
+		});
 	}
 }

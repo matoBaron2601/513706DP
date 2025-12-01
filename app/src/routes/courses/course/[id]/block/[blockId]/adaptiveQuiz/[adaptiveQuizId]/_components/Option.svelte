@@ -7,7 +7,6 @@
 		optionIndex,
 		reviewCorrect = false,
 		reviewSelected = false
-
 	}: {
 		onOptionClick?: () => void;
 		optionText: string;
@@ -15,7 +14,6 @@
 		reviewCorrect?: boolean;
 		reviewSelected?: boolean;
 	} = $props();
-
 </script>
 
 <Card.Root

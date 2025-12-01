@@ -128,7 +128,7 @@
 							<button
 								class="cursor-pointer rounded border px-2 py-1"
 								onclick={() => removeAt(i)}
-								aria-label="Delete">✕</button
+								aria-label="Delete">x</button
 							>
 						</div>
 					</div>

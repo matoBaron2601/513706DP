@@ -1,4 +1,4 @@
-import type { GetManyByCourseIdResponse } from "../../../../../schemas/blockSchema";
+import type { GetManyByCourseIdResponse } from '../../../../../schemas/blockSchema';
 
 const getBlocks = async (courseId: string): Promise<GetManyByCourseIdResponse> => {
 	const response = await fetch(`/api/block/courseId/${courseId}`);

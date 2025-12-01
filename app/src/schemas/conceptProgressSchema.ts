@@ -2,6 +2,7 @@ import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 
+// BASE
 const baseConceptProgressSchema = t.Object({
 	userBlockId: t.String(),
 	conceptId: t.String(),
@@ -21,6 +22,7 @@ const baseConceptProgressSchema = t.Object({
 	mastered: t.Boolean()
 });
 
+// EXTENDED
 export const conceptProgressSchema = t.Intersect([baseSchema, baseConceptProgressSchema]);
 export type ConceptProgress = Static<typeof conceptProgressSchema>;
 
@@ -30,6 +32,10 @@ export type CreateConceptProgress = Static<typeof createConceptProgressSchema>;
 export const updateConceptProgressSchema = t.Partial(createConceptProgressSchema);
 export type UpdateConceptProgress = Static<typeof updateConceptProgressSchema>;
 
-
-export const questionTypeEnum = t.Union([t.Literal('A1'), t.Literal('A2'), t.Literal('B1'), t.Literal('B2')]);
+export const questionTypeEnum = t.Union([
+	t.Literal('A1'),
+	t.Literal('A2'),
+	t.Literal('B1'),
+	t.Literal('B2')
+]);
 export type QuestionType = Static<typeof questionTypeEnum>;

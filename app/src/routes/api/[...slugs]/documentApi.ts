@@ -1,4 +1,3 @@
-// src/api/document/documentApi.ts
 import { Elysia } from 'elysia';
 
 import { BucketService } from '../../../services/bucketService';
@@ -40,7 +39,7 @@ export const createDocumentApi = (deps?: {
 		.delete(
 			'/',
 			async (req) => {
-				return await documentFacade.deleteDocument(req.body.documentPath);
+				return await documentFacade.deleteDocumentByFilePath(req.body.documentPath);
 			},
 			{ body: deleteDocumentRequestSchema }
 		);

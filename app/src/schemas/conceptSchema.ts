@@ -3,6 +3,8 @@ import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 import { conceptProgressSchema } from './conceptProgressSchema';
 
+// BASE
+
 export const baseConceptSchema = t.Object({
 	blockId: t.String(),
 	name: t.String(),
@@ -19,6 +21,7 @@ export const updateConceptSchema = t.Partial(createConceptSchema);
 export type UpdateConcept = Static<typeof updateConceptSchema>;
 
 // EXTENDED
+
 export const getConceptProgressByUserBlockIdRequestSchema = t.Object({
 	userBlockId: t.String()
 });
@@ -28,7 +31,7 @@ export type GetConceptProgressByUserBlockIdRequest = Static<
 
 export const complexConceptSchema = t.Object({
 	concept: conceptSchema,
-	conceptProgress: conceptProgressSchema,
+	conceptProgress: conceptProgressSchema
 });
 export type ComplexConcept = Static<typeof complexConceptSchema>;
 

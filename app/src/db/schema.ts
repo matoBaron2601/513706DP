@@ -8,7 +8,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 import { type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
-import { command } from '$app/server';
 
 export const user = pgTable('user', {
 	id: varchar('id')

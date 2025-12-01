@@ -2,20 +2,20 @@ import { t, type Static } from 'elysia';
 
 export const analysisSchema = t.Object({
 	courseId: t.String(),
-	questionId: t.String(),//
+	questionId: t.String(),
 	userId: t.String(),
-	version: t.Number(),//
-	questionText: t.String(),//
-	codeSnippet: t.Nullable(t.String()),//
-	questionType: t.String(),//
-	options: t.Array(//
-		t.Object({//
-			optionId: t.String(),//
-			optionText: t.String(),//
-			isCorrect: t.Boolean()//
+	version: t.Number(),
+	questionText: t.String(),
+	codeSnippet: t.Nullable(t.String()),
+	questionType: t.String(),
+	options: t.Array(
+		t.Object({
+			optionId: t.String(),
+			optionText: t.String(),
+			isCorrect: t.Boolean()
 		})
 	),
-	isCorrect: t.Nullable(t.Boolean()),//
+	isCorrect: t.Nullable(t.Boolean()),
 	time: t.Number()//
 });
 

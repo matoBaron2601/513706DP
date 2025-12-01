@@ -1,7 +1,6 @@
-import type { AnalysisGetRequest } from '../../../schemas/analysisSchema';
-import type { Course } from '../../../schemas/courseSchema';
+import type { AnalysisDto, AnalysisGetRequest } from '../../../schemas/analysisSchema';
 
-const getRandomQuestions = async (body: AnalysisGetRequest): Promise<Course> => {
+const getRandomQuestions = async (body: AnalysisGetRequest): Promise<AnalysisDto[]> => {
 	const response = await fetch(`/api/analysis`, {
 		method: 'POST',
 		headers: {
@@ -10,7 +9,7 @@ const getRandomQuestions = async (body: AnalysisGetRequest): Promise<Course> => 
 		body: JSON.stringify(body)
 	});
 	if (!response.ok) {
-		throw new Error('Failed to delete course');
+		throw new Error('Failed to fetch analysis data');
 	}
 	const data = await response.json();
 	return data;

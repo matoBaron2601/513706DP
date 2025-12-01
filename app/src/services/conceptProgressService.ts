@@ -1,15 +1,9 @@
 import type { Transaction } from '../types';
 import { NotFoundError } from '../errors/AppError';
-import fs from 'fs/promises';
-import path from 'path';
-import { BlockRepository } from '../repositories/blockRepository';
+
 import type {
-	BlockDto,
-	ConceptDto,
 	ConceptProgressDto,
-	CreateBlockDto,
 	CreateConceptProgressDto,
-	UpdateBlockDto,
 	UpdateConceptProgressDto
 } from '../db/schema';
 import { ConceptProgressRepository } from '../repositories/conceptProgressRepository';

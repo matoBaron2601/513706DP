@@ -1,8 +1,6 @@
 import type { AdaptiveQuiz } from '../../../../../../../schemas/adaptiveQuizSchema';
 
-const getLastAdaptiveQuizByUserBlockId = async (
-	userBlockId: string
-): Promise<AdaptiveQuiz> => {
+const getLastAdaptiveQuizByUserBlockId = async (userBlockId: string): Promise<AdaptiveQuiz> => {
 	const response = await fetch(`/api/adaptiveQuiz/last/${userBlockId}`);
 
 	if (!response.ok) {

@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { goto } from '$app/navigation';
-	import type { Course, GetCoursesResponse } from '../../../schemas/courseSchema';
+	import type { GetCoursesResponse } from '../../../schemas/courseSchema';
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
 	import getCreatorById from '../_clientServices/getCreatorById';
 	import Spinner from '$lib/components/Spinner.svelte';
@@ -124,10 +124,12 @@
 				{:else}
 					<div class="space-y-0.5">
 						<p class="truncate text-xs text-gray-500">
-							<span class="font-medium text-gray-700">Created by:</span> {creatorName}
+							<span class="font-medium text-gray-700">Created by:</span>
+							{creatorName}
 						</p>
 						<p class="truncate text-xs text-gray-500">
-							<span class="font-medium text-gray-700">Blocks:</span> {course.blocksCount}
+							<span class="font-medium text-gray-700">Blocks:</span>
+							{course.blocksCount}
 						</p>
 					</div>
 				{/if}

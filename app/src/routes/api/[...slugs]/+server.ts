@@ -51,7 +51,6 @@ const handler: RequestHandler = async (event) => {
 	if (!url.pathname.startsWith('/api/auth')) {
 		let session = await locals.auth?.();
 
-		// Test-only fake session
 		if (!session?.user && AUTH_BYPASS) {
 			session = {
 				user: {

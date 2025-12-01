@@ -13,6 +13,7 @@
 	import finishAdaptiveQuiz from './_clientServices/finishAdaptiveQuiz';
 	import getCourseById from '../../../../../../../_clientServices/getCourseById';
 	import getBlockById from '../../../../../../../_clientServices/getBlockById';
+	import getConceptsByBlockId from './_clientServices/getConceptsByBlockId';
 
 	let { data }: { data: PageData } = $props();
 	const courseId = page.params.id ?? '';
@@ -23,7 +24,6 @@
 	let questionStartTime = $state(Date.now());
 
 	const adaptiveQuizId = page.params.adaptiveQuizId ?? '';
-	console.log('adaptiveQuizId', adaptiveQuizId);
 	const courseQuery = createQuery({
 		queryKey: ['course'],
 		queryFn: async () => await getCourseById(courseId)
@@ -52,6 +52,11 @@
 		mutationFn: async () => await finishAdaptiveQuiz(adaptiveQuizId)
 	});
 
+	const conceptQuery = createQuery({
+		queryKey: ['concepts'],
+		queryFn: async () => await getConceptsByBlockId(blockId)
+	});
+
 	const handleSubmitQuestion = async (optionText: string, baseQuestionId: string) => {
 		const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000);
 
@@ -75,19 +80,14 @@
 	};
 
 	$effect(() => {
-		if ($adaptiveQuizQuery.data && questionIndex === 0) {
-			const unansweredQuestions = $adaptiveQuizQuery.data.questions.filter(
-				(q) => q.userAnswerText === null
-			);
+		const quizData = $adaptiveQuizQuery.data;
+		const conceptData = $conceptQuery.data;
+
+		if (quizData && conceptData && questionIndex === 0) {
+			const unansweredQuestions = quizData.questions.filter((q) => q.userAnswerText === null);
 
 			if (unansweredQuestions.length > 0) {
-				const smallestOrderIndexQuestion = unansweredQuestions.sort(
-					(a, b) => Number(a.orderIndex) - Number(b.orderIndex)
-				)[0];
-
-				questionIndex = $adaptiveQuizQuery.data.questions.findIndex(
-					(q) => q.id === smallestOrderIndexQuestion.id
-				);
+				questionIndex = quizData.questions.findIndex((q) => q.id === unansweredQuestions[0].id);
 			} else {
 				showSummary = true;
 			}

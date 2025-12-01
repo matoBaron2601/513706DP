@@ -5,7 +5,7 @@
 
 	import { House, Columns3CogIcon, PlusIcon } from '@lucide/svelte';
 	import Button from './ui/button/button.svelte';
-	import logo from './logo.png';
+	import logo from '../components/assets/logo.png';
 	const items = [
 		{
 			title: 'Home',
@@ -21,7 +21,7 @@
 			title: 'Create Course',
 			url: '/courses/create',
 			icon: PlusIcon
-		}
+		},
 	];
 </script>
 
@@ -49,11 +49,11 @@
 			</Sidebar.GroupContent>
 			<Sidebar.Footer>
 				<div class="flex items-center">
-					<!-- <img
+					<img
 						src={page.data.session?.user?.image}
 						alt="Google Logo"
 						class="mr-2 h-8 w-8 rounded-2xl"
-					/> -->
+					/>
 					<div>
 						<p>{page.data.session?.user?.name}</p>
 						<p class="text-muted-foreground text-sm">{page.data.session?.user?.email}</p>

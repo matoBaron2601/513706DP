@@ -1,0 +1,139 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class User {
+  +id : string
+  +email : string
+  +name : string
+  +profilePicture : string
+}
+
+class Course {
+  +id : string
+  +name : string
+  +creatorId : string
+  +published : boolean
+}
+
+class Block {
+  +id : string
+  +courseId : string
+  +name : string
+  +documentPath : string
+}
+
+class Concept {
+  +id : string
+  +blockId : string
+  +name : string
+  +difficultyIndex : int
+}
+
+class BaseQuiz {
+  +id : string
+}
+
+class BaseQuestion {
+  +id : string
+  +baseQuizId : string
+  +questionText : string
+  +correctAnswerText : string
+  +conceptId : string
+  +codeSnippet : string
+  +questionType : string
+  +orderIndex : int
+}
+
+class BaseOption {
+  +id : string
+  +baseQuestionId : string
+  +optionText : string
+  +isCorrect : boolean
+}
+
+class UserBlock {
+  +id : string
+  +userId : string
+  +blockId : string
+  +completed : boolean
+}
+
+class ConceptProgress {
+  +id : string
+  +userBlockId : string
+  +conceptId : string
+  +correctA1 : int
+  +askedA1 : int
+  +correctA2 : int
+  +askedA2 : int
+  +correctB1 : int
+  +askedB1 : int
+  +correctB2 : int
+  +askedB2 : int
+  +alfa : double
+  +beta : double
+  +variance : double
+  +score : double
+  +streak : int
+  +mastered : boolean
+}
+
+class PlacementQuiz {
+  +id : string
+  +blockId : string
+  +baseQuizId : string
+}
+
+class AdaptiveQuiz {
+  +id : string
+  +userBlockId : string
+  +baseQuizId : string
+  +placementQuizId : string
+  +version : int
+  +isCompleted : boolean
+  +readyForAnswering : boolean
+}
+
+class AdaptiveQuizAnswer {
+  +id : string
+  +adaptiveQuizId : string
+  +baseQuestionId : string
+  +answerText : string
+  +isCorrect : boolean
+  +time : int
+}
+
+class Document {
+  +id : string
+  +blockId : string
+  +filePath : string
+  +isMain : boolean
+}
+
+' RELATIONSHIPS WITH MULTIPLICITY
+User "1" -- "0..*" Course : creator
+Course "1" -- "0..*" Block
+Block "1" -- "0..*" Concept
+Block "1" -- "0..*" Document
+
+Concept "1" -- "0..*" BaseQuestion
+BaseQuiz "1" -- "0..*" BaseQuestion
+BaseQuestion "1" -- "0..*" BaseOption
+
+User "1" -- "0..*" UserBlock
+Block "1" -- "0..*" UserBlock
+
+UserBlock "1" -- "0..*" ConceptProgress
+Concept "1" -- "0..*" ConceptProgress
+
+Block "1" -- "0..*" PlacementQuiz
+BaseQuiz "1" -- "0..*" PlacementQuiz
+
+UserBlock "1" -- "0..*" AdaptiveQuiz
+BaseQuiz "1" -- "0..*" AdaptiveQuiz
+PlacementQuiz "0..1" -- "0..*" AdaptiveQuiz
+
+AdaptiveQuiz "1" -- "0..*" AdaptiveQuizAnswer
+BaseQuestion "1" -- "0..*" AdaptiveQuizAnswer
+
+@enduml

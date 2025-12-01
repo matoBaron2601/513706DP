@@ -1,6 +1,6 @@
 import { db } from '../db/client';
-import type { CreateBaseOptionDto, CreateBaseQuestionDto } from '../db/schema';
-import type { BaseQuestion, BaseQuestionWithOptions } from '../schemas/baseQuestionSchema';
+import type { CreateBaseOptionDto } from '../db/schema';
+import type { BaseQuestionWithOptions } from '../schemas/baseQuestionSchema';
 import type {
 	BaseQuizWithQuestionsAndOptions,
 	BaseQuizWithQuestionsAndOptionsBlank
@@ -23,6 +23,7 @@ export class BaseQuizFacade {
 		this.openAiService = new OpenAiService();
 	}
 
+	// Creates base questions and their options within a transaction
 	async createBaseQuestionsAndOptions({
 		data,
 		baseQuizId
@@ -32,15 +33,18 @@ export class BaseQuizFacade {
 	}): Promise<string[]> {
 		return db.transaction(async (tx) => {
 			const questionIds: string[] = [];
+			let orderIndex = 0;
+
 			for (const [conceptId, questions] of data) {
 				for (const question of questions.questions) {
+					orderIndex += 1;
 					const { id: baseQuestionId } = await this.baseQuestionService.create(
 						{
 							questionText: question.questionText,
 							correctAnswerText: question.correctAnswerText,
 							baseQuizId: baseQuizId,
 							conceptId: conceptId,
-							orderIndex: question.orderIndex,
+							orderIndex: orderIndex,
 							codeSnippet: question.codeSnippet,
 							questionType: question.questionType
 						},
@@ -66,6 +70,7 @@ export class BaseQuizFacade {
 		});
 	}
 
+	// Retrieves base quiz with questions and their options
 	async getQuestionsWithOptionsByBaseQuizId(
 		baseQuizId: string
 	): Promise<BaseQuizWithQuestionsAndOptions> {
@@ -86,6 +91,7 @@ export class BaseQuizFacade {
 		};
 	}
 
+	// Checks if the provided answer is correct for the given question
 	async isAnswerCorrect(questionId: string, answer: string, tx?: Transaction): Promise<boolean> {
 		const question = await this.baseQuestionService.getById(questionId, tx);
 		const options = await this.baseOptionsService.getByBaseQuestionId(questionId, tx);

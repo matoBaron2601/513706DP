@@ -285,33 +285,6 @@ describe('CourseService', () => {
 		expect(res).toEqual(rows);
 	});
 
-	// getAll
-
-	it('getAll: delegates to repository.getAll', async () => {
-		const rows: GetCoursesResponse[] = [
-			{
-				id: 'course1',
-				name: 'C1',
-				creatorId: 'user1',
-				createdAt: new Date('2024-01-01T00:00:00Z'),
-				updatedAt: null,
-				deletedAt: null,
-				published: true,
-				blocksCount: 2
-			}
-		];
-
-		const courseRepo = new FakeCourseRepository({
-			getAllResult: rows
-		}) as unknown as CourseRepository;
-		const blockRepo = new FakeBlockRepository({}) as unknown as BlockRepository;
-		const userRepo = new FakeUserRepository({}) as unknown as UserRepository;
-
-		const svc = new CourseService(courseRepo, blockRepo, userRepo);
-
-		const res = await svc.getAll({ name: 'C1' });
-		expect(res).toEqual(rows);
-	});
 
 	// delete (soft delete)
 

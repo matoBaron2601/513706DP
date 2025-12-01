@@ -4,6 +4,8 @@ import { baseSchema } from './baseSchema';
 import { baseBaseOptionSchema, baseOptionSchema } from './baseOptionSchema';
 import { questionTypeEnum } from './conceptProgressSchema';
 
+// BASE
+
 const baseBaseQuestionSchema = t.Object({
 	baseQuizId: t.String(),
 	questionText: t.String(),
@@ -23,6 +25,7 @@ export const updateBaseQuestionSchema = t.Partial(createBaseQuestionSchema);
 export type UpdateBaseQuestion = Static<typeof updateBaseQuestionSchema>;
 
 // EXTENDED
+
 export const baseQuestionWithOptionsBlankSchema = t.Intersect([
 	t.Object({
 		questionText: t.String(),

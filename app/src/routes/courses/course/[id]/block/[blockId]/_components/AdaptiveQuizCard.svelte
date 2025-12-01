@@ -21,26 +21,26 @@
 		<Card.Content class="flex flex-col gap-2">
 			<Card.Title class="m-auto text-xl">{quizLabel}</Card.Title>
 			<div class="mx-auto">
-			{#if adaptiveQuiz.isCompleted}
-				<span
-					class="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-200 px-4 py-1 text-[10px] font-semibold text-emerald-700"
-				>
-					Completed
-				</span>
-			{:else}
-				<span
-					class="inline-flex items-center rounded-full bg-[#f8e8d2] px-4 py-1 text-[10px] font-semibold text-yellow-700 hover:bg-[#f8e8d2]"
-				>
-					Not completed
-				</span>
-			{/if}
-		</div>
+				{#if adaptiveQuiz.isCompleted}
+					<span
+						class="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-200 px-4 py-1 text-[10px] font-semibold text-emerald-700"
+					>
+						Completed
+					</span>
+				{:else}
+					<span
+						class="inline-flex items-center rounded-full bg-[#f8e8d2] px-4 py-1 text-[10px] font-semibold text-yellow-700 hover:bg-[#f8e8d2]"
+					>
+						Not completed
+					</span>
+				{/if}
+			</div>
 			<div class="flex gap-2">
 				{#if adaptiveQuiz.isCompleted}
 					<Button
 						onclick={() =>
 							goto(
-								`/courses/course/${page.params.id}/block/${page.params.blockId}/adaptiveQuiz/${adaptiveQuiz.id}`
+								`/courses/course/${page.params.id}/block/${page.params.blockId}/adaptiveQuiz/${adaptiveQuiz.id}/summary`
 							)}
 						variant="outline"
 						class="flex-1 cursor-pointer">Review quiz</Button

@@ -4,16 +4,18 @@ from chunking_evaluation.chunking import RecursiveTokenChunker, KamradtModifiedC
 from analyze_chunks import analyze_chunks
 from openai import OpenAI
 from dotenv import load_dotenv
-import os
-app = Flask(__name__)
 
+app = Flask(__name__)
+load_dotenv()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Handles file upload and performs recursive token-based chunking
 @app.route('/rtc', methods=['POST'])
 def rtc():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
     file = request.files['file']
-    
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
@@ -27,36 +29,27 @@ def rtc():
     )
 
     recursive_character_chunks = recursive_character_chunker.split_text(document)
-
-    # analysis_results = analyze_chunks(recursive_character_chunks, use_tokens=False)
-
-
-    with open('./test.json', "w", encoding="utf-8") as f:
-        json.dump({
-            "content": recursive_character_chunks,
-        }, f, ensure_ascii=False, indent=2)
-
     return jsonify(recursive_character_chunks)
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-def get_embedding(text, model="text-embedding-3-small"):
-    if isinstance(text, list):  # batch mode
+
+# Creates embeddings for a single string or a list of strings
+def get_embedding(text, model="text-embedding-3-large"):
+    if isinstance(text, list):
         texts = [t.replace("\n", " ") for t in text]
         response = client.embeddings.create(input=texts, model=model)
-        return [res.embedding for res in response.data]  # list of embeddings
-    else:  # single string
+        return [res.embedding for res in response.data]
+    else:
         cleaned = text.replace("\n", " ")
         response = client.embeddings.create(input=[cleaned], model=model)
         return response.data[0].embedding
 
+# Performs semantic chunking using embeddings and analyzes the chunks
 @app.route('/semantic', methods=['POST'])
 def semantic():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
     file = request.files['file']
-    
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
@@ -69,8 +62,6 @@ def semantic():
     )
 
     kamradt_chunks = kamradt_chunker.split_text(document)
-    analyze_chunks(kamradt_chunks, use_tokens=True)
-
     return jsonify(kamradt_chunks)
 
 if __name__ == '__main__':

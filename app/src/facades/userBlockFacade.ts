@@ -20,12 +20,13 @@ export class UserBlockFacade {
 		this.conceptService = new ConceptService();
 	}
 
-	async handleUserBlockLogic(createUserBlockData: CreateUserBlock): Promise<UserBlock> {
+	async getOrCreateUserBlock(createUserBlockData: CreateUserBlock): Promise<UserBlock> {
 		return await db.transaction(async (tx) => {
-			const userBlock = await this.userBlockService.getByBothIdsOrUndefined(
+			const userBlock = await this.userBlockService.getByUserIdAndBlockIdOrUndefined(
 				createUserBlockData,
 				tx
 			);
+			
 			if (userBlock) {
 				return userBlock;
 			}

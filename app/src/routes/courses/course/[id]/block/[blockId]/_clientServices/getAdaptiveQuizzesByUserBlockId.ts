@@ -1,4 +1,4 @@
-import type { AdaptiveQuiz } from "../../../../../../../schemas/adaptiveQuizSchema";
+import type { AdaptiveQuiz } from '../../../../../../../schemas/adaptiveQuizSchema';
 
 const getAdaptiveQuizzesByUserBlockId = async (userBlockId: string): Promise<AdaptiveQuiz[]> => {
 	const response = await fetch(`/api/adaptiveQuiz/${userBlockId}`);

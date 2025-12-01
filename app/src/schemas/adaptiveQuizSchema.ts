@@ -3,6 +3,8 @@ import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
 import { baseQuestionWithOptionsSchema } from './baseQuestionSchema';
 
+// BASE
+
 export const baseAdaptiveQuizSchema = t.Object({
 	baseQuizId: t.String(),
 	userBlockId: t.String(),
@@ -20,6 +22,8 @@ export type CreateAdaptiveQuiz = Static<typeof createAdaptiveQuizSchema>;
 
 export const updateAdaptiveQuizSchema = t.Partial(createAdaptiveQuizSchema);
 export type UpdateAdaptiveQuiz = Static<typeof updateAdaptiveQuizSchema>;
+
+// EXTENDED
 
 export const ComplexAdaptiveQuizSchema = t.Intersect([
 	adaptiveQuizSchema,

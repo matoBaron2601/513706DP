@@ -1,26 +1,19 @@
-// analysis.repository.ts
 import type { AnalysisDto } from '../schemas/analysisSchema';
 import type { Transaction } from '../types';
 
 import _getDbClient, { type GetDbClient } from './utils/getDbClient';
 
 import {
-	user,
 	baseQuestion,
 	baseOption,
-	course,
 	adaptiveQuiz,
 	adaptiveQuizAnswer,
-	baseQuiz,
 	concept,
 	block,
-	userBlock // <-- assuming this exists with userBlock.userId
-} from '../db/schema'; // adjust path/exports as needed
+	userBlock
+} from '../db/schema';
 
-import { eq, and, sql } from 'drizzle-orm';
-import { baseAdaptiveQuizSchema } from '../schemas/adaptiveQuizSchema';
-import { db } from '../db/client';
-import { get } from 'http';
+import { eq, sql } from 'drizzle-orm';
 
 export class AnalysisRepository {
 	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
@@ -42,7 +35,8 @@ export class AnalysisRepository {
 				isCorrect: baseOption.isCorrect,
 				version: adaptiveQuiz.version,
 				courseId: block.courseId,
-				userId: userBlock.userId
+				userId: userBlock.userId,
+				conceptName: concept.name
 			})
 			.from(adaptiveQuizAnswer)
 			.innerJoin(adaptiveQuiz, eq(adaptiveQuizAnswer.adaptiveQuizId, adaptiveQuiz.id))
@@ -50,6 +44,7 @@ export class AnalysisRepository {
 			.leftJoin(baseOption, eq(baseOption.baseQuestionId, baseQuestion.id))
 			.innerJoin(userBlock, eq(userBlock.id, adaptiveQuiz.userBlockId))
 			.innerJoin(block, eq(userBlock.blockId, block.id))
+			.innerJoin(concept, eq(baseQuestion.conceptId, concept.id))
 			.where(eq(block.courseId, courseId))
 			.orderBy(sql`RANDOM()`)
 		const questionsMap = new Map<
@@ -69,6 +64,7 @@ export class AnalysisRepository {
 				}[];
 				courseId: string;
 				userId: string;
+				conceptName: string;
 			}
 		>();
 
@@ -86,7 +82,8 @@ export class AnalysisRepository {
 					questionType: row.questionType,
 					time: row.time,
 					options: [],
-					userId: row.userId
+					userId: row.userId,
+					conceptName: row.conceptName
 				};
 				questionsMap.set(row.questionId, question);
 			}

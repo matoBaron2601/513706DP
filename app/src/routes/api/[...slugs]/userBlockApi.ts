@@ -1,4 +1,3 @@
-// src/api/userBlock/userBlockApi.ts
 import { Elysia } from 'elysia';
 import { UserBlockService } from '../../../services/userBlockService';
 import { createUserBlockSchema } from '../../../schemas/userBlockSchema';
@@ -15,7 +14,7 @@ export const createUserBlockApi = (deps?: {
 		.post(
 			'/',
 			async (req) => {
-				return await userBlockFacade.handleUserBlockLogic(req.body);
+				return await userBlockFacade.getOrCreateUserBlock(req.body);
 			},
 			{
 				body: createUserBlockSchema
@@ -23,8 +22,7 @@ export const createUserBlockApi = (deps?: {
 		)
 		.get('/user/:userId/block/:blockId', async (req) => {
 			const { userId, blockId } = req.params;
-			const email = req.headers['x-user-email'] as string | undefined;
-			return await userBlockService.getByBothIdsOrUndefined({ userId, blockId });
+			return await userBlockService.getByUserIdAndBlockIdOrUndefined({ userId, blockId });
 		});
 };
 

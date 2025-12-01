@@ -1,4 +1,3 @@
-// test/api/documentApi.test.ts
 import { describe, it, expect } from 'bun:test';
 import type { DocumentDto } from '../../../src/db/schema';
 import type { DocumentService } from '../../../src/services/documentService';
