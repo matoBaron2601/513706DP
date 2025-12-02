@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
+	import { onMount } from 'svelte';
 
 	const principles = [
 		{
@@ -72,6 +73,18 @@
 				'When a concept meets all mastery conditions, it is marked as mastered and removed from further scheduling. A block is marked as completed when all its concepts are mastered, and the user can move on within the course.'
 		}
 	];
+
+	onMount(async () => {
+		console.log('Performing API health check...');
+		await fetch('/api/health')
+			.then((res) => res.text())
+			.then((text) => {
+				console.log('API Health check response:', text);
+			})
+			.catch((error) => {
+				console.error('API Health check failed:', error);
+			});
+	});
 </script>
 
 <PageWrapper breadcrumbItems={[]} classNameWrapper="lg:max-w-[100%] xl:max-w-[100%] w-full">
