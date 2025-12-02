@@ -1,7 +1,7 @@
 import type { GetCoursesRequest, GetCoursesResponse } from '../../../schemas/courseSchema';
 
 export const getCourses = async (getCoursesRequest: GetCoursesRequest): Promise<GetCoursesResponse[]> => {
-	console.log('calling Courses')
+	console.log('Calling getCourses with request:', getCoursesRequest);
 	const response = await fetch(`/api/course/available`, {
 		body: JSON.stringify(getCoursesRequest),
 		method: 'POST',

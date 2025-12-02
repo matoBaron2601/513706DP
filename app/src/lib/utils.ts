@@ -24,7 +24,6 @@ export const getUserFromPage = () => {
 };
 
 export const getUserByEmail = async (email: string): Promise<User> => {
-	console.log(`Fetching user by email: ${email}`);
 	const result = await fetch(`/api/auth/email/${email}`);
 	return await result.json();
 };
