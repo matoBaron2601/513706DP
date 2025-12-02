@@ -48,6 +48,7 @@ const app = new Elysia({ prefix: '/api' })
 	.use(analysisApi);
 
 const handler: RequestHandler = async (event) => {
+	console.log('API Request:', event.request.method, event.url);
 	const { request, url, locals } = event;
 	if (!url.pathname.startsWith('/api/auth')) {
 		let session = await locals.auth?.();
