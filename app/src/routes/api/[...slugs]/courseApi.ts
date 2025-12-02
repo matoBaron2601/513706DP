@@ -14,6 +14,7 @@ export const createCourseApi = (
 		.post(
 			'/available',
 			async (req) => {
+				console.log('API - get available courses called');
 				return await courseFacade.getAvailableCoursesWithBlockCount(req.body.creatorId);
 			},
 			{
