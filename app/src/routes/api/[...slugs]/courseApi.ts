@@ -24,6 +24,7 @@ export const createCourseApi = (
 		.post(
 			'/',
 			async (req) => {
+				console.log('courseApi: Received request to create course with body:', req.body);
 				return await courseService.create(req.body);
 			},
 			{
