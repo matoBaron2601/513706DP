@@ -11,7 +11,7 @@ export const createCourseApi = (
 		.get('/:id', async (req) => {
 			return await courseService.getById(req.params.id);
 		})
-		.post(
+		.get(
 			'/available/:id',
 			async (req) => {
 				console.log('courseApi: Received request for available courses with body:');
