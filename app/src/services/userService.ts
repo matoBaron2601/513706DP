@@ -13,6 +13,7 @@ export class UserService {
 	}
 
 	async getByEmail(email: string, tx?: Transaction): Promise<UserDto> {
+		console.log(`UserService - getByEmail called for email: ${email}`);
 		const item = await this.repo.getByEmail(email, tx);
 		if (!item) throw new NotFoundError(`User with email ${email} not found`);
 		return item;

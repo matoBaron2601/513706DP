@@ -7,8 +7,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getCourses } from './_clientServices/getCourses';
 
-	console.log('hello from courses page');
-
 	const user = getUserFromPage();
 	const getCoursesQuery = createQuery({
 		queryKey: ['courses'],

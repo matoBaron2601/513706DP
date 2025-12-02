@@ -8,6 +8,7 @@ export const createAuthApi = (userService: UserService = new UserService()) =>
 			return await userService.getById(req.params.id);
 		})
 		.get('/email/:email', async (req) => {
+			console.log(`API - get user by email called: ${req.params.email}`);
 			return await userService.getByEmail(req.params.email);
 		})
 		.post(
