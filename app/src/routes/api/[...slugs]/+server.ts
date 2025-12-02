@@ -48,7 +48,6 @@ const app = new Elysia({ prefix: '/api' })
 	.use(analysisApi);
 
 const handler: RequestHandler = async (event) => {
-	console.log('API Request:', event.request.method, event.url);
 	const { request, url, locals } = event;
 	if (!url.pathname.startsWith('/api/auth')) {
 		let session = await locals.auth?.();
@@ -81,6 +80,7 @@ const handler: RequestHandler = async (event) => {
 		const headers = new Headers(request.headers);
 		headers.set('x-user-email', session.user.email ?? '');
 		const reqForElysia = new Request(request, { headers });
+		console.log('Req for Elysia Headers:', reqForElysia);
 
 		return app.handle(reqForElysia);
 	}
