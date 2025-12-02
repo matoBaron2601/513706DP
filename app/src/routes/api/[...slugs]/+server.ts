@@ -16,6 +16,7 @@ import analysisApi from './analysisApi';
 const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
 
 const app = new Elysia({ prefix: '/api' })
+	.get('/health', () => 'OK')
 	.onError(({ error, set }) => {
 		if (error instanceof AppError) {
 			set.status = error.status;
