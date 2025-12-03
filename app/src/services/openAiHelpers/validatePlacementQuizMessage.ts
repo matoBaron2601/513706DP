@@ -11,7 +11,11 @@ export const validatePlacementQuizMessage = (concept: string): string => {
 
     -ensure that questions are clear and unambiguous, and have all necessary information for answering it.
 
-
+    -Focus on B1 and B2 questions. Make sure they make sense and are relevant to the concept. 
+    All information needed for answering the question must be present in questionText and codeSnippet. 
+    If not, modify the question to include the necessary details. Make sure the questions are clear and unambiguous.
+    
+    
     --- Output Schema ---
     {
         "questions": [
