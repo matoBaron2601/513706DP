@@ -12,7 +12,6 @@
 		queryKey: ['courses'],
 		queryFn: async () => {
 			const { id } = await getUserByEmail(user.email);
-			console.log("ID:", id);
 			return await getCourses({ creatorId: id });
 		}
 	});

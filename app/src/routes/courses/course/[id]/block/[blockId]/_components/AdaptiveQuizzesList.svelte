@@ -30,7 +30,6 @@
 	let interval = $state<NodeJS.Timeout>();
 
 	$effect(() => {
-		console.log($adaptiveQuizQuery?.data);
 		if (
 			!$adaptiveQuizQuery?.data?.readyForAnswering &&
 			$adaptiveQuizQuery?.data?.version !== 9999

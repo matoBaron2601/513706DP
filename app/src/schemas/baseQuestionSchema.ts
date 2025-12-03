@@ -1,7 +1,7 @@
 import { t } from 'elysia';
 import { type Static } from 'elysia';
 import { baseSchema } from './baseSchema';
-import { baseBaseOptionSchema, baseOptionSchema } from './baseOptionSchema';
+import { baseOptionSchema } from './baseOptionSchema';
 import { questionTypeEnum } from './conceptProgressSchema';
 
 // BASE

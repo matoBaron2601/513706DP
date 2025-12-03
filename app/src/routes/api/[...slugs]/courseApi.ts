@@ -14,17 +14,12 @@ export const createCourseApi = (
 		.get(
 			'/available/:id',
 			async (req) => {
-				console.log('courseApi: Received request for available courses with body:');
 				return await courseFacade.getAvailableCoursesWithBlockCount(req.params.id);
 			},
-			// {
-			// 	body: getCoursesRequestSchema
-			// }
 		)
 		.post(
 			'/',
 			async (req) => {
-				console.log('courseApi: Received request to create course with body:', req.body);
 				return await courseService.create(req.body);
 			},
 			{

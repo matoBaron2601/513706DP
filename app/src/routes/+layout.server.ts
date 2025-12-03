@@ -12,7 +12,7 @@ export const load: LayoutServerLoad = async (event) => {
 			user: {
 				email: 'test@example.com',
 				name: 'E2E Test User',
-				image: 'testimage.png'
+				image: 'https://d8iqbmvu05s9c.cloudfront.net/ajprhqgqg1otf7d5sm7u3brf27gv'
 			},
 			accessToken: 'test-token'
 		} as any;
