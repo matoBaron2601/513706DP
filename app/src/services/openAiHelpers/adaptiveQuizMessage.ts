@@ -55,22 +55,26 @@ A1 – Theoretical Multiple Choice:
 • codeSnippet = ""  
 • 4 options, exactly 1 correct  
 • correctAnswerText must match the correct optionText  
+• do not make questions about console logs
 
 A2 – Fill-in-the-blank:
 • questionText must contain exactly one blank: "____"  
 • options = []  
 • codeSnippet = ""  
 • correctAnswerText is the correct 1-word answer  
+• do not make questions about console logs
 
 B1 – Practical MCQ:
 • Must include a non-empty code snippet  
 • 4 options, exactly 1 correct  
 • correctAnswerText must match the correct option  
+• do not make questions about console logs
 
 B2 – Practical Coding:
 • Must include a code snippet containing: /* your code here */  
 • options = []  
 • correctAnswerText = correct 1–2 line code the student should write  
+• do not make questions about console logs
 
 --- JSON Structure Template ---
 {
