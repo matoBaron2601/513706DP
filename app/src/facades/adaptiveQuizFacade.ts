@@ -201,7 +201,7 @@ export class AdaptiveQuizFacade {
 
 		let lastError: unknown;
 
-		for (let attempt = 1; attempt <= 3; attempt++) {
+		for (let attempt = 1; attempt <= 10; attempt++) {
 			try {
 				const questions = await this.openAiService.createAdaptiveQuizQuestions(
 					conceptName,
@@ -221,7 +221,7 @@ export class AdaptiveQuizFacade {
 				lastError = error;
 				console.warn(`Attempt ${attempt} failed for ${conceptName}. Retrying...`, error);
 
-				if (attempt === 3) {
+				if (attempt === 10) {
 					console.log(`All attempts failed for ${conceptName}.`);
 				}
 

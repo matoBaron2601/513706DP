@@ -1,65 +1,114 @@
 export const adaptiveQuizMessage = (
-  concept: string,
-  numberOfA1Questions: number,
-  numberOfA2Questions: number,
-  numberOfB1Questions: number,
-  numberOfB2Questions: number,
-  questionHistory: {
-    questionText: string;
-    correctAnswerText: string;
-    isCorrect: boolean;
-  }[]
+	concept: string,
+	numberOfA1Questions: number,
+	numberOfA2Questions: number,
+	numberOfB1Questions: number,
+	numberOfB2Questions: number,
+	questionHistory: {
+		questionText: string;
+		correctAnswerText: string;
+		isCorrect: boolean;
+	}[]
 ) => {
-  const numberOfQuestions =
-    numberOfA1Questions + numberOfA2Questions + numberOfB1Questions + numberOfB2Questions;
+	const numberOfQuestions =
+		numberOfA1Questions + numberOfA2Questions + numberOfB1Questions + numberOfB2Questions;
 
-  return `
-    Based on the learned knowledge.
-You are an expert quiz creator in a RAG system.
+	return `
 
-Create a placement quiz about the concept = ${concept}, with exactly ${numberOfQuestions} questions, based **solely** on the provided <chunks> for all knowledge content.
+      Based on the learned knowledge.
+    You are an expert quiz creator in a RAG system.
+    
+    Concept to test: "${concept}"
 
+Your output MUST be valid JSON only, matching the schema EXACTLY. 
+Never add explanations or text outside the JSON.
 
---- HARD RULES (MUST PASS) ---
-1) questionText is plain sentences only. No code, no backticks, no code fences, no angle brackets, no {}, no ;, no line starting with code keywords like: function, const, let, class, if, for, while, return, import.
-2) Any code MUST appear only in codeSnippet (never in questionText).
-3) For A1/A2: codeSnippet MUST be an empty string "".
-4) For B1/B2: codeSnippet MUST be non-empty (≤10 lines). Do not include answers in code.
-5) All questionText, options, and correct answers MUST be strictly derivable from the chunks only. No new facts, no unreferenced APIs or terminology.
-6) Code snippets may be newly invented, but:
-   - Must remain consistent with ${concept} as presented in the chunks
-   - Must NOT introduce new libraries, frameworks, or technologies not found in the chunks
-7) You MUST generate exactly:
-   - ${numberOfA1Questions} × A1
-   - ${numberOfA2Questions} × A2
-   - ${numberOfB1Questions} × B1
-   - ${numberOfB2Questions} × B2
-No extra, missing, or duplicate types.
-8) Avoid repeating questionHistory:
-   - Do NOT reuse questionText from history
-   - Do NOT reuse or restate the identical correctAnswerText conceptually
-   - If similarity is detected, choose a different angle from the chunks
-9) When A1 or B1 questions, one of the options MUST be exactly the correctAnswerText
---- Question Types ---
-A1 = Theoretical Multiple Choice (no code)
-A2 = Theoretical Fill-in-the-Blank (no options, no code)
-B1 = Practical Multiple Choice (codeSnippet required)
-B2 = Practical Fill-in-the-blank task (codeSnippet required)
-
---- Output Schema (exact) ---
+--- JSON Output Schema ---
 {
   "questions": [
     {
-      "questionText": string,
-      "correctAnswerText": string,
-      "orderIndex": string,
-      "codeSnippet": string,
-      "questionType": "B1" | "B2" | "A1" | "A2",
-      "options": [ { "optionText": string, "isCorrect": boolean } ]
+      "questionType": "A1 | A2 | B1 | B2",
+      "questionText": "",
+      "codeSnippet": "",
+      "correctAnswerText": "",
+      "options": [ { "optionText": "", "isCorrect": true/false } ],
+      "orderIndex": ""
     }
   ]
 }
 
+--- STRICT RULES YOU MUST FOLLOW ---
+
+General Rules:
+• You MUST generate exactly:
+   - ${numberOfA1Questions} × A1
+   - ${numberOfA2Questions} × A2
+   - ${numberOfB1Questions} × B1
+   - ${numberOfB2Questions} × B2 
+• Medium difficulty.  
+• Correct answers must be unambiguous.  
+• The answer must NOT appear in the question text or code snippet.  
+• orderIndex must be "1", "2", "3", "4"....${numberOfQuestions} in order.  
+• Output MUST follow the schema exactly.  
+
+A1 – Theoretical Multiple Choice:
+• codeSnippet = ""  
+• 4 options, exactly 1 correct  
+• correctAnswerText must match the correct optionText  
+
+A2 – Fill-in-the-blank:
+• questionText must contain exactly one blank: "____"  
+• options = []  
+• codeSnippet = ""  
+• correctAnswerText is the correct 1-word answer  
+
+B1 – Practical MCQ:
+• Must include a non-empty code snippet  
+• 4 options, exactly 1 correct  
+• correctAnswerText must match the correct option  
+
+B2 – Practical Coding:
+• Must include a code snippet containing: /* your code here */  
+• options = []  
+• correctAnswerText = correct 1–2 line code the student should write  
+
+--- JSON Structure Template ---
+{
+  "questions": [
+    {
+      "questionType": "",
+      "questionText": "",
+      "codeSnippet": "",
+      "correctAnswerText": "",
+      "options": [],
+      "orderIndex": "1"
+    },
+    {
+      "questionType": "",
+      "questionText": "",
+      "codeSnippet": "",
+      "correctAnswerText": "",
+      "options": [],
+      "orderIndex": "2"
+    },
+    {
+      "questionType": "",
+      "questionText": "",
+      "codeSnippet": "",
+      "correctAnswerText": "",
+      "options": [],
+      "orderIndex": "3"
+    },
+    {
+      "questionType": "",
+      "questionText": "",
+      "codeSnippet": "",
+      "correctAnswerText": "",
+      "options": [],
+      "orderIndex": "4"
+    }
+  ]
+}
 
 --- Question History: Strict Non-Repetition Rules ---
 Below is a list of previous questions already asked about ${concept}.
@@ -79,12 +128,6 @@ START OF QUESTION HISTORY
 ${JSON.stringify(questionHistory)}
 END OF QUESTION HISTORY
 
---- Final Instructions ---
-- Produce exactly ${numberOfQuestions} questions: 
-  ${numberOfA1Questions}×A1, ${numberOfA2Questions}×A2, 
-  ${numberOfB1Questions}×B1, ${numberOfB2Questions}×B2
-- Validate all HARD RULES yourself before responding
-- Respond ONLY with the JSON object. No extra text.
-- Ensure that questionType is one of "A1", "A2", "B1", or "B2" as specified.
-`;
+Now generate the quiz following ALL rules above.
+    `;
 };

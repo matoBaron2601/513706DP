@@ -88,11 +88,37 @@ test.describe('Courses page and course creation', () => {
 
 		await expect(page.getByRole('button', { name: 'Upload file' })).toBeVisible();
 
+		page.getByRole('button', { name: 'Upload file' }).click();
+
+		const [uploadFileResponse] = await Promise.all([
+			page.waitForResponse('**/block/identifyConcepts', { timeout: 30000 }),
+			page.getByRole('button', { name: 'Upload file' }).click()
+		]);
+
+		await page.waitForTimeout(10000);
+
 		await page.getByRole('button', { name: 'Upload file' }).click();
 
 		await expect(page.getByText('2. Edit concepts')).toBeVisible();
 		await page.getByRole('button', { name: 'Submit concepts' }).click();
+
 		await expect(page.getByText('3. Create block')).toBeVisible();
+		await page.getByLabel('Name').fill('Test block');
 		await page.getByRole('button', { name: 'Submit' }).click();
+		await page.waitForTimeout(10000);
+		await expect(page).toHaveURL(/\/courses\/course\/.+$/);
+		await page.waitForTimeout(10000);
+	});
+
+	test('verify created block is visible on course page', async ({ page }) => {
+		await page.goto('/courses');
+		const coursePageButton = page.getByRole('button', { name: 'Open course' });
+		await coursePageButton.click();
+		await page.waitForTimeout(3000);
+
+		await expect(page).toHaveURL(/\/courses\/course\/.+/);
+		await page.waitForTimeout(3000);
+
+		console.log(await page.content());
 	});
 });
