@@ -1,10 +1,11 @@
 import type {
-	CreateDocumentRequest,
 	DeleteDocumentRequest,
 	Document
 } from '../../../../../../../../schemas/documentSchema';
 
-export const deleteDocument = async (deleteDocumentRequest: DeleteDocumentRequest): Promise<Document> => {
+export const deleteDocument = async (
+	deleteDocumentRequest: DeleteDocumentRequest
+): Promise<Document> => {
 	const response = await fetch(`/api/document`, {
 		method: 'DELETE',
 		body: JSON.stringify(deleteDocumentRequest),

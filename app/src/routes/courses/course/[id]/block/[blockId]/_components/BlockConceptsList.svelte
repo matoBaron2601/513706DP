@@ -1,12 +1,8 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import BlockConceptCard from './BlockConceptCard.svelte';
-	import { page } from '$app/state';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { getConceptProgressByUserBlockId } from '../_clientServices/getConceptProgressByUserBlockId';
-
-	const blockId = page.params.blockId ?? '';
-	const courseId = page.params.id ?? '';
 
 	let { userBlockId }: { userBlockId: string } = $props();
 

@@ -3,7 +3,9 @@ import type {
 	Document
 } from '../../../../../../../../schemas/documentSchema';
 
-export const uploadDocument = async (createDocumentRequest: CreateDocumentRequest): Promise<Document> => {
+export const uploadDocument = async (
+	createDocumentRequest: CreateDocumentRequest
+): Promise<Document> => {
 	const formData = new FormData();
 	formData.append('blockId', createDocumentRequest.blockId);
 	formData.append('document', createDocumentRequest.document);

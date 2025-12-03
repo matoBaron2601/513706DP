@@ -29,7 +29,6 @@
 		const alfaValue = concept.conceptProgress.alfa ?? 0;
 		const betaValue = concept.conceptProgress.beta ?? 0;
 
-		// If parameters are not valid for Beta distribution, return 0 safely
 		if (alfaValue <= 0 || betaValue <= 0) {
 			return 0;
 		}
@@ -40,7 +39,6 @@
 		return upper - lower;
 	});
 
-	// thresholds
 	const streakOk = $derived.by(() => concept.conceptProgress.streak > 3);
 	const scoreOk = $derived.by(() => concept.conceptProgress.score > 0.8);
 	const askedOk = $derived.by(() => asked > 5);

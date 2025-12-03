@@ -1,6 +1,5 @@
 <script lang="ts">
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
-	import { getUserByEmail } from '$lib/utils';
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
 
 	import { page } from '$app/state';
@@ -25,7 +24,6 @@
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
-	const userEmail = page.data.session?.user?.email ?? '';
 
 
 	const courseQuery = createQuery({

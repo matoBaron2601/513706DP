@@ -15,7 +15,6 @@
 	import { getConceptsByBlockId } from './_clientServices/getConceptsByBlockId';
 	import { submitAdaptiveQuizAnswer } from './_clientServices/submitAdaptiveQuizAnswer';
 
-
 	let { data }: { data: PageData } = $props();
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';

@@ -1,6 +1,8 @@
-import type { ComplexAdaptiveQuiz } from "../../../../../../../../../schemas/adaptiveQuizSchema";
+import type { ComplexAdaptiveQuiz } from '../../../../../../../../../schemas/adaptiveQuizSchema';
 
-export const getComplexAdaptiveQuizById = async (adaptiveQuizId: string): Promise<ComplexAdaptiveQuiz> => {
+export const getComplexAdaptiveQuizById = async (
+	adaptiveQuizId: string
+): Promise<ComplexAdaptiveQuiz> => {
 	const response = await fetch(`/api/adaptiveQuiz/complexQuiz/${adaptiveQuizId}`);
 	if (!response.ok) {
 		throw new Error('Failed to get adaptive quizzes');
