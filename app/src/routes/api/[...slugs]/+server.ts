@@ -13,6 +13,7 @@ import documentApi from './documentApi';
 import { AppError } from '../../../errors/AppError';
 
 const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
+const ENVIRONMENT = process.env.environment || 'prod';
 
 const app = new Elysia({ prefix: '/api' })
 	.onError(({ error, set }) => {
@@ -42,69 +43,69 @@ const app = new Elysia({ prefix: '/api' })
 	.use(adaptiveQuizApi)
 	.use(adaptiveQuizAnswerApi)
 	.use(placementQuizApi)
-	.use(documentApi)
+	.use(documentApi);
 
-//     const handler: RequestHandler = async (event) => {
-//     const { request, url, locals } = event;
+const productionHandler: RequestHandler = async (event) => {
+	const { request, url, locals } = event;
 
-//     // Bypass auth-related paths
-//     if (!url.pathname.startsWith('/api/auth')) {
-//         let session = await locals.auth?.();
+	// Bypass auth-related paths
+	if (!url.pathname.startsWith('/api/auth')) {
+		let session = await locals.auth?.();
 
-//         // E2E Test Bypass (Maintain original logic)
-//         if (!session?.user && typeof AUTH_BYPASS !== 'undefined' && AUTH_BYPASS) {
-//             session = {
-//                 user: {
-//                     email: 'test@example.com',
-//                     name: 'E2E Test User',
-//                     image: 'https://d8iqbmvu05s9c.cloudfront.net/ajprhqgqg1otf7d5sm7u3brf27gv'
-//                 },
-//                 accessToken: 'test-token'
-//             } as any;
-//         }
+		// E2E Test Bypass (Maintain original logic)
+		if (!session?.user && typeof AUTH_BYPASS !== 'undefined' && AUTH_BYPASS) {
+			session = {
+				user: {
+					email: 'test@example.com',
+					name: 'E2E Test User',
+					image: 'https://d8iqbmvu05s9c.cloudfront.net/ajprhqgqg1otf7d5sm7u3brf27gv'
+				},
+				accessToken: 'test-token'
+			} as any;
+		}
 
-//         // Unauthorized Check
-//         if (!session?.user) {
-//             return new Response(
-//                 JSON.stringify({
-//                     code: 'UNAUTHORIZED',
-//                     message: 'Unauthorized',
-//                     details: null
-//                 }),
-//                 {
-//                     status: 401,
-//                     headers: { 'content-type': 'application/json' }
-//                 }
-//             );
-//         }
+		// Unauthorized Check
+		if (!session?.user) {
+			return new Response(
+				JSON.stringify({
+					code: 'UNAUTHORIZED',
+					message: 'Unauthorized',
+					details: null
+				}),
+				{
+					status: 401,
+					headers: { 'content-type': 'application/json' }
+				}
+			);
+		}
 
-//         const headers = new Headers(request.headers);
-//         headers.set('x-user-email', session.user.email ?? '');
+		const headers = new Headers(request.headers);
+		headers.set('x-user-email', session.user.email ?? '');
 
-//         let bodyForElysia: ReadableStream | undefined = undefined;
+		let bodyForElysia: ReadableStream | undefined = undefined;
 
-//         if (request.body) {
-//             const [body1, bodyClone] = request.body.tee();
-//             bodyForElysia = body1;
-//         }
+		if (request.body) {
+			const [body1, bodyClone] = request.body.tee();
+			bodyForElysia = body1;
+		}
 
-//         const reqForElysia = new Request(request.url, {
-//             method: request.method,
-//             headers: headers,
-//             body: bodyForElysia,
-//             signal: request.signal,
-//             referrer: request.referrer,
-//             referrerPolicy: request.referrerPolicy,
-//             mode: request.mode,
-//             credentials: request.credentials,
-//             cache: request.cache,
-//             integrity: request.integrity
-//         });
-        
-//         return app.handle(reqForElysia);
-//     }
-//     return app.handle(request);
-// };
+		const reqForElysia = new Request(request.url, {
+			method: request.method,
+			headers: headers,
+			body: bodyForElysia,
+			signal: request.signal,
+			referrer: request.referrer,
+			referrerPolicy: request.referrerPolicy,
+			mode: request.mode,
+			credentials: request.credentials,
+			cache: request.cache,
+			integrity: request.integrity
+		});
+
+		return app.handle(reqForElysia);
+	}
+	return app.handle(request);
+};
 const handler: RequestHandler = async (event) => {
 	const { request, url, locals } = event;
 	if (!url.pathname.startsWith('/api/auth')) {
@@ -145,8 +146,8 @@ const handler: RequestHandler = async (event) => {
 	return app.handle(request);
 };
 
-export const GET = handler;
-export const POST = handler;
-export const PUT = handler;
-export const PATCH = handler;
-export const DELETE = handler;
+export const GET = ENVIRONMENT === 'prod' ? productionHandler : handler;
+export const POST = ENVIRONMENT === 'prod' ? productionHandler : handler;
+export const PUT = ENVIRONMENT === 'prod' ? productionHandler : handler;
+export const PATCH = ENVIRONMENT === 'prod' ? productionHandler : handler;
+export const DELETE = ENVIRONMENT === 'prod' ? productionHandler : handler;

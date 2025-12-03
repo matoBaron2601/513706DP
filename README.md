@@ -36,7 +36,7 @@ The Chunker is a Python-based service running on Flask.
 | **4. Install Dependencies**| Install the core chunking library. | `pip install git+https://github.com/brandonstarxel/chunking_evaluation.git` | Installs the dependency directly from the GitHub repository. |
 | **5. Run Service** | Execute the main startup script. | `python3 main.py` | Starts the Chunker service. |
 
-> **Status:** The Chunker should be running and accessible at **localhost:3000** (as configured by the `CHUNKER_ENDPOINT` variable).
+> **Status:** The Chunker should be running and accessible at **http://127.0.0.1:5000** 
 
 ---
 
