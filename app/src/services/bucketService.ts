@@ -1,3 +1,9 @@
+/**
+ * @fileoverview
+ * BucketService handles interactions with the MinIO object storage service,
+ * specifically for managing block data files and profile pictures.
+ */
+
 import { MinioClient } from '../routes/api/[...slugs]/bucketApi';
 
 const BLOCKDATA = 'blockdata';
@@ -5,11 +11,22 @@ const PROFILEPIC = 'profilepic';
 
 export class BucketService {
 	constructor() {}
+	/**
+	 * Ensures that the block data bucket exists; creates it if it does not.
+	 * @param none
+	 * @returns void
+	 */
 	async ensureBlockDataBucket() {
 		const blockDataExists = await MinioClient.bucketExists(BLOCKDATA).catch(() => false);
 
 		if (!blockDataExists) await MinioClient.makeBucket(BLOCKDATA, 'us-east-1');
 	}
+
+	/**
+	 * Uploads a block data file to the block data bucket.
+	 * @param file The file to upload.
+	 * @returns The name of the uploaded object.
+	 */
 	async uploadBlockDataFile(file: File): Promise<string> {
 		await this.ensureBlockDataBucket();
 
@@ -27,12 +44,22 @@ export class BucketService {
 		return objectName;
 	}
 
+	/**
+	 * Retrieves a readable stream for a block data file from the block data bucket.
+	 * @param objectName The name of the object to retrieve.
+	 * @returns A readable stream of the object.
+	 */
 	async getBlockDataFileStream(objectName: string) {
 		await this.ensureBlockDataBucket();
 		const stream = await MinioClient.getObject(BLOCKDATA, objectName);
 		return stream;
 	}
 
+	/**
+	 * Retrieves the contents of a block data file as a string.
+	 * @param objectName The name of the object to retrieve.
+	 * @returns The contents of the object as a string.
+	 */
 	async getBlockDataFileString(objectName: string): Promise<string> {
 		await this.ensureBlockDataBucket();
 
@@ -46,11 +73,22 @@ export class BucketService {
 		return Buffer.concat(chunks).toString('utf-8');
 	}
 
+	/**
+	 * Ensures that the profile picture bucket exists; creates it if it does not.
+	 * @param none
+	 * @returns void
+	 */
 	async ensureProfilePicBucket() {
 		const profilePicExists = await MinioClient.bucketExists(PROFILEPIC).catch(() => false);
 
 		if (!profilePicExists) await MinioClient.makeBucket(PROFILEPIC, 'us-east-1');
 	}
+
+	/**
+	 * Uploads a profile picture file to the profile picture bucket.
+	 * @param file The file to upload.
+	 * @returns The name of the uploaded object.
+	 */
 	async uploadProfilePicFile(file: File): Promise<string> {
 		await this.ensureProfilePicBucket();
 
@@ -70,12 +108,22 @@ export class BucketService {
 		return objectName;
 	}
 
+	/**
+	 * Retrieves a readable stream for a profile picture file from the profile picture bucket.
+	 * @param objectName The name of the object to retrieve.
+	 * @returns A readable stream of the object.
+	 */
 	async getProfilePicFileStream(objectName: string) {
 		await this.ensureProfilePicBucket();
 		const stream = await MinioClient.getObject(PROFILEPIC, objectName);
 		return stream;
 	}
 
+	/**
+	 * Retrieves the contents of a profile picture file as a Buffer.
+	 * @param objectName The name of the object to retrieve.
+	 * @returns The contents of the object as a Buffer.
+	 */
 	async getProfilePicFileBuffer(objectName: string): Promise<Buffer> {
 		await this.ensureProfilePicBucket();
 

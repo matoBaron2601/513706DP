@@ -4,11 +4,18 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import HistoryList from './_components/HistoryList.svelte';
-
-	import { Button } from '$lib/components/ui/button'; // adjust path if needed
+	import { Button } from '$lib/components/ui/button';
 	import { getCourseById } from '../../../../../../_clientServices/getCourseById';
 	import { getUserBlock } from '../_clientServices/getUserBlock';
 	import { getBlockById } from '../../../../../../_clientServices/getBlockById';
+
+	/**
+	 * @fileoverview
+	 * This Svelte component provides a user interface for viewing and interacting with a specific block within a course.
+	 * It fetches the block and course data, as well as the user's progress on the block. The component displays the block's concepts
+	 * and adaptive quizzes based on the user's progress. It also includes navigation breadcrumbs and action buttons for viewing history and documents.
+	 * Route === '/courses/course/[id]/block/[blockId]/history'
+	 */
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
@@ -50,8 +57,10 @@
 	{#if $userBlockQuery.data?.id}
 		<HistoryList userBlockId={$userBlockQuery.data?.id} />
 	{:else}
-		<div class="mx-auto mt-10 max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-			<div class="mb-3 text-4xl select-none">📜</div>
+		<div
+			class="mx-auto mt-10 max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm"
+		>
+			<div class="mb-3 select-none text-4xl">📜</div>
 			<h2 class="mb-1 text-lg font-semibold text-gray-900">No history yet</h2>
 			<p class="mb-6 text-sm text-gray-500">
 				Once you start working on this block, your progress history will appear here.

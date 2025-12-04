@@ -1,3 +1,10 @@
+/**
+ * @fileoverview
+ * This file defines the AdaptiveQuizFacade class, which serves as a facade
+ * for handling operations related to adaptive quizzes. It utilizes various
+ * services to manage adaptive quizzes, generate questions, and track user progress.
+ */
+
 import { db } from '../db/client';
 import type { AdaptiveQuizAnswer } from '../schemas/adaptiveQuizAnswerSchema';
 import type { AdaptiveQuiz, ComplexAdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
@@ -42,7 +49,11 @@ export class AdaptiveQuizFacade {
 		this.userBlockService = new UserBlockService();
 	}
 
-	// Get a complex adaptive quiz by its ID, including user answers and correctness
+	/**
+	 * Get a complex adaptive quiz by its ID, including user answers and correctness
+	 * @param adaptiveQuizId
+	 * @returns ComplexAdaptiveQuiz
+	 */
 	async getComplexAdaptiveQuizById(adaptiveQuizId: string): Promise<ComplexAdaptiveQuiz> {
 		const adaptiveQuiz: AdaptiveQuiz = await this.adaptiveQuizService.getById(adaptiveQuizId);
 		const baseQuiz: BaseQuizWithQuestionsAndOptions =
@@ -64,7 +75,12 @@ export class AdaptiveQuizFacade {
 		};
 	}
 
-	// Finish an adaptive quiz and potentially generate a new one
+	/**
+	 * Complete an adaptive quiz and potentially generate a new one based on progress
+	 * @param adaptiveQuizId
+	 * @returns AdaptiveQuiz
+	 */
+
 	async finishAdaptiveQuiz(adaptiveQuizId: string): Promise<AdaptiveQuiz> {
 		const updatedAdaptiveQuiz = await this.adaptiveQuizService.update(adaptiveQuizId, {
 			isCompleted: true
@@ -101,7 +117,13 @@ export class AdaptiveQuizFacade {
 		return updatedAdaptiveQuiz;
 	}
 
-	// Generate an adaptive quiz based on user performance and concept priorities
+	/**
+	 * Generate an adaptive quiz based on user performance and concept priorities
+	 * @param userBlockId
+	 * @param baseQuizId
+	 * @param adaptiveQuizId
+	 * @returns boolean
+	 */
 	async generateAdaptiveQuiz(
 		userBlockId: string,
 		baseQuizId: string,
@@ -184,7 +206,18 @@ export class AdaptiveQuizFacade {
 		return true;
 	}
 
-	// Generate adaptive quiz questions for a specific concept
+	/**
+	 * Generate adaptive quiz questions for a specific concept
+	 * @param blockId
+	 * @param conceptId
+	 * @param conceptNames
+	 * @param numberOfQuestionsA1
+	 * @param numberOfQuestionsA2
+	 * @param numberOfQuestionsB1
+	 * @param numberOfQuestionsB2
+	 * @param userBlockId
+	 * @returns BaseQuizWithQuestionsAndOptionsBlank
+	 */
 	private async generateAdaptiveQuizQuestions(
 		blockId: string,
 		conceptId: string,
@@ -232,6 +265,11 @@ export class AdaptiveQuizFacade {
 		throw new Error(`Unexpected state while generating quiz questions for ${conceptName}.`);
 	}
 
+	/**
+	 * Regenerate an adaptive quiz by updating its version and regenerating questions
+	 * @param adaptiveQuizId
+	 * @returns boolean
+	 */
 	async regenerateAdaptiveQuiz(adaptiveQuizId: string): Promise<boolean> {
 		const adaptiveQuiz = await this.adaptiveQuizService.getById(adaptiveQuizId);
 		const baseQuizId = adaptiveQuiz.baseQuizId;
@@ -241,7 +279,11 @@ export class AdaptiveQuizFacade {
 		return this.generateAdaptiveQuiz(userBlockId, baseQuizId, adaptiveQuizId);
 	}
 
-	// Calculate the priority of concepts based on user progress
+	/**
+	 * Calculate concept priorities based on user performance
+	 * @param userBlockId
+	 * @returns ConceptProgress[]
+	 */
 	private async calculateConceptPriority(userBlockId: string): Promise<ConceptProgress[]> {
 		const conceptProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
@@ -259,7 +301,12 @@ export class AdaptiveQuizFacade {
 		return topConceptProgresses;
 	}
 
-	// Get the question history for a user and concept
+	/**
+	 *  Get question history for a user and concept
+	 * @param userBlockId
+	 * @param conceptId
+	 * @returns AdaptiveQuizAnswer[]
+	 */
 	private async getQuestionHistory(userBlockId: string, conceptId: string) {
 		const adaptiveQuizzes = await this.adaptiveQuizService.getByUserBlockId(userBlockId);
 		const questionHistory = await this.adaptiveQuizAnswerService.getQuestionHistory(
@@ -269,7 +316,11 @@ export class AdaptiveQuizFacade {
 		return questionHistory;
 	}
 
-	// Validate the questions in a quiz
+	/**
+	 *  Validate the generated quiz questions and options
+	 * @param quiz 
+	 * @returns void
+	 */
 	private async questionsValidations(quiz: BaseQuizWithQuestionsAndOptionsBlank): Promise<void> {
 		if (!quiz || !quiz.questions || quiz.questions.length === 0) {
 			throw new Error('Quiz must contain at least one question.');

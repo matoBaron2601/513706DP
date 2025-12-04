@@ -1,3 +1,9 @@
+/**
+ * @fileoverview
+ * Facade for managing blocks, including creation, retrieval,
+ * concept identification, and integration with chunking and indexing services.
+ */
+
 import { ChunkerService } from '../chunker/chunkerService';
 import { db } from '../db/client';
 import type {
@@ -6,7 +12,7 @@ import type {
 	GetManyByCourseIdResponse,
 	IdentifyConceptsResponse
 } from '../schemas/blockSchema';
-import { OpenAiService,} from '../services/openAIService';
+import { OpenAiService } from '../services/openAIService';
 import { BlockService } from '../services/blockService';
 import { ConceptService } from '../services/conceptService';
 import { TypesenseService } from '../typesense/typesenseService';
@@ -32,7 +38,11 @@ export class BlockFacade {
 		this.documentService = new DocumentService();
 	}
 
-	// Get many blocks by course ID, including their concepts
+	/**
+	 * Get blocks with concepts by course ID
+	 * @param courseId
+	 * @returns GetManyByCourseIdResponse
+	 */
 	async getManyByCourseId(courseId: string): Promise<GetManyByCourseIdResponse> {
 		const blocks = await this.blockService.getManyByCourseId(courseId);
 		const concepts = await this.conceptService.getManyByBlockIds(blocks.map((cb) => cb.id));
@@ -42,7 +52,11 @@ export class BlockFacade {
 		}));
 	}
 
-	// Identify concepts from a document path
+	/**
+	 * Identify concepts in a document using OpenAI
+	 * @param documentPath
+	 * @returns IdentifyConceptsResponse
+	 */
 	async identifyConcepts(documentPath: string): Promise<IdentifyConceptsResponse> {
 		const fileText = await this.bucketService.getBlockDataFileString(documentPath);
 		if (!fileText) {
@@ -55,7 +69,11 @@ export class BlockFacade {
 		};
 	}
 
-	// Create a new block with associated concepts and document
+	/**
+	 * Create a new block with concepts, document, and index its content
+	 * @param data
+	 * @returns CreateBlockResponse
+	 */
 	async createBlock(data: CreateBlockRequest): Promise<CreateBlockResponse> {
 		return await db.transaction(async (tx) => {
 			const block = await this.blockService.create(
@@ -130,7 +148,11 @@ export class BlockFacade {
 		});
 	}
 
-	// Get a block by ID, including its concepts
+	/**
+	 * Get block by ID with its concepts
+	 * @param id
+	 * @returns CreateBlockResponse
+	 */
 	async getById(id: string) {
 		const block = await this.blockService.getById(id);
 		const concepts = await this.conceptService.getManyByBlockId(id);

@@ -1,5 +1,10 @@
 import type { CreateUserBlock, UserBlock } from '../../../../../../../schemas/userBlockSchema';
 
+/**
+ * Create or fetch a user block with the provided data
+ * @param createUserBlock 
+ * @returns UserBlock 
+ */
 export const getUserBlock = async (createUserBlock: CreateUserBlock): Promise<UserBlock> => {
 	const response = await fetch(`/api/userBlock`, {
 		method: 'POST',

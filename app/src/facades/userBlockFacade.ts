@@ -1,3 +1,9 @@
+/**
+ * @fileoverview
+ * User Block Facade - provides a simplified interface for managing user blocks,
+ * including creation and initialization of related quizzes and concept progress.
+ */
+
 import { db } from '../db/client';
 import type { CreateUserBlock, UserBlock } from '../schemas/userBlockSchema';
 import { AdaptiveQuizService } from '../services/adaptiveQuizService';
@@ -19,14 +25,18 @@ export class UserBlockFacade {
 		this.conceptProgressService = new ConceptProgressService();
 		this.conceptService = new ConceptService();
 	}
-
+	/**
+	 * Get or create a user block, initializing related quizzes and concept progress if created
+	 * @param createUserBlockData
+	 * @returns The existing or newly created user block
+	 */
 	async getOrCreateUserBlock(createUserBlockData: CreateUserBlock): Promise<UserBlock> {
 		return await db.transaction(async (tx) => {
 			const userBlock = await this.userBlockService.getByUserIdAndBlockIdOrUndefined(
 				createUserBlockData,
 				tx
 			);
-			
+
 			if (userBlock) {
 				return userBlock;
 			}

@@ -5,6 +5,14 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { goto } from '$app/navigation';
 
+	/**
+	 * @fileoverview
+	 * Svelte component for the authentication page.
+	 * This component provides a user interface for signing in with Google.
+	 * It checks if the user is already authenticated and redirects them to the
+	 * home page if they are.
+	 */
+
 	onMount(() => {
 		if (page.data.session) {
 			goto('/');

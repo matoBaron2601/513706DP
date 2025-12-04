@@ -4,6 +4,12 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { getConceptProgressByUserBlockId } from '../_clientServices/getConceptProgressByUserBlockId';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component displays a list of concepts associated with a specific user block.
+	 * It fetches the concept progress data and renders each concept using the BlockConceptCard component.
+	 */
+
 	let { userBlockId }: { userBlockId: string } = $props();
 
 	const getBlockConceptsQuery = createQuery({

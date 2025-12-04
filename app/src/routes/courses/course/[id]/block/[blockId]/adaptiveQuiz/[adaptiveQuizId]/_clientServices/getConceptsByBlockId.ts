@@ -1,5 +1,10 @@
 import type { Concept } from '../../../../../../../../../schemas/conceptSchema';
 
+/**
+ * Fetch concepts for a given block ID
+ * @param blockId 
+ * @returns Concept[] 
+ */
 export const getConceptsByBlockId = async (blockId: string): Promise<Concept[]> => {
 	const response = await fetch(`/api/concept/blockId/${blockId}`);
 	if (!response.ok) {

@@ -16,15 +16,23 @@
 	import { unpublishCourse } from '../_clientServices/unpublishCourse';
 	import { publishCourse } from '../_clientServices/publishCourse';
 
+	/**
+	 * @fileoverview
+	 * Svelte component for displaying a course card.
+	 * This component shows course details such as name, creator, and block count.
+	 * It allows the creator to publish/unpublish the course and delete it.
+	 * The component uses Svelte Query for data fetching and mutations.
+	 */
+
 	let { course }: { course: GetCoursesResponse } = $props();
 	const user = getUserFromPage();
 
 	let published = $state(course.published);
 
 	const creatorName = $derived.by(() => {
-		return $creatorQuery.data ? $creatorQuery.data.name : 'Unknown Creator';
+		return $creatorQuery.data ? $creatorQuery.data.name : '';
 	});
-	
+
 	const isCreator = $derived.by(() => {
 		return $creatorQuery.data?.email === user?.email;
 	});
@@ -69,10 +77,10 @@
 		published = course.published;
 	});
 
-	async function handleSwitchChange(checked: boolean) {
+	const handleSwitchChange = async (checked: boolean) => {
 		published = checked;
 		await $updateCourseMutation.mutateAsync(checked);
-	}
+	};
 </script>
 
 {#if isCreator || course.blocksCount != 0}

@@ -15,6 +15,14 @@
 	import { getConceptsByBlockId } from './_clientServices/getConceptsByBlockId';
 	import { submitAdaptiveQuizAnswer } from './_clientServices/submitAdaptiveQuizAnswer';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component provides a user interface for taking an adaptive quiz within a specific block of a course.
+	 * It fetches the quiz data, handles question submissions, and displays a summary upon completion. The component also retrieves
+	 * relevant course and block information for breadcrumb navigation.
+	 * Route === '/courses/course/[id]/block/[blockId]/adaptiveQuiz/[adaptiveQuizId]'
+	 */
+
 	let { data }: { data: PageData } = $props();
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';

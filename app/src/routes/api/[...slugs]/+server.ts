@@ -1,3 +1,10 @@
+/**
+ * @fileoverview
+ * This file sets up the API routes for the application using the Elysia framework.
+ * It includes error handling, authentication, and various API modules for different functionalities.
+ * The API is prefixed with '/api' and handles requests based on the environment (production or development).
+ */
+
 import type { RequestHandler } from './$types';
 import { Elysia } from 'elysia';
 import { openapi } from '@elysiajs/openapi';
@@ -106,6 +113,7 @@ const productionHandler: RequestHandler = async (event) => {
 	}
 	return app.handle(request);
 };
+
 const handler: RequestHandler = async (event) => {
 	const { request, url, locals } = event;
 	if (!url.pathname.startsWith('/api/auth')) {

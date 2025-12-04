@@ -2,6 +2,13 @@
 	import type { ComplexAdaptiveQuiz } from '../../../../../../../../../schemas/adaptiveQuizSchema';
 	import Option from './Option.svelte';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component displays a summary of an adaptive quiz, showing each question along with
+	 * the user's selected answers and the correct answers. It visually indicates whether each answer
+	 * was correct or incorrect.
+	 */
+
 	let { complexAdaptiveQuiz }: { complexAdaptiveQuiz: ComplexAdaptiveQuiz } = $props();
 </script>
 

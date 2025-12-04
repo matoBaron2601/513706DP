@@ -1,3 +1,11 @@
+/**
+ * @fileoverview
+ * This file defines the AdaptiveQuizAnswerFacade class, which serves as a facade
+ * for handling operations related to adaptive quiz answers. It utilizes the
+ * AdaptiveQuizAnswerService to create and manage adaptive quiz answers and
+ * the BaseQuizFacade to check the correctness of answers.
+ */
+
 import type {
 	AdaptiveQuizAnswer,
 	SubmitAdaptiveQuizAnswer
@@ -14,7 +22,11 @@ export class AdaptiveQuizAnswerFacade {
 		this.baseQuizFacade = new BaseQuizFacade();
 	}
 
-	// Submits an answer, checks correctness, and stores the result
+	/**
+	 * Submits an answer for an adaptive quiz question.
+	 * @param createAdaptiveQuizAnswer
+	 * @returns AdaptiveQuizAnswer
+	 */
 	async submitAnswer(
 		createAdaptiveQuizAnswer: SubmitAdaptiveQuizAnswer
 	): Promise<AdaptiveQuizAnswer> {

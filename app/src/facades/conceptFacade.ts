@@ -1,3 +1,7 @@
+/**
+ * @fileoverview
+ * Concept Facade - provides a simplified interface for managing concepts and their progress.
+ */
 import type { AdaptiveQuiz } from '../schemas/adaptiveQuizSchema';
 import type { ConceptProgress, QuestionType } from '../schemas/conceptProgressSchema';
 import type {
@@ -28,7 +32,11 @@ export class ConceptFacade {
 		this.baseQuestionService = new BaseQuestionService();
 	}
 
-	// Get concept progress by user block ID
+	/**
+	 * Get concept progress by user block ID
+	 * @param data
+	 * @returns Concept progress details
+	 */
 	async getConceptProgressByUserBlockId(
 		data: GetConceptProgressByUserBlockIdRequest
 	): Promise<GetConceptProgressByUserBlockIdResponse> {
@@ -54,7 +62,12 @@ export class ConceptFacade {
 		return complexConcepts;
 	}
 
-	// Update concept progress based on user block ID and adaptive quiz ID
+	/**
+	 * Update concept progress based on adaptive quiz answers
+	 * @param userBlockId
+	 * @param adaptiveQuizId
+	 * @returns Whether all concepts are completed
+	 */
 	async updateConceptProgress(userBlockId: string, adaptiveQuizId: string): Promise<boolean> {
 		const conceptsProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);
@@ -154,7 +167,11 @@ export class ConceptFacade {
 		return await this.checkAllConceptsCompleted(userBlockId);
 	}
 
-	// Check if all concepts in a user block are completed
+	/**
+	 * Check if all concepts are completed for a user block
+	 * @param userBlockId
+	 * @returns Whether all concepts are completed
+	 */
 	async checkAllConceptsCompleted(userBlockId: string): Promise<boolean> {
 		const conceptsProgressesAfterUpdate: ConceptProgress[] =
 			await this.conceptProgressService.getManyByUserBlockId(userBlockId);
@@ -165,7 +182,11 @@ export class ConceptFacade {
 		return allCompleted;
 	}
 
-	// Update completeness of concepts based on criteria
+	/**
+	 * Update completeness of concepts based on criteria
+	 * @param userBlockId
+	 * @returns Whether update was successful
+	 */
 	async updateCompleteness(userBlockId: string) {
 		const conceptsProgresses =
 			await this.conceptProgressService.getManyIncompleteByUserBlockId(userBlockId);

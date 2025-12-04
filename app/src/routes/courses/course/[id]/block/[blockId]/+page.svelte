@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createMutation, createQuery } from '@tanstack/svelte-query';
+	import { createQuery } from '@tanstack/svelte-query';
 	import { page } from '$app/state';
 	import { getUserByEmail } from '$lib/utils';
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
@@ -7,11 +7,18 @@
 	import BlockConceptsList from './_components/BlockConceptsList.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { goto } from '$app/navigation';
-
 	import { History, File } from '@lucide/svelte';
 	import { getCourseById } from '../../../../../_clientServices/getCourseById';
 	import { getBlockById } from '../../../../../_clientServices/getBlockById';
 	import { getUserBlock } from './_clientServices/getUserBlock';
+
+	/**
+	 * @fileoverview
+	 * This Svelte component provides a user interface for viewing and interacting with a specific block within a course.
+	 * It fetches the block and course data, as well as the user's progress on the block. The component displays the block's concepts
+	 * and adaptive quizzes based on the user's progress. It also includes navigation breadcrumbs and action buttons for viewing history and documents.
+	 * Route === '/courses/course/[id]/block/[blockId]'
+	*/
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';

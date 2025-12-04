@@ -3,9 +3,15 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { page } from '$app/state';
 	import type { AdaptiveQuiz } from '../../../../../../../schemas/adaptiveQuizSchema';
-	import { Tally5Icon } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import Spinner from '$lib/components/Spinner.svelte';
+
+	/**
+	 * @fileoverview
+	 * This Svelte component represents a card for an adaptive quiz within a course block. It displays the quiz's
+	 * name, completion status for the current user, and provides action buttons to either start the quiz or review it
+	 * based on whether it has been completed.
+	 */
 
 	const { adaptiveQuiz }: { adaptiveQuiz: AdaptiveQuiz } = $props();
 

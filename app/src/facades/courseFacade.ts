@@ -1,10 +1,7 @@
-import { db } from '../db/client';
-import type { CreateUserBlock, UserBlock } from '../schemas/userBlockSchema';
-import { AdaptiveQuizService } from '../services/adaptiveQuizService';
-import { ConceptProgressService } from '../services/conceptProgressService';
-import { PlacementQuizService } from '../services/placementQuizService';
-import { UserBlockService } from '../services/userBlockService';
-import { ConceptService } from '../services/conceptService';
+/**
+ * @fileoverview
+ * Course Facade - provides a simplified interface for managing courses and their block counts.
+ */
 import { CourseService } from '../services/courseService';
 import { BlockService } from '../services/blockService';
 import type { GetCoursesResponse } from '../schemas/courseSchema';
@@ -16,9 +13,16 @@ export class CourseFacade {
 		this.courseService = new CourseService();
 		this.blockService = new BlockService();
 	}
-
+	/**
+	 * Get available courses with their block counts for a specific creator
+	 * @param creatorId
+	 * @returns List of courses with block counts
+	 */
 	async getAvailableCoursesWithBlockCount(creatorId: string): Promise<GetCoursesResponse[]> {
-		console.log('CourseFacade: Getting available courses with block count for creatorId:', creatorId);
+		console.log(
+			'CourseFacade: Getting available courses with block count for creatorId:',
+			creatorId
+		);
 		const courses = await this.courseService.getAvailableCourses(creatorId);
 		const coursesWithBlockCount = await Promise.all(
 			courses.map(async (course) => {

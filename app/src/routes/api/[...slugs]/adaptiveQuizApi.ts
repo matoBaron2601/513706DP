@@ -1,7 +1,20 @@
+/**
+ * @fileoverview
+ * This file defines the API endpoints for managing adaptive quizzes.
+ * It uses the Elysia framework to create routes for retrieving, completing,
+ * regenerating, and fetching complex adaptive quizzes.
+ */
+
 import { Elysia } from 'elysia';
 import { AdaptiveQuizFacade } from '../../../facades/adaptiveQuizFacade';
 import { AdaptiveQuizService } from '../../../services/adaptiveQuizService';
 
+/**
+ * Creates an Elysia application with routes for adaptive quiz management.
+ *
+ * @param deps - Optional dependencies for the facade and service.
+ * @returns An Elysia application with adaptive quiz routes.
+ */
 export const createAdaptiveQuizApi = (deps?: {
 	adaptiveQuizFacade?: AdaptiveQuizFacade;
 	adaptiveQuizService?: AdaptiveQuizService;

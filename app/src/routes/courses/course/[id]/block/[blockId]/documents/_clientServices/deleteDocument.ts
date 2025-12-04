@@ -3,6 +3,12 @@ import type {
 	Document
 } from '../../../../../../../../schemas/documentSchema';
 
+
+/**
+ * Delete a document with the provided request data
+ * @param deleteDocumentRequest 
+ * @returns Document 
+ */
 export const deleteDocument = async (
 	deleteDocumentRequest: DeleteDocumentRequest
 ): Promise<Document> => {

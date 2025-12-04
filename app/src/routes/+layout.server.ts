@@ -1,6 +1,11 @@
 import type { LayoutServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
-
+/**
+ * @fileoverview
+ * This file handles server-side loading for the layout route. It checks for user authentication
+ * and redirects to the auth page if the user is not authenticated,
+ * unless running in an end-to-end testing environment with auth bypass enabled.
+ */
 const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
 
 export const load: LayoutServerLoad = async (event) => {

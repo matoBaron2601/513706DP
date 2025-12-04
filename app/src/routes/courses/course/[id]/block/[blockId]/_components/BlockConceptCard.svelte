@@ -5,6 +5,13 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import beta from '@stdlib/stats-base-dists-beta';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component represents a card for a concept within a course block. It displays the concept's name
+	 * and provides detailed statistics about the user's progress with the concept via a popover. The card visually indicates
+	 * whether the concept has been mastered and if it meets certain learning criteria.	
+	 */
+
 	const { concept }: { concept: ComplexConcept } = $props();
 
 	const completed = $derived.by(() => concept.conceptProgress.mastered);

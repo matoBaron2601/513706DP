@@ -1,6 +1,11 @@
 <script lang="ts">
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { principles, steps } from './utils/homePageTexts';
+	/**
+	 * @fileoverview
+	 * This is the home page of the application, providing an overview of its structure and core principles.
+	 * Route === '/'
+	 */
 </script>
 
 <PageWrapper breadcrumbItems={[]} classNameWrapper="lg:max-w-[100%] xl:max-w-[100%] w-full">

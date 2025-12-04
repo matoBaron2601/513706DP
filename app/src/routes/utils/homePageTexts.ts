@@ -1,3 +1,7 @@
+/**
+ * Texts for the home page explaining the adaptive learning system.
+ */
+
 export const principles = [
 	{
 		title: 'Mastery over completion',

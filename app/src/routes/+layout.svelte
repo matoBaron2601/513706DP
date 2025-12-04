@@ -12,14 +12,21 @@
 	import hed2 from '$lib/components/assets/hed2.png';
 	import todbubble from '$lib/components/assets/todbubble.png';
 	import { learningQuotes } from '$lib/utils';
+
+	/**
+	 * @fileoverview
+	 * This is the root layout component for the application. It sets up the main structure, including the sidebar,
+	 * toast notifications, and a dynamic learning quote feature that updates every 10 seconds.
+	 * It also conditionally renders the sidebar based on user session data.
+	 * Route === '/*'
+	 */
+
 	let { children } = $props();
 	let currentQuote = $state('');
 
-	
-
-	function pickRandomQuote() {
+	const pickRandomQuote = () => {
 		currentQuote = learningQuotes[Math.floor(Math.random() * learningQuotes.length)];
-	}
+	};
 
 	onMount(() => {
 		pickRandomQuote();

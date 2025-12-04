@@ -1,3 +1,7 @@
+/**
+ * @fileoverview
+ * Repository for analysis-related database operations.
+ */
 import type { AnalysisDto } from '../schemas/analysisSchema';
 import type { Transaction } from '../types';
 
@@ -18,6 +22,13 @@ import { eq, sql } from 'drizzle-orm';
 export class AnalysisRepository {
 	constructor(private readonly getDbClient: GetDbClient = _getDbClient) {}
 
+	/**
+	 * Retrieves a specified number of random questions for a given course.
+	 * @param count - The number of random questions to retrieve.
+	 * @param courseId - The ID of the course to filter questions by.
+	 * @param tx - Optional transaction object.
+	 * @returns An array of Analysis DTOs containing question details.
+	 */
 	async getRandomQuestions(
 		count: number,
 		courseId: string,

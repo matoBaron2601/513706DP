@@ -1,11 +1,14 @@
+/**
+ * @fileoverview
+ * Placement Quiz Facade - provides a simplified interface for managing placement quizzes.
+ */
+
 import { db } from '../db/client';
 import type {
 	BaseQuizWithQuestionsAndOptions,
 	BaseQuizWithQuestionsAndOptionsBlank
 } from '../schemas/baseQuizSchema';
-import type {
-	CreatePlacementQuizRequest,
-} from '../schemas/placementQuizSchema';
+import type { CreatePlacementQuizRequest } from '../schemas/placementQuizSchema';
 import { BaseQuizService } from '../services/baseQuizService';
 import { ConceptService } from '../services/conceptService';
 import { OpenAiService } from '../services/openAIService';
@@ -30,7 +33,11 @@ export class PlacementQuizFacade {
 		this.openAiService = new OpenAiService();
 	}
 
-	// Create a placement quiz for a given block
+	/**
+	 * Create a placement quiz for a given block
+	 * @param data
+	 * @returns The created placement quiz with questions and options
+	 */
 	async createPlacementQuiz(
 		data: CreatePlacementQuizRequest
 	): Promise<BaseQuizWithQuestionsAndOptions> {
@@ -54,7 +61,11 @@ export class PlacementQuizFacade {
 		return placementQuiz;
 	}
 
-	// Generate placement quiz questions for a given block
+	/**
+	 * Generate placement quiz questions for a given block
+	 * @param blockId
+	 * @returns A map of concept IDs to generated placement quiz questions
+	 */
 	async generatePlacementQuizQuestions(
 		blockId: string
 	): Promise<Map<string, BaseQuizWithQuestionsAndOptionsBlank>> {

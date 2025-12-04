@@ -1,9 +1,8 @@
-import { timeStamp } from 'console';
-import { db } from '../db/client';
+/**
+ * @fileoverview
+ * Document Facade - provides a simplified interface for managing documents and their indexing.
+ */
 import type { CreateDocumentDto } from '../db/schema';
-import type { Course } from '../schemas/courseSchema';
-import { BlockService } from '../services/blockService';
-import { CourseService } from '../services/courseService';
 import { DocumentService } from '../services/documentService';
 import { TypesenseService } from '../typesense/typesenseService';
 import { ChunkerService } from '../chunker/chunkerService';
@@ -21,7 +20,11 @@ export class DocumentFacade {
 		this.bucketService = new BucketService();
 	}
 
-	// Upload a document and index its content
+	/**
+	 * Upload a document and index its content
+	 * @param newDocument
+	 * @returns The created document
+	 */
 	async uploadDocument(newDocument: CreateDocumentDto) {
 		const document = await this.documentService.create(newDocument);
 		const fileText = await this.bucketService.getBlockDataFileString(newDocument.filePath);
@@ -39,7 +42,11 @@ export class DocumentFacade {
 		return document;
 	}
 
-	// Delete a document and remove its indexed content
+	/**
+	 * Delete a document by its file path and remove it from the index
+	 * @param filePath
+	 * @returns The deleted document
+	 */
 	async deleteDocumentByFilePath(filePath: string) {
 		const document = await this.documentService.deleteByFilePath(filePath);
 		await this.typesenseService.deleteByDocumentPath(document.blockId, document.filePath);

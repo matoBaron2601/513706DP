@@ -1,3 +1,10 @@
+/**
+ * @fileoverview
+ * This file defines the API endpoints for managing blocks.
+ * It uses the Elysia framework to create routes for retrieving blocks by ID or course ID,
+ * identifying concepts in a document, and creating new blocks.
+ */
+
 import { Elysia } from 'elysia';
 import { BlockFacade } from '../../../facades/blockFacade';
 import {
@@ -7,6 +14,11 @@ import {
 import { BucketService } from '../../../services/bucketService';
 import { BlockService } from '../../../services/blockService';
 
+/**
+ * Creates an Elysia application with routes for block management.
+ * @param deps
+ * @returns  An Elysia application with block routes.
+ */
 export const createBlockApi = (deps?: {
 	blockFacade?: BlockFacade;
 	blockService?: BlockService;

@@ -1,6 +1,12 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component represents an option within an adaptive quiz question. It displays the option text and
+	 * indicates whether the option was selected by the user and if it was correct during review mode.
+	 */
+
 	let {
 		onOptionClick,
 		optionText,

@@ -7,6 +7,13 @@
 	import { getComplexAdaptiveQuizById } from '../_clientServices/getAdaptiveQuizById';
 	import { getCourseById } from '../../../../../../../../_clientServices/getCourseById';
 	import { getBlockById } from '../../../../../../../../_clientServices/getBlockById';
+	/**
+	 * @fileoverview
+	 * This Svelte component provides a summary view of a completed adaptive quiz within a specific block of a course.
+	 * It fetches the quiz data along with relevant course and block information for breadcrumb navigation.
+	 * Route === '/courses/course/[id]/block/[blockId]/adaptiveQuiz/[adaptiveQuizId]/summary'
+	 */
+
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
 	const adaptiveQuizId = page.params.adaptiveQuizId ?? '';

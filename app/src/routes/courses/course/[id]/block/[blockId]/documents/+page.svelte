@@ -1,7 +1,6 @@
 <script lang="ts">
 	import PageWrapper from '$lib/components/PageWrapper.svelte';
 	import { createMutation, createQuery } from '@tanstack/svelte-query';
-
 	import { page } from '$app/state';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import * as Form from '$lib/components/ui/form/index.js';
@@ -20,11 +19,18 @@
 	import { uploadDocument } from './_clientServices/uploadDocument';
 	import { deleteDocument } from './_clientServices/deleteDocument';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component provides a user interface for managing documents associated with a specific block within a course.
+	 * It allows users to upload new text documents and view or delete existing ones. The component fetches the block and course data to display relevant information
+	 * and uses forms and mutations to handle document uploads and deletions.
+	 * Route === '/courses/course/[id]/block/[blockId]/documents'
+	 */
+
 	let { data }: { data: PageData } = $props();
 
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';
-
 
 	const courseQuery = createQuery({
 		queryKey: ['course'],
@@ -114,13 +120,13 @@
 	<div class="space-y-6">
 		<header class="space-y-1">
 			<h1 class="text-2xl font-semibold tracking-tight text-gray-900">Block documents</h1>
-			<p class="text-sm text-gray-500">
-				Manage text documents attached to this block.
-			</p>
+			<p class="text-sm text-gray-500">Manage text documents attached to this block.</p>
 		</header>
 
 		<div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)]">
-			<section class="rounded-2xl border border-gray-200 bg-white shadow-sm px-4 py-4 sm:px-5 sm:py-5 space-y-3">
+			<section
+				class="space-y-3 rounded-2xl border border-gray-200 bg-white px-4 py-4 shadow-sm sm:px-5 sm:py-5"
+			>
 				<div class="flex items-center justify-between">
 					<h2 class="text-sm font-medium text-gray-900">Uploaded documents</h2>
 					<p class="text-xs text-gray-400">
@@ -140,9 +146,8 @@
 
 								<button
 									type="button"
-									class="inline-flex items-center rounded-md p-2 text-xs font-medium text-red-500 hover:bg-red-50 transition"
-									onclick={async () =>
-										await $deleteDocumentMutation.mutateAsync(document.filePath)}
+									class="inline-flex items-center rounded-md p-2 text-xs font-medium text-red-500 transition hover:bg-red-50"
+									onclick={async () => await $deleteDocumentMutation.mutateAsync(document.filePath)}
 									aria-label="Delete document"
 								>
 									<Trash class="h-4 w-4 cursor-pointer" />
@@ -151,18 +156,16 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-sm text-gray-500">
-						No documents uploaded yet.
-					</p>
+					<p class="text-sm text-gray-500">No documents uploaded yet.</p>
 				{/if}
 			</section>
 
-			<section class="rounded-2xl border border-gray-200 bg-white shadow-sm px-4 py-5 sm:px-5 sm:py-6 space-y-4">
+			<section
+				class="space-y-4 rounded-2xl border border-gray-200 bg-white px-4 py-5 shadow-sm sm:px-5 sm:py-6"
+			>
 				<div class="space-y-1">
 					<h2 class="text-sm font-medium text-gray-900">Upload new document</h2>
-					<p class="text-xs text-gray-500">
-						Upload a .txt file to add content to this block.
-					</p>
+					<p class="text-xs text-gray-500">Upload a .txt file to add content to this block.</p>
 				</div>
 
 				<Form.Field {form} name="file">
@@ -182,7 +185,7 @@
 
 								<button
 									type="button"
-									class="flex w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-600 hover:bg-gray-100 cursor-pointer transition"
+									class="flex w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 px-3 py-3 text-sm text-gray-600 transition hover:bg-gray-100"
 									onclick={() => document.getElementById('fileInput')?.click()}
 								>
 									<Upload class="mr-2 h-4 w-4" />

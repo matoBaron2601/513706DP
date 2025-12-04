@@ -16,8 +16,19 @@
 	import { toast } from 'svelte-sonner';
 	import { createCourse } from './_clientService.ts/createCourse';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component provides a user interface for creating a new course. It includes a form
+	 * where users can input the course name. Upon submission, it validates the input using Zod schema
+	 * and sends a request to create the course. Successful creation redirects the user to the courses list
+	 * and displays a success toast notification.
+	 * Route === '/courses/create'
+	 */
+
 	let { data }: { data: PageData } = $props();
+
 	const user = getUserFromPage();
+
 	const createCourseMutation = createMutation({
 		mutationKey: ['createCourse'],
 		mutationFn: async () => {
@@ -39,6 +50,7 @@
 	const form = superForm(data.createCourseForm, {
 		validators: zodClient(createCourseFormSchema)
 	});
+
 	const { form: formData, enhance, validateForm } = form;
 
 	const handleFormSubmit = async () => {

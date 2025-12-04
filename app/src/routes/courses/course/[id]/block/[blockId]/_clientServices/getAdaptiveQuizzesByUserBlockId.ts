@@ -1,5 +1,10 @@
 import type { AdaptiveQuiz } from '../../../../../../../schemas/adaptiveQuizSchema';
 
+/**
+ * Fetch adaptive quizzes for a given user block ID
+ * @param userBlockId 
+ * @returns AdaptiveQuiz[] 
+ */
 export const getAdaptiveQuizzesByUserBlockId = async (userBlockId: string): Promise<AdaptiveQuiz[]> => {
 	const response = await fetch(`/api/adaptiveQuiz/${userBlockId}`);
 	if (!response.ok) {

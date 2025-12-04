@@ -3,6 +3,11 @@ import type {
 	Document
 } from '../../../../../../../../schemas/documentSchema';
 
+/**
+ * Upload a document with the provided request data
+ * @param createDocumentRequest 
+ * @returns Document 
+ */
 export const uploadDocument = async (
 	createDocumentRequest: CreateDocumentRequest
 ): Promise<Document> => {

@@ -8,6 +8,14 @@
 	import { getUserByEmail } from '$lib/utils';
 	import { getUserBlocks } from '../_clientServices.ts/getUserBlocks';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component represents a card for a course block. It displays the block's name,
+	 * completion status for the current user, and the number of concepts within the block.
+	 * Depending on whether the block is completed, it provides appropriate action buttons
+	 * to either open the block or view its history.
+	 */
+
 	let { block }: { block: BlockWithConcepts } = $props();
 
 	const userEmail = page.data.session?.user?.email ?? '';

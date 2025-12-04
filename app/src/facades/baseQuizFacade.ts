@@ -1,3 +1,11 @@
+/**
+ * @fileoverview
+ * Facade for managing base quizzes, questions, and options.
+ * It provides methods to create questions with options,
+ * retrieve quizzes with their questions and options,
+ * and validate answers.
+ */
+
 import { db } from '../db/client';
 import type { CreateBaseOptionDto } from '../db/schema';
 import type { BaseQuestionWithOptions } from '../schemas/baseQuestionSchema';
@@ -23,7 +31,12 @@ export class BaseQuizFacade {
 		this.openAiService = new OpenAiService();
 	}
 
-	// Creates base questions and their options within a transaction
+	/**
+	 *  Creates base questions and options for a given base quiz.
+	 * @param data
+	 * @param baseQuizId
+	 * @returns  string[]
+	 */
 	async createBaseQuestionsAndOptions({
 		data,
 		baseQuizId
@@ -70,7 +83,12 @@ export class BaseQuizFacade {
 		});
 	}
 
-	// Retrieves base quiz with questions and their options
+	/**
+	 * Get questions with options by base quiz ID
+	 * @param baseQuizId
+	 * @returns BaseQuizWithQuestionsAndOptions
+	 */
+
 	async getQuestionsWithOptionsByBaseQuizId(
 		baseQuizId: string
 	): Promise<BaseQuizWithQuestionsAndOptions> {
@@ -91,7 +109,13 @@ export class BaseQuizFacade {
 		};
 	}
 
-	// Checks if the provided answer is correct for the given question
+	/**
+	 * Checks if the provided answer is correct for the given question ID.
+	 * @param questionId
+	 * @param answer
+	 * @param tx
+	 * @returns boolean
+	 */
 	async isAnswerCorrect(questionId: string, answer: string, tx?: Transaction): Promise<boolean> {
 		const question = await this.baseQuestionService.getById(questionId, tx);
 		const options = await this.baseOptionsService.getByBaseQuestionId(questionId, tx);

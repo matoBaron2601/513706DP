@@ -7,7 +7,16 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getCourses } from './_clientServices/getCourses';
 
+	/**
+	 * @fileoverview
+	 * Svelte component for the courses page.
+	 * This component fetches and displays a list of courses created by the authenticated user.
+	 * If no courses are found, it prompts the user to create a new course.
+	 * Route === '/courses'
+	 */
+
 	const user = getUserFromPage();
+
 	const getCoursesQuery = createQuery({
 		queryKey: ['courses'],
 		queryFn: async () => {
@@ -15,8 +24,6 @@
 			return await getCourses({ creatorId: id });
 		}
 	});
-
-
 </script>
 
 <PageWrapper

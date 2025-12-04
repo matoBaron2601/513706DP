@@ -6,6 +6,13 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getAdaptiveQuizzesByUserBlockId } from '../_clientServices/getAdaptiveQuizzesByUserBlockId';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component displays the history of completed adaptive quizzes for a specific user block. It fetches the adaptive quizzes associated with the user block,
+	 * filters them to show only completed quizzes, and renders each quiz using the AdaptiveQuizCard component. If there are no completed quizzes,
+	 * it provides a message indicating that there is no history yet and a button to navigate back to the block.
+	 */
+
 	const { userBlockId }: { userBlockId: string } = $props();
 	const courseId = page.params.id ?? '';
 	const blockId = page.params.blockId ?? '';

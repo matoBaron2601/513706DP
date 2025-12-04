@@ -1,7 +1,20 @@
+/**
+ * @fileoverview
+ * This file defines the API endpoints for user authentication and management.
+ * It uses the Elysia framework to create routes for getting user details,
+ * creating new users, updating existing users, and getting or creating users
+ * based on provided information.
+ */
+
 import { Elysia } from 'elysia';
 import { UserService } from '../../../services/userService';
 import { createUserSchema, updateUserSchema } from '../../../schemas/userSchema';
 
+/**
+ *  Creates an Elysia application with routes for user authentication and management.
+ * @param userService
+ * @returns An Elysia application with auth routes.
+ */
 export const createAuthApi = (userService: UserService = new UserService()) =>
 	new Elysia({ prefix: 'auth' })
 		.get('/:id', async (req) => {

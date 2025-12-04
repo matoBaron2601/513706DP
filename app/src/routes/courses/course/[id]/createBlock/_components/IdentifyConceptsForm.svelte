@@ -13,6 +13,14 @@
 	import { toast } from 'svelte-sonner';
 	import { identifyConcepts } from '../_clientServices.ts/identifyConcepts';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component provides an interface for uploading a .txt file to identify key concepts
+	 * for a course block. It includes a form for file upload, handles form submission, and triggers
+	 * a mutation to process the file using an AI service. Upon successful identification, it updates
+	 * the parent component with the document path and identified concepts, and navigates to the next step.
+	 */
+
 	let {
 		data,
 		handleSetDocumentPath,

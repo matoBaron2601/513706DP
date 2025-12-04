@@ -9,6 +9,14 @@
     import type { BaseQuestionWithOptions } from '../../../../../../../../../schemas/baseQuestionSchema';
     import { submitAnswerFormSchema } from '../submitAnswerFormSchema';
 
+    /**
+     * @fileoverview
+     * This Svelte component renders a question for an adaptive quiz, allowing users to select an option
+     * or provide a text answer. It handles both multiple-choice questions with predefined options and
+     * open-ended questions without options. The component uses a form to manage user input and submits
+     * the answer through a provided handler function.  
+     */
+
     let {
         index,
         question,

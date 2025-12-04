@@ -4,6 +4,15 @@
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { Input } from '$lib/components/ui/input';
 	import type { Step } from '../+page.svelte';
+
+	/**
+	 * @fileoverview
+	 * This Svelte component provides an interface for editing a list of concepts identified from a document.
+	 * Users can modify concept names, reorder them via drag-and-drop or buttons, and remove concepts.
+	 * Once finalized, the updated list of concepts is emitted to the parent component for further processing.	
+	 */
+
+
 	type Concept = { name: string; difficultyIndex: number };
 
 	let { concepts, handleSetStep }: { concepts: Concept[]; handleSetStep: (newStep: Step) => void } =

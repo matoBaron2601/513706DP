@@ -8,6 +8,16 @@
 	import CourseBlockCard from './_components/BlockCard.svelte';
 	import { getCourseById } from '../../../_clientServices/getCourseById';
 	import { getBlocks } from './_clientServices.ts/getBlocks';
+
+	/**
+	 * @fileoverview
+	 * This Svelte component displays the details of a specific course, including its blocks.
+	 * It fetches the course data and associated blocks using Svelte Query. If no blocks are present,
+	 * it provides an option to create a new block. The component also includes navigation breadcrumbs
+	 * for better user experience.
+	 * Route === '/courses/course/[id]'
+	 */
+
 	const courseId = page.params.id ?? '';
 
 	const courseQuery = createQuery({
@@ -44,15 +54,17 @@
 	{#if $blockQuery.isLoading}
 		<p class="text-sm text-gray-500">Loading…</p>
 	{:else if !$blockQuery.data || $blockQuery.data.length === 0}
-		<div class="mx-auto mt-10 max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-			<div class="text-4xl mb-3 select-none">📦</div>
-			<h2 class="text-lg font-semibold text-gray-900 mb-1">No blocks yet</h2>
-			<p class="text-sm text-gray-500 mb-6">
+		<div
+			class="mx-auto mt-10 max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm"
+		>
+			<div class="mb-3 select-none text-4xl">📦</div>
+			<h2 class="mb-1 text-lg font-semibold text-gray-900">No blocks yet</h2>
+			<p class="mb-6 text-sm text-gray-500">
 				Add the first block to this course to start building its content.
 			</p>
 			<Button
 				onclick={() => goto(`${page.url.pathname}/createBlock`)}
-				class="cursor-pointer text-sm px-4 py-2"
+				class="cursor-pointer px-4 py-2 text-sm"
 				variant="outline"
 			>
 				<Upload class="mr-2 h-4 w-4" />

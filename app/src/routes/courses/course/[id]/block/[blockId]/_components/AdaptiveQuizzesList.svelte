@@ -9,6 +9,13 @@
 	import { regenerateAdaptiveQuiz } from '../_clientServices/regenerateAdaptiveQuiz';
 	import { getLastAdaptiveQuizByUserBlockId } from '../_clientServices/getLastAdaptiveQuizByUserBlockId';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component displays a list of adaptive quizzes for a specific user block. It fetches the latest adaptive quiz
+	 * associated with the user block and shows its status. If the quiz is not ready, it periodically checks for updates.
+	 * Users can also trigger a regeneration of the adaptive quiz if an error occurs during preparation.
+	 */
+
 	let { userBlockId }: { userBlockId: string } = $props();
 
 	const queryKey = ['adaptiveQuizzes', userBlockId];

@@ -1,3 +1,10 @@
+/**
+ * @fileoverview
+ * This file defines custom error classes for the application.
+ * These errors include AppError, NotFoundError, ValidationError,
+ * BadRequestError, ConflictError, and UnauthorizedError.
+ */
+
 // Base application error with HTTP status, code, and optional details
 export class AppError extends Error {
 	status: number;

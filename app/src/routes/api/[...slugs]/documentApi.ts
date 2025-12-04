@@ -1,5 +1,11 @@
-import { Elysia } from 'elysia';
+/**
+ * @fileoverview
+ * This file defines the API endpoints for managing documents.
+ * It uses the Elysia framework to create routes for retrieving documents by ID or block ID,
+ * uploading new documents, and deleting documents by file path.
+ */
 
+import { Elysia } from 'elysia';
 import { BucketService } from '../../../services/bucketService';
 import { DocumentService } from '../../../services/documentService';
 import {
@@ -8,6 +14,11 @@ import {
 } from '../../../schemas/documentSchema';
 import { DocumentFacade } from '../../../facades/documentFacade';
 
+/**
+ *  Creates an Elysia application with routes for document management.
+ * @param deps
+ * @returns  An Elysia application with document routes.
+ */
 export const createDocumentApi = (deps?: {
 	documentFacade?: DocumentFacade;
 	documentService?: DocumentService;

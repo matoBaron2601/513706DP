@@ -19,6 +19,14 @@
 	import { createPlacementQuiz } from '../_clientServices.ts/createPlacementQuiz';
 	import { createBlock } from '../_clientServices.ts/createBlock';
 
+	/**
+	 * @fileoverview
+	 * This Svelte component provides an interface for creating a new block within a course. It includes
+	 * a form to configure block settings such as name, chunking strategy, and whether to use LLM transformation.
+	 * Upon submission, it validates the input and triggers mutations to create the block and an associated placement quiz.
+	 * It also handles navigation and displays success or error notifications.
+	*/
+
 	const courseId = page.params.id ?? '';
 	let {
 		data,
