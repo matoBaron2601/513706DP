@@ -6,6 +6,7 @@
 	import { House, Columns3CogIcon, PlusIcon } from '@lucide/svelte';
 	import Button from './ui/button/button.svelte';
 	import logo from '../components/assets/logo.png';
+
 	const items = [
 		{
 			title: 'Home',
@@ -21,12 +22,23 @@
 			title: 'Create Course',
 			url: '/courses/create',
 			icon: PlusIcon
-		},
+		}
 	];
+
+	const email = page.data.session?.user?.email;
+	const fallback = `/api/bucket/profilePic/${encodeURIComponent(email ?? '')}.jpg`;
+
+	let src = $state(page.data.session?.user?.image ?? fallback);
+
+	function handleError() {
+		if (src !== fallback) {
+			src = fallback;
+		}
+	}
 </script>
 
 <Sidebar.Root class="border border-gray-100">
-	<Sidebar.Content class="h-full border border-r-1 border-gray-100 border-r-gray-200 bg-gray-100">
+	<Sidebar.Content class="border-r-1 h-full border border-gray-100 border-r-gray-200 bg-gray-100">
 		<a href="/">
 			<img src={logo} alt="Owl mascot" class="translate-2 h-20 w-20 rounded-full object-cover" /></a
 		>
@@ -49,11 +61,7 @@
 			</Sidebar.GroupContent>
 			<Sidebar.Footer>
 				<div class="flex items-center">
-					<img
-						src={page.data.session?.user?.image}
-						alt="Google Logo"
-						class="mr-2 h-8 w-8 rounded-2xl"
-					/>
+					<img {src} onerror={handleError} alt="Google Logo" class="mr-2 h-8 w-8 rounded-2xl" />
 					<div>
 						<p>{page.data.session?.user?.name}</p>
 						<p class="text-muted-foreground text-sm">{page.data.session?.user?.email}</p>

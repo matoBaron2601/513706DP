@@ -24,7 +24,7 @@ export const load: LayoutServerLoad = async (event) => {
 	}
 
 	if (session?.user) {
-		await fetch('http://localhost:5173/api/auth/getOrCreate', {
+		const user = await fetch('http://localhost:5173/api/auth/getOrCreate', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -36,6 +36,24 @@ export const load: LayoutServerLoad = async (event) => {
 				accessToken: session.accessToken
 			})
 		});
+		const profilePicture = (
+			(await user.json()) as {
+				email: string;
+				name: string;
+				profilePicture: string;
+				accessToken: string;
+			}
+		).profilePicture;
+
+		const res = await fetch(profilePicture);
+		const blob = await res.blob();
+
+		const file = new File([blob], `${session.user.email}.jpg`, {
+			type: blob.type
+		});
+
+		const formData = new FormData();
+		formData.append('file', file);
 	}
 
 	const authPage = '/auth';

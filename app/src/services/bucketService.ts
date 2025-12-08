@@ -4,7 +4,8 @@
  * specifically for managing block data files and profile pictures.
  */
 
-import { MinioClient } from '../routes/api/[...slugs]/bucketApi';
+import { MinioClient } from "$lib/minioClient";
+
 
 const BLOCKDATA = 'blockdata';
 const PROFILEPIC = 'profilepic';
@@ -97,12 +98,12 @@ export class BucketService {
 		const arrayBuffer = await file.arrayBuffer();
 		const buffer = Buffer.from(arrayBuffer);
 
-		const objectName = `${file.name.split('.').slice(0, -1).join('.')}_${new Date().toISOString()}.${
-			file.name.split('.').pop() || 'png'
+		const objectName = `${file.name.split('.').slice(0, -1).join('.')}.${
+			file.name.split('.').pop() || 'jpg'
 		}`;
 
 		await MinioClient.putObject(PROFILEPIC, objectName, buffer, buffer.length, {
-			'Content-Type': file.type || 'image/png'
+			'Content-Type': file.type || 'image/jpg'
 		});
 
 		return objectName;

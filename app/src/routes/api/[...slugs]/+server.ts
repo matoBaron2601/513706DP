@@ -18,6 +18,7 @@ import adaptiveQuizApi from './adaptiveQuizApi';
 import { placementQuizApi } from './placementQuizApi';
 import documentApi from './documentApi';
 import { AppError } from '../../../errors/AppError';
+import bucketApi from './bucketApi';
 
 const AUTH_BYPASS = process.env.E2E_AUTH_BYPASS === 'true';
 const ENVIRONMENT = process.env.environment || 'prod';
@@ -50,7 +51,8 @@ const app = new Elysia({ prefix: '/api' })
 	.use(adaptiveQuizApi)
 	.use(adaptiveQuizAnswerApi)
 	.use(placementQuizApi)
-	.use(documentApi);
+	.use(documentApi)
+	.use(bucketApi);
 
 const productionHandler: RequestHandler = async (event) => {
 	const { request, url, locals } = event;
@@ -116,7 +118,7 @@ const productionHandler: RequestHandler = async (event) => {
 
 const handler: RequestHandler = async (event) => {
 	const { request, url, locals } = event;
-	if (!url.pathname.startsWith('/api/auth')) {
+	if (!url.pathname.startsWith('/api/auth') && !url.pathname.startsWith('/api/bucket')) {
 		let session = await locals.auth?.();
 
 		if (!session?.user && AUTH_BYPASS) {
