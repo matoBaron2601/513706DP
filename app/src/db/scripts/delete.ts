@@ -1,8 +1,8 @@
 import { db } from '../client';
-import { table } from '../schema'; 
+import { table } from '../schema';
 
 // Deletes all records from every table in the configured order
-const run = async () => {
+export const deleteDatabase = async () => {
 	try {
 		await db.delete(table.document);
 		await db.delete(table.adaptiveQuizAnswer);
@@ -16,10 +16,10 @@ const run = async () => {
 		await db.delete(table.concept);
 		await db.delete(table.block);
 		await db.delete(table.course);
-		console.log('All data deleted successfully');
+		console.log('All data deleted successfully.');
 	} catch (error) {
 		console.error('Error deleting data: ', error);
 	}
 };
 
-run();
+deleteDatabase();

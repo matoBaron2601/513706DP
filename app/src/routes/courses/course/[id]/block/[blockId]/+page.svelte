@@ -99,7 +99,7 @@
 
 			{#if $userBlockQuery.data.completed}
 				<div class="flex flex-col gap-2 text-sm text-gray-700">
-					<p class="font-medium">You’ve completed this block 🎉</p>
+					<p class="font-medium">You`ve completed this block 🎉</p>
 					<p class="text-xs text-gray-500">
 						You can revisit quizzes or review concepts if you want to reinforce your knowledge.
 					</p>
