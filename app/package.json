@@ -22,7 +22,7 @@
 		"deletedb": "bun run src/db/scripts/delete.ts",
 		"populatedb": "bun run src/db/scripts/populate.ts",
 		"test": "bun test && bun run testfe",
-		"testfe": "bun run deletedb && playwright test --headed"
+		"testfe": "bun run deletedb && playwright test --headed && bun run deletedb"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
