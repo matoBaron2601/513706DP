@@ -50,7 +50,9 @@ export class PlacementQuizFacade {
 			return { baseQuizId, placementQuizId };
 		});
 
+		console.log('STARTED GENERATING QUESTIONS');
 		const generatedQuestions = await this.generatePlacementQuizQuestions(data.blockId);
+		console.log('FINISHED GENERATING QUESTIONS');
 
 		await this.baseQuizFacade.createBaseQuestionsAndOptions({
 			data: generatedQuestions,
@@ -80,6 +82,7 @@ export class PlacementQuizFacade {
 				})
 			)
 		);
+
 		return new Map(
 			await Promise.all(
 				concepts.map(async (concept) => {
