@@ -81,8 +81,9 @@ export class PlacementQuizFacade {
 			)
 		);
 
-		console.log(conceptIdChunksMap)
+		console.log(conceptIdChunksMap, 'conceptIdChunksMap');
 
+		console.log('Generating placement questions...');
 		return new Map(
 			await Promise.all(
 				concepts.map(async (concept) => {
