@@ -5,7 +5,7 @@ services:
     ports:
       - '8108:8108'
     volumes:
-      - ./typesense-data:/data
+      - ../volumes/typesense:/data
     command: '--data-dir /data --api-key=xyz --enable-cors'
   
   minio:
@@ -18,7 +18,7 @@ services:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: minio123
     volumes:
-      - ./minio_data:/data
+      - ../volumes/minio:/data
   typesense-dashboard:
     image: ghcr.io/bfritscher/typesense-dashboard:latest
     ports: ['8109:80']
@@ -26,7 +26,7 @@ services:
   db:
     image: postgres
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ../volumes/postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: mydb
