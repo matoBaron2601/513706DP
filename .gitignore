@@ -25,3 +25,12 @@ vite.config.ts.timestamp-*
 app/typesense-data/
 app/typesense-data/*
 app/chunker/.env
+
+# Typesense
+/data/db/
+/data/meta/
+
+# MinIO
+app/minio_data/
+app/data/
+app/typesense-data/
