@@ -19,10 +19,6 @@ export class CourseFacade {
 	 * @returns List of courses with block counts
 	 */
 	async getAvailableCoursesWithBlockCount(creatorId: string): Promise<GetCoursesResponse[]> {
-		console.log(
-			'CourseFacade: Getting available courses with block count for creatorId:',
-			creatorId
-		);
 		const courses = await this.courseService.getAvailableCourses(creatorId);
 		const coursesWithBlockCount = await Promise.all(
 			courses.map(async (course) => {
