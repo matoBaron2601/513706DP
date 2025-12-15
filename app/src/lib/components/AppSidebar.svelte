@@ -32,7 +32,7 @@
 
 	function handleError() {
 		if (src !== fallback) {
-			src = fallback;
+			src = logo;
 		}
 	}
 </script>
