@@ -69,7 +69,6 @@ export class PlacementQuizFacade {
 	async generatePlacementQuizQuestions(
 		blockId: string
 	): Promise<Map<string, BaseQuizWithQuestionsAndOptionsBlank>> {
-		console.log("IN FUNCTION generatePlacementQuizQuestions");
 		const conceptsData = await this.conceptService.getManyByBlockId(blockId);
 		const concepts = conceptsData.sort((a, b) => a.difficultyIndex - b.difficultyIndex);
 
