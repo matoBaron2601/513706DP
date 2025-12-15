@@ -59,8 +59,9 @@ This module uses **Bun** as its package manager and relies on **Docker Compose**
 | **1. Navigate** | Go to the Main Application directory. | `cd app` | Change into the main application folder. |
 | **2. Install Dependencies** | Install the project dependencies using Bun. | `bun install` | Requires **Bun** to be installed on your system. |
 | **3. Start Infrastructure** | Start necessary services (Typesense, S3-like bucket) using Docker Compose. | `docker compose up -d` | The `-d` flag runs containers in detached mode. |
-| **4. Initialize Database** | Create the required Typesense collection schema. | `bun run createcol` | This ensures the search index is properly initialized. |
-| **5. Run Application** | Start the main application server. | `bun run dev` | Runs the application in development mode. |
+| **4. Initialize Search Index** | Create the required Typesense collection schema. | `bun run createcol` | This ensures the search index is properly initialized. |
+| **5. Create Migrations** | Generate new database migration files based on schema changes. | `bun run db:makemigrations` | Only needed when the database schema. |
+| **6. Run Migrations** | Apply pending database migrations. | `bun run db:migrate` | Initializes the database structure. || **5. Run Application** | Start the main application server. | `bun run dev` | Runs the application in development mode. |
 
 > **Status:** The Main Application should be running and accessible via your browser at **localhost:5173**
 
